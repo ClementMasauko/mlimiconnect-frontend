@@ -1,0 +1,19 @@
+{
+  "welcome": "Welcome to MlimiConnect",
+  "dashboard": "Dashboard",
+  "marketplace": "Marketplace",
+  "orders": "Orders",
+  "profile": "Profile",
+  "login": "Login",
+  "register": "Register",
+  "email": "Email",
+  "password": "Password",
+  "farmSize": "Farm Size (acres)",
+  "mainCrops": "Main Crops",
+  "submit": "Submit",
+  "verificationSent": "Verification Request Sent!",
+  // Add more keys for all app text (e.g. from LandingPage, Dashboard, etc.)
+  "chooseLanguage": "Choose Language",
+  "english": "English",
+  "chichewa": "Chichewa"
+}

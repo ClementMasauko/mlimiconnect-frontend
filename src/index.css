@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+/* Optional custom theme overrides */
+@theme {
+  /* --color-primary: oklch(0.72 0.18 200); etc. */
+}
+
+.test-red   { @apply bg-red-500 text-white p-4 rounded; }
+.test-green { @apply bg-green-500 text-white p-4 rounded; }
+.test-blue  { @apply bg-blue-500 text-white p-4 rounded; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
