@@ -1,0 +1,11 @@
+/* src/index.css - Tailwind v4 */
+@import "tailwindcss";
+
+/* Your custom styles - NO @apply in regular CSS files */
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background-color: #f0f0f0;
+}
+
+/* Custom classes should be defined in components, not here */

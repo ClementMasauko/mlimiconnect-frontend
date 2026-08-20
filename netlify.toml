@@ -1,0 +1,6 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Demo accounts deliberately remain disabled here. For a test deployment, add
+# VITE_DEMO_LOGIN_ENABLED=true in Netlify's environment variables and redeploy.

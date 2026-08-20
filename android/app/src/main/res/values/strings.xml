@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MlimiConnect</string>
+    <string name="title_activity_main">MlimiConnect</string>
+    <string name="package_name">mw.mlimiconnect.app</string>
+    <string name="custom_url_scheme">mw.mlimiconnect.app</string>
+</resources>

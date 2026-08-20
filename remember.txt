@@ -1,0 +1,17 @@
+Not all individually—my last message overstated it. Sorry.
+
+Individually improved:
+- Forgot Password and Reset Password
+- Settings and notification preferences/centre
+- Marketplace, product details, cart
+- Pricing/subscriptions and revenue model
+- Landing page and public product preview
+
+Only given shared/global styling so far:
+- My Profile, Edit Profile, Address Book, role-upgrade pages
+- Advanced Search, Farm Inputs, Checkout
+- Orders, listings, messages, wallet, onboarding, traceability, advisory, dashboards, support
+- Most admin pages
+- About, Contact, FAQ, Blog, legal pages (shared header/footer only)
+
+Those still need their own content-level redesigns.
