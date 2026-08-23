@@ -76,13 +76,17 @@ export default function BecomeFarmer() {
           toast.success(`Voice recognized: "${transcript}"`);
         }
       }
-      stopListening();
+      toast.dismiss("voice-toast-farmer");
+      setIsListening(false);
+      setListeningField(null);
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.error("Speech Error:", event.error);
       if (event.error === "not-allowed") setPermissionDenied(true);
-      stopListening();
+      toast.dismiss("voice-toast-farmer");
+      setIsListening(false);
+      setListeningField(null);
     };
 
     recognition.onend = () => {

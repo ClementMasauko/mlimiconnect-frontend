@@ -35,7 +35,7 @@ const mockProducts = [
 
 export default function TraceabilityOverview() {
   const { user } = useAuth();
-  const isFarmer = user?.user_type === "farmer";
+  const isFarmer = user?.can_sell === true || user?.user_type === "farmer";
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showQrModal, setShowQrModal] = useState<number | null>(null);

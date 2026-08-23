@@ -52,9 +52,16 @@ After these updates, `npm.cmd run check` has completed successfully (TypeScript 
 
 ## Local development
 
-1. Copy `.env.example` to `.env` and set `VITE_API_URL`.
-2. Run `npm.cmd install` and `npm.cmd run dev`.
-3. For production verification, run `npx.cmd tsc -b` and `npm.cmd run build`.
+1. In the sibling `backend` folder, follow its `README.md`, migrate the database, and run Django on port 8000.
+2. Copy `.env.example` to `.env`; keep `VITE_API_URL=http://localhost:8000`, payments disabled, and demo flags false for real API data.
+3. Run `npm.cmd install` and `npm.cmd run dev`.
+4. Run `npm.cmd run check` for TypeScript, ESLint, frontend tests, and the production build.
+
+Authentication now uses a server-owned `HttpOnly` session cookie with CSRF protection. The browser no longer stores access or refresh tokens. Set `VITE_DEMO_DATA_ENABLED=true` only when intentionally presenting the seeded prototype catalog without the backend.
+
+## English and Chichewa
+
+The application uses `react-i18next`; the language selector is available in the main header, authentication pages, and account settings. Selection persists under `mc_language`, updates the HTML `lang` attribute, and falls back to English. Add every new user-facing key to both `src/i18n/en.json` and `src/i18n/ny.json`, use `useTranslation()` instead of hard-coded JSX text, and run `npm.cmd run i18n:check` to enforce parity.
 
 ## Install on a phone (PWA demo)
 
@@ -86,6 +93,8 @@ A PWA is a website and cannot be installed by copying its `dist` folder over Blu
 3. Configure Africa's Talking to POST to `/ussd` and use `/health` for health checks.
 
 The USSD service requires an API endpoint at `POST /api/ussd/authenticate` which receives `{ phone, pin }` and returns `{ authenticated: boolean }`. It intentionally rejects PIN attempts when this endpoint is absent or unavailable.
+
+The Django backend now provides this endpoint. Set the same long random `USSD_SERVICE_KEY` in both services, ensure the user's phone is stored in `+265...` format, then create a hashed PIN with `py manage.py set_ussd_pin <username-or-phone> <4-digit-pin>`. The USSD service uses phone-level lockout and safely replays identical responses when the provider retries a callback.
 
 ## Security notes
 

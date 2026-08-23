@@ -22,8 +22,10 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
+import { useTranslation } from "react-i18next";
 
 export default function Sidebar() {
+  const { t } = useTranslation();
   const { user, isLoading } = useAuth();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const location = useLocation();
@@ -45,8 +47,9 @@ export default function Sidebar() {
     );
   }
 
-  const safeUser = user || { user_type: "buyer" };
-  const isFarmer = safeUser.user_type === "farmer" || safeUser.user_type === "admin";
+  const safeUser = user || { user_type: "buyer", can_buy: true, can_sell: false };
+  const canSell = safeUser.can_sell === true || safeUser.user_type === "farmer" || safeUser.user_type === "admin";
+  const canBuy = safeUser.can_buy !== false || safeUser.user_type === "admin";
   const isAdmin = safeUser.user_type === "admin";
 
   const notificationCounts = {
@@ -60,10 +63,10 @@ export default function Sidebar() {
     <div className="h-full overflow-y-auto border-r border-slate-200 bg-white shadow-[2px_0_12px_rgba(15,23,42,.03)] dark:border-gray-800 dark:bg-gray-950">
       {/* Mobile header */}
       <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800 lg:hidden">
-        <h2 className="text-lg font-semibold">Menu</h2>
+        <h2 className="text-lg font-semibold">{t("menu")}</h2>
         <button
           onClick={() => setIsMobileOpen(false)}
-          aria-label="Close menu"
+          aria-label={t("closeMenu")}
         >
           <X className="w-6 h-6" />
         </button>
@@ -73,41 +76,41 @@ export default function Sidebar() {
         {/* ─── MAIN ──────────────────────────────────────── */}
         <div>
           <h3 className="px-3 mb-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-            Main
+            {t("main")}
           </h3>
           <nav className="space-y-1">
             <SidebarLink
               to="/app/dashboard"
               icon={<LayoutDashboard className="w-5 h-5" />}
-              label="Dashboard"
+              label={t("dashboard")}
             />
               <SidebarLink
                 to="/app/marketplace"
                 icon={<ShoppingBag className="w-5 h-5" />}
-                label="Marketplace"
+                label={t("marketplace")}
               />
 
-            {safeUser.user_type === "buyer" && (
+            {canBuy && (
               <SidebarLink
                 to="/app/orders"
                 icon={<ListOrdered className="w-5 h-5" />}
-                label="My Orders"
+                label={t("myOrders")}
                 badge={notificationCounts.pendingOrdersBuyer}
               />
             )}
 
-            {isFarmer && (
+            {canSell && (
               <SidebarLink
                 to="/app/listings/orders"
                 icon={<Package className="w-5 h-5" />}
-                label="Farmer Orders"
+                label={t("sellerOrders")}
                 badge={notificationCounts.pendingOrdersFarmer}
               />
             )}
             <SidebarLink
               to="/app/messages"
               icon={<MessageSquare className="w-5 h-5" />}
-              label="Messages"
+              label={t("messages")}
               badge={notificationCounts.unreadMessages}
               badgeColor="bg-blue-500"
             />
@@ -115,13 +118,13 @@ export default function Sidebar() {
         </div>
 
         {/* ─── FARMER TOOLS ──────────────────────────────── */}
-        {isFarmer && (
+        {canSell && (
           <Accordion.Root type="single" collapsible defaultValue="farmer">
             <Accordion.Item value="farmer">
               <AccordionTrigger>
                 <div className="flex items-center">
                   <Store className="w-5 h-5 mr-3" />
-                  <span>Farmer Tools</span>
+                <span>{t("sellerTools")}</span>
                 </div>
               </AccordionTrigger>
 
@@ -129,12 +132,12 @@ export default function Sidebar() {
                 <SidebarLink
                   to="/app/listings"
                   icon={<Store className="w-5 h-5" />}
-                  label="Listings"
+                  label={t("listings")}
                 />
                 <SidebarLink
                   to="/app/traceability"
                   icon={<Leaf className="w-5 h-5" />}
-                  label="Traceability"
+                  label={t("traceability")}
                   badge={notificationCounts.pendingDisputes}
                   badgeColor="bg-amber-500"
                 />
@@ -149,7 +152,7 @@ export default function Sidebar() {
             <AccordionTrigger>
               <div className="flex items-center">
                 <Lightbulb className="w-5 h-5 mr-3" />
-                <span>Tools</span>
+                <span>{t("tools")}</span>
               </div>
             </AccordionTrigger>
 
@@ -157,12 +160,12 @@ export default function Sidebar() {
               <SidebarLink
                 to="/app/advisory"
                 icon={<Lightbulb className="w-5 h-5" />}
-                label="Advisory"
+                label={t("advisory")}
               />
               <SidebarLink
                 to="/app/analytics"
                 icon={<BarChart3 className="w-5 h-5" />}
-                label="Analytics"
+                label={t("analytics")}
               />
             </AccordionContent>
           </Accordion.Item>
@@ -171,23 +174,23 @@ export default function Sidebar() {
         {/* ─── ACCOUNT ───────────────────────────────────── */}
         <div>
           <h3 className="px-3 mb-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-            Account
+            {t("account")}
           </h3>
           <nav className="space-y-1">
             <SidebarLink
               to="/app/profile"
               icon={<User className="w-5 h-5" />}
-              label="Profile"
+              label={t("profile")}
             />
             <SidebarLink
               to="/app/subscription"
               icon={<Crown className="w-5 h-5" />}
-              label="Plans & subscriptions"
+              label={t("plans")}
             />
             <SidebarLink
               to="/app/profile/settings"
               icon={<Settings className="w-5 h-5" />}
-              label="Settings"
+              label={t("settings")}
             />
           </nav>
         </div>
@@ -198,7 +201,7 @@ export default function Sidebar() {
             <SidebarLink
               to="/admin"
               icon={<ShieldCheck className="w-5 h-5" />}
-              label="Admin Panel"
+              label={t("adminPanel")}
               className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/30 font-medium"
               activeClass="bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-300"
             />
@@ -237,9 +240,10 @@ export default function Sidebar() {
       </div>
 
       {/* Desktop fixed sidebar */}
-      <div className="sticky top-16 hidden h-[calc(100vh-4rem)] w-64 self-start overflow-hidden lg:block">
+      <div className="fixed bottom-0 left-0 top-[128px] z-30 hidden w-64 overflow-hidden lg:block">
         {sidebarContent}
       </div>
+      <div className="hidden w-64 shrink-0 lg:block" aria-hidden="true" />
     </>
   );
 }

@@ -104,7 +104,7 @@ export default function Dashboard() {
   const [recentActivity] = useState(mockRecentActivity);
   const [loading] = useState(false); // mock — no real loading
 
-  const isFarmer = user?.user_type === "farmer" || user?.user_type === "admin";
+  const isFarmer = user?.can_sell === true || user?.user_type === "farmer" || user?.user_type === "admin";
 
   // ────────────────────────────────────────────────────────────────
   // COMMENTED OUT — no "Please sign in" screen
@@ -481,8 +481,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const isFarmer = user?.user_type === "farmer";
-  const isBuyer = user?.user_type === "buyer";
+  const isFarmer = user?.can_sell === true || user?.user_type === "farmer";
+  const isBuyer = user?.can_buy === true || user?.user_type === "buyer";
 
   useEffect(() => {
     if (!user) return;

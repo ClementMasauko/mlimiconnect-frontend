@@ -5,7 +5,7 @@ import Button from "../../components/ui/Button";
 import { Upload, X, Gavel, ShoppingBag, Clock, HelpCircle } from "lucide-react";
 import { useMarketplace } from "../../context/MarketplaceContext";
 import { useAuth } from "../../context/AuthContext";
-import api from "../../lib/api";
+import api, { getApiError } from "../../lib/api";
 
 export default function CreateListing() {
   const navigate = useNavigate();
@@ -92,9 +92,10 @@ export default function CreateListing() {
       await api.post("/api/marketplace/listings/", payload, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-    } catch (requestError: any) {
-      // Quietly log error but do not block user if backend is offline or mock-enabled
-      console.warn("Backend posting failed or was offline. Adding listing locally:", requestError);
+    } catch (requestError: unknown) {
+      setError(getApiError(requestError, "The listing could not be published. Please try again."));
+      setSubmitting(false);
+      return;
     }
 
     // 2. Always write to client state to guarantee high-fidelity interactivity
@@ -106,6 +107,9 @@ export default function CreateListing() {
       navigate("/app/marketplace");
     }, 2000);
   };
+
+  if (user && user.can_sell === false) return <Card className="mx-auto mt-12 max-w-xl p-8 text-center"><h1 className="text-2xl font-bold">Selling is not enabled</h1><p className="mt-3 text-gray-600">This account is currently configured to buy only. Contact support to request seller verification before publishing products.</p><Button className="mt-6" onClick={() => navigate("/contact")}>Contact support</Button></Card>;
+  if (user?.account_type && user.account_type !== "individual" && user.organization_status !== "verified") return <Card className="mx-auto mt-12 max-w-xl p-8 text-center"><h1 className="text-2xl font-bold">Organization verification pending</h1><p className="mt-3 text-gray-600">Your cooperative or company can browse and prepare for trading, but it cannot publish listings until its registration and representative authority are verified.</p><Button className="mt-6" onClick={() => navigate("/app/profile")}>View organization profile</Button></Card>;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8 px-4 sm:px-6 lg:px-8">

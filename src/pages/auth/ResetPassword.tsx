@@ -85,7 +85,7 @@ export default function ResetPassword() {
       await api.post("/api/auth/reset-password/", {
         otp: data.otp.trim(),
         password: data.password,
-        // token,  // uncomment if required by your backend
+        token,
       });
 
       setSuccess(true);

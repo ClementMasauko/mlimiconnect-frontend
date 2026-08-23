@@ -44,7 +44,7 @@ const mockAdvisories = [
 
 export default function AdvisoryDashboard() {
   const { user } = useAuth();
-  const isFarmer = user?.user_type === "farmer";
+  const isFarmer = user?.can_sell === true || user?.user_type === "farmer";
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredAdvisories = mockAdvisories.filter(a =>

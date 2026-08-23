@@ -1,5 +1,5 @@
 // src/pages/profile/MyProfile.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Card from "../../components/ui/Card";
@@ -35,8 +35,13 @@ export default function MyProfile() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [organization, setOrganization] = useState<{ legal_name: string; registration_number: string; representative_name: string; representative_role: string; business_size: string; member_count?: number; address: string; verification_status: string } | null>(null);
 
-  const isFarmer = user?.user_type === "farmer";
+  useEffect(() => {
+    if (user?.account_type && user.account_type !== "individual") api.get("/api/organizations/me/").then(({ data }) => setOrganization(data)).catch(() => setOrganization(null));
+  }, [user?.account_type]);
+
+  const isFarmer = user?.can_sell === true || user?.user_type === "farmer";
 
   // Highly personalized profile fields with fallbacks to user context
   const profile = {
@@ -88,6 +93,11 @@ export default function MyProfile() {
   return (
     <div className="min-h-screen bg-gray-50/50 dark:bg-gray-950/50 py-10 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
       <div className="max-w-4xl mx-auto space-y-8">
+        {organization && <Card className="border border-blue-200 p-6 dark:border-blue-900/60">
+          <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-wider text-blue-700">{user?.account_type} account</p><h2 className="mt-1 text-2xl font-bold">{organization.legal_name}</h2><p className="mt-1 text-sm text-gray-500">Registration: {organization.registration_number} · {organization.business_size} organization</p></div><span className={`rounded-full px-3 py-1 text-xs font-bold ${organization.verification_status === "verified" ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"}`}>{organization.verification_status}</span></div>
+          <div className="mt-5 grid gap-4 text-sm sm:grid-cols-2"><p><strong>Authorized representative:</strong><br />{organization.representative_name}, {organization.representative_role}</p><p><strong>Trading capabilities:</strong><br />{user?.can_buy ? "Buy" : ""}{user?.can_buy && user?.can_sell ? " and " : ""}{user?.can_sell ? "Sell" : ""}</p>{organization.member_count && <p><strong>Cooperative members:</strong><br />{organization.member_count}</p>}<p><strong>Address:</strong><br />{organization.address}</p></div>
+          {organization.verification_status === "pending" && <p className="mt-5 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">Verification is pending. MlimiConnect must confirm registration and representative authority before raising transaction limits.</p>}
+        </Card>}
         
         {/* Header Title with quick edit & logout actions */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 dark:border-gray-800/80 pb-6">

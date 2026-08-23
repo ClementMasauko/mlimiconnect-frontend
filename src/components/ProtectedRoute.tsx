@@ -1,6 +1,7 @@
 // src/components/ProtectedRoute.tsx  (or wherever it lives)
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
+import LogoLoader from "./LogoLoader";
 import { useAuth } from "../context/AuthContext";   // ← use the hook
 
 interface ProtectedRouteProps {
@@ -14,11 +15,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, role }) => {
 
   // While checking auth state, show nothing or a loader
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
-      </div>
-    );
+    return <LogoLoader fullScreen />;
   }
 
   // Not logged in → redirect to login with "from" state

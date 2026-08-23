@@ -2,6 +2,8 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { ScrollToTop } from "./components/RouteExperience";
+import LogoLoader from "./components/LogoLoader";
 
 import NotFound from "./pages/NotFound";
 
@@ -116,14 +118,13 @@ const BuyerDashboard = React.lazy(() => import("./pages/buyer/BuyerDashboard"));
 
 // Loading fallback
 const Loading = () => (
-  <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950">
-    <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-green-600"></div>
-  </div>
+  <LogoLoader fullScreen />
 );
 
 export default function AppRoutes() {
   return (
     <React.Suspense fallback={<Loading />}>
+      <ScrollToTop />
       <Routes>
         {/* ────────────────────────────────────────────────────────────────
             PUBLIC ROUTES (no layout, no protection)

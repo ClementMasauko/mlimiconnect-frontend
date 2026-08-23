@@ -1,5 +1,6 @@
 // src/context/MarketplaceContext.tsx
-import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import api from "../lib/api";
 
 export interface Bid {
   id: string;
@@ -72,6 +73,7 @@ interface MarketplaceContextValue {
 const MarketplaceContext = createContext<MarketplaceContextValue | undefined>(undefined);
 const MARKETPLACE_STORAGE_KEY = "mc_marketplace_products";
 const REVIEWS_STORAGE_KEY = "mc_marketplace_reviews";
+const demoDataEnabled = import.meta.env.VITE_DEMO_DATA_ENABLED === "true";
 
 // Default Initial Farmers
 const DEFAULT_FARMERS: Record<string, FarmerProfile> = {
@@ -338,30 +340,37 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [products, setProducts] = useState<Product[]>(() => {
     try {
       const saved = localStorage.getItem(MARKETPLACE_STORAGE_KEY);
-      return saved ? JSON.parse(saved) : DEFAULT_PRODUCTS;
+      return demoDataEnabled ? (saved ? JSON.parse(saved) : DEFAULT_PRODUCTS) : [];
     } catch {
-      return DEFAULT_PRODUCTS;
+      return demoDataEnabled ? DEFAULT_PRODUCTS : [];
     }
   });
 
   const [reviews, setReviews] = useState<Review[]>(() => {
     try {
       const saved = localStorage.getItem(REVIEWS_STORAGE_KEY);
-      return saved ? JSON.parse(saved) : DEFAULT_REVIEWS;
+      return demoDataEnabled ? (saved ? JSON.parse(saved) : DEFAULT_REVIEWS) : [];
     } catch {
-      return DEFAULT_REVIEWS;
+      return demoDataEnabled ? DEFAULT_REVIEWS : [];
     }
   });
 
   const [farmers, setFarmers] = useState<Record<string, FarmerProfile>>(DEFAULT_FARMERS);
 
+  useEffect(() => {
+    if (demoDataEnabled) return;
+    api.get<Array<Product & { price: string | number }>>("/api/marketplace/public-listings/")
+      .then(({ data }) => setProducts(data.map(product => ({ ...product, price: Number(product.price), image: product.image || "/logo.png" }))))
+      .catch(() => setProducts([]));
+  }, []);
+
   // Sync to local storage
   useEffect(() => {
-    localStorage.setItem(MARKETPLACE_STORAGE_KEY, JSON.stringify(products));
+    if (demoDataEnabled) localStorage.setItem(MARKETPLACE_STORAGE_KEY, JSON.stringify(products));
   }, [products]);
 
   useEffect(() => {
-    localStorage.setItem(REVIEWS_STORAGE_KEY, JSON.stringify(reviews));
+    if (demoDataEnabled) localStorage.setItem(REVIEWS_STORAGE_KEY, JSON.stringify(reviews));
   }, [reviews]);
 
   // Place a Bid on an Auction Item
@@ -508,7 +517,7 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
     return reviews.filter((r) => r.farmerName === farmerName);
   };
 
-  const value = useMemo(() => ({
+  const value = {
     products,
     reviews,
     farmers,
@@ -517,7 +526,7 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
     addListing,
     getSellerStats,
     getFarmerReviews
-  }), [products, reviews, farmers]);
+  };
 
   return <MarketplaceContext.Provider value={value}>{children}</MarketplaceContext.Provider>;
 };

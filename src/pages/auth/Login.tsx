@@ -10,6 +10,7 @@ import { demoLoginEnabled, useAuth } from "../../context/AuthContext";   // ← 
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import AuthShell from "../../components/AuthShell";
+import { useTranslation } from "react-i18next";
 
 const loginSchema = z.object({
   identifier: z.string().min(1, "Email or username is required"),
@@ -20,6 +21,7 @@ const loginSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>;
 
 export default function Login() {
+  const { t } = useTranslation();
   const { login: authLogin, isLoading: authLoading } = useAuth();   // ← from hook
   const navigate = useNavigate();
   const location = useLocation();
@@ -85,14 +87,14 @@ export default function Login() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-green-50 to-white dark:from-gray-950 dark:to-gray-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Checking authentication...</p>
+          <p className="text-gray-600 dark:text-gray-400">{t("checkingAuth")}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <AuthShell title="Welcome back" description="Sign in to manage your farm, orders and marketplace activity.">
+    <AuthShell title={t("welcomeBack")} description={t("loginDescription")}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -108,11 +110,11 @@ export default function Login() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              Email or Username
+              {t("identifier")}
             </label>
             <Input
               {...register("identifier")}
-              placeholder="username or email"
+              placeholder={t("identifierPlaceholder")}
               leftIcon={<Mail size={18} />}
               error={errors.identifier?.message}
               autoComplete="username email"
@@ -121,7 +123,7 @@ export default function Login() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              Password
+              {t("password")}
             </label>
             <Input
               type="password"
@@ -140,14 +142,14 @@ export default function Login() {
                 className="rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500 mr-2"
                 {...register("rememberMe")}
               />
-              <span className="text-gray-600 dark:text-gray-400">Remember me</span>
+              <span className="text-gray-600 dark:text-gray-400">{t("rememberMe")}</span>
             </label>
 
             <Link
               to="/forgot-password"
               className="text-green-700 dark:text-green-400 hover:underline font-medium"
             >
-              Forgot password?
+              {t("forgotPassword")}
             </Link>
           </div>
 
@@ -158,7 +160,7 @@ export default function Login() {
             className="w-full shadow-md hover:shadow-lg"
             disabled={loading || authLoading}
           >
-            {loading || authLoading ? "Signing in..." : "Sign In"}
+            {loading || authLoading ? t("signingIn") : t("signIn")}
           </Button>
         </form>
 
@@ -171,12 +173,12 @@ export default function Login() {
         )}
 
         <p className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
-          Don't have an account yet?{" "}
+          {t("noAccount")}{" "}
           <Link
             to="/register"
             className="text-green-700 dark:text-green-400 font-semibold hover:underline"
           >
-            Create free account
+            {t("createFreeAccount")}
           </Link>
         </p>
 

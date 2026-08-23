@@ -5,8 +5,10 @@ import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import { useCart } from "../../context/CartContext";
 import { useMarketplace, type Product } from "../../context/MarketplaceContext";
+import { useTranslation } from "react-i18next";
 
 export default function Products() {
+  const { t } = useTranslation();
   const { products, getSellerStats } = useMarketplace();
   const { addItem } = useCart();
   const [notice, setNotice] = useState("");
@@ -28,33 +30,33 @@ export default function Products() {
       category: "produce", 
       image: product.image 
     });
-    setNotice(`${product.name} was added to your cart.`);
+    setNotice(t("addedToCart", { name: product.name }));
     window.setTimeout(() => setNotice(""), 2600);
   };
 
   const getRemainingTimeText = (endTimeStr?: string) => {
     if (!endTimeStr) return "";
     const diff = new Date(endTimeStr).getTime() - Date.now();
-    if (diff <= 0) return "Auction Ended";
+    if (diff <= 0) return t("auctionEnded");
     const hours = Math.floor(diff / (1000 * 60 * 60));
     if (hours < 1) {
       const mins = Math.floor(diff / (1000 * 60));
-      return `${mins}m left`;
+      return t("minutesLeft", { count: mins });
     }
     if (hours < 24) {
-      return `${hours}h left`;
+      return t("hoursLeft", { count: hours });
     }
     const days = Math.floor(hours / 24);
     const remHours = hours % 24;
-    return `${days}d ${remHours}h left`;
+    return t("daysHoursLeft", { days, hours: remHours });
   };
 
   // Categories list
   const categories = [
-    { id: "all", label: "All Items" },
-    { id: "produce", label: "Produce" },
-    { id: "seeds", label: "Seeds & Grains" },
-    { id: "equipment", label: "Farm Equipment" },
+    { id: "all", label: t("allItems") },
+    { id: "produce", label: t("produce") },
+    { id: "seeds", label: t("seedsGrains") },
+    { id: "equipment", label: t("farmEquipment") },
   ];
 
   // Filter and Sort Products
@@ -84,31 +86,31 @@ export default function Products() {
   return (
     <div className="space-y-8">
       {/* Hero Banner */}
-      <section className="overflow-hidden rounded-2xl bg-slate-950 text-white shadow-xl">
+      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-xl dark:border-slate-800 dark:bg-slate-950 dark:text-white">
         <div className="relative grid min-h-58 items-center gap-8 px-6 py-10 sm:px-10 lg:grid-cols-[1fr_420px] lg:px-12">
           <div className="relative z-10">
-            <p className="mb-3 text-xs font-bold uppercase tracking-[.2em] text-green-400">
-              Malawi's Premier Agricultural Marketplace
+            <p className="mb-3 text-xs font-bold uppercase tracking-[.2em] text-green-700 dark:text-green-400">
+              {t("marketplaceTagline")}
             </p>
             <h1 className="max-w-xl text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl">
-              Buy fresh. Bid smart. <span className="text-green-400">Grow together.</span>
+              <span className="text-slate-900 dark:text-white">{t("marketplaceHeadline")}</span>
             </h1>
-            <p className="mt-4 max-w-lg text-sm text-slate-300 leading-relaxed">
-              Explore buy-it-now farm produce, or place your bids in our exciting crop & machinery auctions. Secure escrow trading with certified local farmers.
+            <p className="mt-4 max-w-lg text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+              {t("marketplaceDescription")}
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link to="/app/marketplace/search">
                 <Button className="bg-green-600 text-white hover:bg-green-700 font-bold px-6 py-3 shadow-lg">
-                  Advanced Search
+                  {t("advancedSearch")}
                 </Button>
               </Link>
-              <Link to="/app/listings/new" className="rounded-lg border border-white/20 bg-white/5 px-5 py-2.5 text-sm font-semibold hover:bg-white/15 transition-all flex items-center gap-2">
-                <Gavel size={16} /> Start Selling
+              <Link to="/app/listings/new" className="flex items-center gap-2 rounded-lg border border-slate-300 bg-slate-50 px-5 py-2.5 text-sm font-semibold text-slate-800 transition-all hover:bg-slate-100 dark:border-white/20 dark:bg-white/5 dark:text-white dark:hover:bg-white/15">
+                <Gavel size={16} /> {t("startSelling")}
               </Link>
             </div>
           </div>
           <div className="hidden lg:block h-full">
-            <div className="absolute inset-y-0 right-0 w-5/12 bg-[url('/hero.png')] bg-cover bg-center opacity-40 mix-blend-overlay rounded-r-2xl" />
+            <div className="absolute inset-y-0 right-0 w-5/12 rounded-r-2xl bg-[url('/hero.png')] bg-cover bg-center opacity-20 dark:opacity-40 dark:mix-blend-overlay" />
           </div>
         </div>
       </section>
@@ -134,19 +136,19 @@ export default function Products() {
         <div className="flex items-center gap-2 self-end md:self-auto">
           <Link to="/app/marketplace/search">
             <button className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200">
-              <SlidersHorizontal size={16} /> Advanced Filters
+              <SlidersHorizontal size={16} /> {t("advancedFilters")}
             </button>
           </Link>
           <select
-            aria-label="Sort products"
+            aria-label={t("sortProducts")}
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
             className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200"
           >
-            <option value="best-match">Best Match</option>
-            <option value="newest">Newest Listed</option>
-            <option value="price-low">Price: Low to High</option>
-            <option value="price-high">Price: High to Low</option>
+            <option value="best-match">{t("bestMatch")}</option>
+            <option value="newest">{t("newestListed")}</option>
+            <option value="price-low">{t("priceLowHigh")}</option>
+            <option value="price-high">{t("priceHighLow")}</option>
           </select>
         </div>
       </div>
@@ -183,11 +185,11 @@ export default function Products() {
                 <div className="absolute left-3 top-3 flex flex-col gap-1.5">
                   {isAuction ? (
                     <span className={`rounded-full px-3 py-1 text-[11px] font-bold shadow-md text-white flex items-center gap-1 ${isClosed ? "bg-red-600" : "bg-blue-600 animate-pulse"}`}>
-                      <Gavel size={11} /> {isClosed ? "Auction Ended" : "eBay Auction"}
+                      <Gavel size={11} /> {isClosed ? t("auctionEnded") : t("auction")}
                     </span>
                   ) : (
                     <span className="rounded-full bg-green-600 px-3 py-1 text-[11px] font-bold shadow-md text-white flex items-center gap-1">
-                      <ShoppingBag size={11} /> Buy It Now
+                      <ShoppingBag size={11} /> {t("buyItNow")}
                     </span>
                   )}
                   {product.tag && (
@@ -199,7 +201,7 @@ export default function Products() {
 
                 <button 
                   className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-white/95 text-slate-700 shadow-md hover:text-red-500 transition-colors dark:bg-gray-800 dark:text-gray-300" 
-                  aria-label={`Save ${product.name}`}
+                  aria-label={t("saveProduct", { name: product.name })}
                 >
                   <Heart size={18} />
                 </button>
@@ -214,29 +216,29 @@ export default function Products() {
                   {product.name}
                 </Link>
                 <div className="mt-1 flex items-center gap-2">
-                  <span className="text-xs text-slate-500 font-medium capitalize">Condition: <strong className="text-slate-800 dark:text-slate-200">{product.condition?.replace("-", " ") || "New"}</strong></span>
+                  <span className="text-xs text-slate-500 font-medium capitalize">{t("condition")}: <strong className="text-slate-800 dark:text-slate-200">{product.condition?.replace("-", " ") || t("new")}</strong></span>
                 </div>
 
                 <div className="mt-4 flex items-end justify-between">
                   <div>
                     {isAuction ? (
                       <>
-                        <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Current Bid</p>
+                        <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t("currentBid")}</p>
                         <p className="text-2xl font-black text-blue-600 dark:text-blue-400">
                           MWK {(product.currentBid || product.price).toLocaleString()}
                         </p>
                         <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1">
-                          <Gavel size={12} /> {product.bidsCount || 0} {(product.bidsCount === 1) ? "bid" : "bids"}
+                          <Gavel size={12} /> {t("bid", { count: product.bidsCount || 0 })}
                         </p>
                       </>
                     ) : (
                       <>
-                        <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Price</p>
+                        <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">{t("priceLabel")}</p>
                         <p className="text-2xl font-black text-slate-900 dark:text-white">
                           MWK {product.price.toLocaleString()}
                         </p>
                         <p className="text-xs text-slate-500 mt-0.5">
-                          In stock: {product.stock} units
+                          {t("inStock", { count: product.stock })}
                         </p>
                       </>
                     )}
@@ -270,14 +272,14 @@ export default function Products() {
                       <span className="line-clamp-1">{product.farmer}</span>
                     </Link>
                     <span className="text-[10px] text-slate-400 font-bold mt-0.5">
-                      {sellerStats.positivePercentage}% Feedback
+                      {t("feedback", { percent: sellerStats.positivePercentage })}
                     </span>
                   </div>
 
                   {isAuction ? (
                     <Link to={`/app/marketplace/product/${product.id}`}>
                       <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-700 shadow-md">
-                        {isClosed ? "View Results" : "Place Bid"}
+                        {isClosed ? t("viewResults") : t("placeBid")}
                       </Button>
                     </Link>
                   ) : (
@@ -286,7 +288,7 @@ export default function Products() {
                       onClick={() => add(product)}
                       className="bg-green-600 hover:bg-green-700 shadow-md"
                     >
-                      Buy Now
+                      {t("buyNow")}
                     </Button>
                   )}
                 </div>

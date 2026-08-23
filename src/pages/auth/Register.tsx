@@ -5,11 +5,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, User, Mail, Lock, Phone } from "lucide-react";
+import { ArrowRight, User, Mail, Lock, Phone, Building2, CheckCircle2 } from "lucide-react";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import api from "../../lib/api";
 import AuthShell from "../../components/AuthShell";
+import { useTranslation } from "react-i18next";
 
 // ── Zod Schemas ────────────────────────────────────────────────────────
 const registerSchema = z.object({
@@ -17,10 +18,18 @@ const registerSchema = z.object({
   email: z.string().email("Invalid email address"),
   phone: z
     .string()
-    .regex(/^\+265[79]\d{8}$/, "Phone must be valid Malawian number (+2659... or +2657...)")
+    .regex(/^(?:|0(?:88|89|98|99)\d{7})$/, "Enter 10 digits starting with 088, 089, 098 or 099")
     .optional(),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  role: z.enum(["farmer", "buyer"]),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  account_type: z.enum(["individual", "cooperative", "company"]),
+  trading_mode: z.enum(["buy", "sell", "both"]),
+  legal_name: z.string().optional(),
+  registration_number: z.string().optional(),
+  representative_name: z.string().optional(),
+  representative_role: z.string().optional(),
+  business_size: z.enum(["small", "medium", "large"]).optional(),
+  member_count: z.string().optional(),
+  address: z.string().optional(),
 });
 
 type RegisterForm = z.infer<typeof registerSchema>;
@@ -31,9 +40,39 @@ const otpSchema = z.object({
 
 type OTPForm = z.infer<typeof otpSchema>;
 
+const normalizeMalawiPhone = (phone?: string) => {
+  const compact = phone?.replace(/[\s-]/g, "") || "";
+  return compact ? `+265${compact.slice(1)}` : "";
+};
+
+const registrationError = (error: any, fallback: string) => {
+  const data = error.response?.data;
+  if (!data || typeof data !== "object") return fallback;
+  if (typeof data.detail === "string") return data.detail;
+  const messages = Object.entries(data).flatMap(([field, value]) => {
+    const values = Array.isArray(value) ? value : [value];
+    return values.filter(item => typeof item === "string").map(item => `${field.replaceAll("_", " ")}: ${item}`);
+  });
+  return messages.join(" ") || fallback;
+};
+
+const passwordStrength = (password: string) => {
+  if (!password) return null;
+  let score = 0;
+  if (password.length >= 8) score += 1;
+  if (password.length >= 12) score += 1;
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score += 1;
+  if (/\d/.test(password)) score += 1;
+  if (/[^A-Za-z0-9]/.test(password)) score += 1;
+  if (score <= 2) return { key: "passwordWeak", width: "33%", color: "bg-red-500", text: "text-red-600" };
+  if (score <= 4) return { key: "passwordStrong", width: "66%", color: "bg-amber-500", text: "text-amber-600" };
+  return { key: "passwordVeryStrong", width: "100%", color: "bg-green-600", text: "text-green-600" };
+};
+
 export default function Register() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const [step, setStep] = useState<"register" | "verify">("register");
+  const [step, setStep] = useState<"register" | "verify" | "success">("register");
   const [userData, setUserData] = useState<{ email: string; phone?: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -42,11 +81,14 @@ export default function Register() {
   const {
     register: registerForm,
     handleSubmit: handleRegister,
-    formState: { errors: regErrors },
+    formState: { errors: regErrors }, watch,
   } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { role: "farmer" },
+    defaultValues: { account_type: "individual", trading_mode: "sell", business_size: "small" },
   });
+  const accountType = watch("account_type");
+  const enteredPassword = watch("password") || "";
+  const strength = passwordStrength(enteredPassword);
 
   const onRegister = async (data: RegisterForm) => {
     setLoading(true);
@@ -56,19 +98,26 @@ export default function Register() {
       await api.post("/api/auth/register/", {
         username: data.username.trim(),
         email: data.email.trim(),
-        phone: data.phone?.trim(),
+        phone: normalizeMalawiPhone(data.phone),
         password: data.password,
-        user_type: data.role,
+        user_type: data.trading_mode === "sell" ? "farmer" : "buyer",
+        account_type: data.account_type,
+        trading_mode: data.trading_mode,
+        organization: data.account_type === "individual" ? undefined : {
+          legal_name: data.legal_name?.trim(),
+          registration_number: data.registration_number?.trim(),
+          representative_name: data.representative_name?.trim(),
+          representative_role: data.representative_role?.trim(),
+          business_size: data.business_size,
+          member_count: data.account_type === "cooperative" && data.member_count ? Number(data.member_count) : undefined,
+          address: data.address?.trim(),
+        },
       });
 
-      setUserData({ email: data.email.trim(), phone: data.phone?.trim() });
-      setStep("verify");
+      setUserData({ email: data.email.trim(), phone: normalizeMalawiPhone(data.phone) });
+      setStep("success");
     } catch (err: any) {
-      setServerError(
-        err.response?.data?.detail ||
-          err.response?.data?.non_field_errors?.[0] ||
-          "Registration failed. Please try again."
-      );
+      setServerError(registrationError(err, t("registrationFailed")));
     } finally {
       setLoading(false);
     }
@@ -108,7 +157,7 @@ export default function Register() {
   };
 
   return (
-    <AuthShell title={step === "register" ? "Create your account" : "Verify your account"} description={step === "register" ? "Join thousands of farmers and buyers trading with confidence." : `We sent a 6-digit code to ${userData?.phone || userData?.email}`}>
+    <AuthShell title={step === "register" ? t("createAccount") : step === "success" ? t("accountReady") : "Verify your account"} description={step === "register" ? t("registerDescription") : step === "success" ? t("accountReadyDescription") : `We sent a 6-digit code to ${userData?.phone || userData?.email}`}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -121,11 +170,11 @@ export default function Register() {
           </div>
         )}
 
-        {step === "register" ? (
+        {step === "success" ? <div className="rounded-2xl border border-green-200 bg-green-50 p-7 text-center dark:border-green-900 dark:bg-green-950/30"><CheckCircle2 className="mx-auto text-green-700" size={52} /><h2 className="mt-4 text-xl font-extrabold text-slate-900 dark:text-white">{t("accountCreated")}</h2><p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{t("signInContinue")}</p><Button className="mt-6 w-full" size="lg" onClick={() => navigate("/login")}>{t("continueSignIn")}<ArrowRight className="ml-2" size={18} /></Button></div> : step === "register" ? (
           <form onSubmit={handleRegister(onRegister)} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Username
+                {t("username")}
               </label>
               <Input
                 {...registerForm("username")}
@@ -137,7 +186,7 @@ export default function Register() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Email
+                {t("email")}
               </label>
               <Input
                 {...registerForm("email")}
@@ -150,11 +199,13 @@ export default function Register() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Phone (Airtel / TNM – recommended)
+                {t("phoneLocal")}
               </label>
               <Input
                 {...registerForm("phone")}
-                placeholder="+265999123456"
+                placeholder="0999123456"
+                inputMode="tel"
+                maxLength={10}
                 leftIcon={<Phone size={18} />}
                 error={regErrors.phone?.message}
               />
@@ -162,7 +213,7 @@ export default function Register() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Password
+                {t("password")}
               </label>
               <Input
                 {...registerForm("password")}
@@ -171,20 +222,41 @@ export default function Register() {
                 leftIcon={<Lock size={18} />}
                 error={regErrors.password?.message}
               />
+              {strength && <div className="mt-2" aria-live="polite"><div className="h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700"><div className={`h-full ${strength.color} transition-all`} style={{ width: strength.width }} /></div><p className={`mt-1 text-xs font-semibold ${strength.text}`}>{t(strength.key)}</p></div>}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                I am a...
+                {t("accountOwner")}
               </label>
               <select
-                {...registerForm("role")}
+                {...registerForm("account_type")}
                 className="w-full h-11 px-4 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all"
               >
-                <option value="farmer">Farmer (Seller)</option>
-                <option value="buyer">Buyer / Business</option>
+                <option value="individual">{t("individual")}</option>
+                <option value="cooperative">{t("cooperative")}</option>
+                <option value="company">{t("company")}</option>
               </select>
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t("tradingIntent")}</label>
+              <select {...registerForm("trading_mode")} className="w-full h-11 px-4 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                <option value="buy">{t("buyProducts")}</option><option value="sell">{t("sellProducts")}</option><option value="both">{t("buyAndSell")}</option>
+              </select>
+              <p className="mt-1 text-xs text-gray-500">{t("capabilityNote")}</p>
+            </div>
+
+            {accountType !== "individual" && <div className="space-y-4 rounded-xl border border-green-200 bg-green-50/60 p-4 dark:border-green-900 dark:bg-green-950/20">
+              <h3 className="flex items-center gap-2 font-semibold"><Building2 size={18} /> {t("organizationDetails")}</h3>
+              <Input {...registerForm("legal_name")} required placeholder={t("legalName")} />
+              <Input {...registerForm("registration_number")} required placeholder={t("registrationNumber")} />
+              <div className="grid gap-4 sm:grid-cols-2"><Input {...registerForm("representative_name")} required placeholder={t("representative")} /><Input {...registerForm("representative_role")} required placeholder={t("representativeRole")} /></div>
+              <select {...registerForm("business_size")} className="w-full h-11 px-4 rounded-xl border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700"><option value="small">{t("smallOrganization")}</option><option value="medium">{t("mediumOrganization")}</option><option value="large">{t("largeOrganization")}</option></select>
+              {accountType === "cooperative" && <Input {...registerForm("member_count")} type="number" min="1" placeholder={t("memberCount")} />}
+              <textarea {...registerForm("address")} required placeholder={t("organizationAddress")} className="min-h-24 w-full rounded-xl border border-gray-300 bg-white p-3 dark:border-gray-600 dark:bg-gray-700" />
+              <p className="text-xs text-gray-600 dark:text-gray-300">{t("verificationNotice")}</p>
+            </div>}
 
             <Button
               type="submit"
@@ -193,7 +265,7 @@ export default function Register() {
               className="w-full mt-3 shadow-md hover:shadow-lg"
               disabled={loading}
             >
-              {loading ? "Creating account..." : "Create Free Account"}
+              {loading ? t("creatingAccount") : t("createFreeAccount")}
               {!loading && <ArrowRight className="ml-2 h-5 w-5" />}
             </Button>
           </form>

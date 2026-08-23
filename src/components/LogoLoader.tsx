@@ -1,0 +1,3 @@
+export default function LogoLoader({ fullScreen = false, label = "Loading MlimiConnect" }: { fullScreen?: boolean; label?: string }) {
+  return <div className={`logo-loader flex items-center justify-center ${fullScreen ? "min-h-screen bg-slate-50 dark:bg-gray-950" : "p-6"}`} role="status" aria-live="polite"><div className="text-center"><div className="logo-loader-mark mx-auto"><span className="logo-loader-ring" /><img src="/logo-mark.png" alt="" className="relative h-20 w-20 object-contain" /></div><span className="sr-only">{label}</span><p className="mt-3 text-sm font-semibold tracking-wide text-slate-500 dark:text-slate-400">MlimiConnect</p></div></div>;
+}

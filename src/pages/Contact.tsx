@@ -3,6 +3,7 @@ import Card from "../components/ui/Card";
 import Input from "../components/ui/Input";
 import Button from "../components/ui/Button";
 import { Mail, Phone, Send, CheckCircle, Clock, Link } from "lucide-react";
+import api, { getApiError } from "../lib/api";
 
 export default function Contact() {
   const [form, setForm] = useState({
@@ -13,6 +14,7 @@ export default function Contact() {
   });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -23,11 +25,15 @@ export default function Contact() {
     e.preventDefault();
     setLoading(true);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1800));
-
-    setLoading(false);
-    setSubmitted(true);
+    setError("");
+    try {
+      await api.post("/api/contact/", form);
+      setSubmitted(true);
+    } catch (requestError: unknown) {
+      setError(getApiError(requestError, "Your message could not be sent. Please try again."));
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) {
@@ -123,6 +129,7 @@ export default function Contact() {
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Your Name
