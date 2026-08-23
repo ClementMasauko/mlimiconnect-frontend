@@ -2,5 +2,19 @@
   command = "npm run build"
   publish = "dist"
 
+# Keep browser authentication same-origin. Netlify forwards API requests to the
+# Django service while the browser continues to use the Netlify domain.
+[[redirects]]
+  from = "/api/*"
+  to = "https://mlimiconnect.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+# React Router SPA fallback. Keep this rule after the API proxy.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
 # Demo accounts deliberately remain disabled here. For a test deployment, add
 # VITE_DEMO_LOGIN_ENABLED=true in Netlify's environment variables and redeploy.

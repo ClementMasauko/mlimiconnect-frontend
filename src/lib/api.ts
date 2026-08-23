@@ -1,6 +1,7 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 
-const api = axios.create({ baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000", withCredentials: true, headers: { "Content-Type": "application/json" } });
+const apiBaseUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://localhost:8000" : window.location.origin);
+const api = axios.create({ baseURL: apiBaseUrl, withCredentials: true, headers: { "Content-Type": "application/json" } });
 let csrfToken: string | null = null;
 
 async function ensureCsrfToken() {
