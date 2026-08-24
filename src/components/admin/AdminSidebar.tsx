@@ -13,11 +13,9 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Menu,
   X,
   ShieldCheck,
   LogOut,
-  Leaf,
   Clock,
   TrendingUp,
 } from 'lucide-react';
@@ -25,15 +23,18 @@ import { cn } from '../../lib/utils';
 
 interface AdminSidebarProps {
   collapsed?: boolean;
+  mobileOpen?: boolean;
+  onMobileOpenChange?: (open: boolean) => void;
   onToggle?: () => void;
 }
 
 export default function AdminSidebar({
   collapsed = false,
+  mobileOpen = false,
+  onMobileOpenChange,
   onToggle,
 }: AdminSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(collapsed);
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -41,8 +42,8 @@ export default function AdminSidebar({
   }, [collapsed]);
 
   useEffect(() => {
-    setIsMobileOpen(false);
-  }, [location.pathname]);
+    onMobileOpenChange?.(false);
+  }, [location.pathname, onMobileOpenChange]);
 
   const toggleCollapse = () => {
     setIsCollapsed((prev) => {
@@ -64,19 +65,19 @@ export default function AdminSidebar({
   const totalAlerts = counts.pendingApprovals + counts.activeDisputes;
 
   const sidebarContent = (
-    <div className="flex h-full flex-col bg-gray-950 text-gray-100 border-r border-gray-800">
+    <div className="flex h-full flex-col border-r border-slate-200 bg-white text-slate-800 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-100">
       {/* Mobile header */}
-      <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 border-b border-gray-800 lg:hidden">
+      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-950 lg:hidden">
         <div className="flex items-center gap-3">
-          <Leaf className="h-7 w-7 text-emerald-500" />
+          <img src="/logo-mark.png" alt="" className="h-10 w-10 object-contain" />
           <div>
             <h2 className="text-lg font-semibold tracking-tight">MlimiConnect</h2>
-            <p className="text-xs text-gray-400">Admin Panel</p>
+            <p className="text-xs text-slate-500 dark:text-gray-400">Admin Panel</p>
           </div>
         </div>
         <button
-          onClick={() => setIsMobileOpen(false)}
-          className="p-2 rounded-lg hover:bg-gray-800 transition-colors"
+          onClick={() => onMobileOpenChange?.(false)}
+          className="grid min-h-11 min-w-11 place-items-center rounded-lg transition-colors hover:bg-slate-100 dark:hover:bg-gray-800"
           aria-label="Close menu"
         >
           <X className="h-6 w-6" />
@@ -87,7 +88,7 @@ export default function AdminSidebar({
       <nav className="flex-1 overflow-y-auto px-3 py-6 space-y-1.5">
         <SidebarLink
           to="/admin"
-          icon={<LayoutDashboard className="h-5 w-5" />}
+          icon={<img src="/logo-mark.png" alt="" className="h-6 w-6 object-contain" />}
           label="Dashboard"
           isCollapsed={isCollapsed}
         />
@@ -196,11 +197,11 @@ export default function AdminSidebar({
       </nav>
 
       {/* Footer / Quick stats + Back link */}
-      <div className="border-t border-gray-800 p-4 mt-auto">
+      <div className="mt-auto border-t border-slate-200 p-3 dark:border-gray-800 sm:p-4">
         {!isCollapsed && (
-          <div className="mb-5 p-4 rounded-lg bg-gray-900/60 text-sm border border-gray-800/50">
-            <h3 className="text-gray-400 font-medium mb-3">Platform Snapshot</h3>
-            <div className="space-y-2.5 text-gray-300">
+          <div className="mb-5 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm dark:border-gray-800/50 dark:bg-gray-900/60">
+            <h3 className="mb-3 font-medium text-slate-500 dark:text-gray-400">Platform Snapshot</h3>
+            <div className="space-y-2.5 text-slate-700 dark:text-gray-300">
               <div className="flex justify-between">
                 <span>Users</span>
                 <span className="font-semibold">1,842</span>
@@ -221,7 +222,7 @@ export default function AdminSidebar({
           to="/app/dashboard"
           icon={<LogOut className="h-5 w-5 rotate-180" />}
           label="Back to Main Platform"
-          className="text-gray-300 hover:text-emerald-400 hover:bg-gray-800/60"
+          className="text-slate-600 hover:bg-slate-100 hover:text-emerald-700 dark:text-gray-300 dark:hover:bg-gray-800/60 dark:hover:text-emerald-400"
           isCollapsed={isCollapsed}
         />
       </div>
@@ -230,25 +231,17 @@ export default function AdminSidebar({
 
   return (
     <>
-      {/* Mobile trigger button */}
-      <button
-        className="fixed left-4 top-20 z-40 rounded-lg border border-gray-800 bg-gray-950 p-2.5 text-gray-100 shadow-lg transition-colors hover:bg-gray-900 lg:hidden"
-        onClick={() => setIsMobileOpen(true)}
-        aria-label="Open admin navigation"
-      >
-        <Menu className="h-6 w-6" />
-      </button>
-
       {/* Mobile drawer */}
       <div
         className={cn(
           'fixed inset-0 z-50 lg:hidden transition-transform duration-300 ease-in-out',
-          isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+          mobileOpen ? 'translate-x-0' : '-translate-x-full'
         )}
+        aria-hidden={!mobileOpen}
       >
         <div
           className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-          onClick={() => setIsMobileOpen(false)}
+          onClick={() => onMobileOpenChange?.(false)}
         />
         <div className="relative w-72 max-w-[85vw] h-full shadow-2xl">
           {sidebarContent}
@@ -258,14 +251,14 @@ export default function AdminSidebar({
       {/* Desktop fixed/sticky sidebar */}
       <aside
         className={cn(
-          'hidden lg:sticky lg:top-0 lg:flex lg:flex-col lg:h-screen lg:border-r lg:border-gray-800 lg:bg-gray-950 lg:transition-all lg:duration-300',
+          'hidden lg:sticky lg:top-16 lg:flex lg:h-[calc(100vh-4rem)] lg:flex-col lg:border-r lg:border-slate-200 lg:bg-white lg:transition-all lg:duration-300 dark:lg:border-gray-800 dark:lg:bg-gray-950',
           isCollapsed ? 'lg:w-16' : 'lg:w-64'
         )}
       >
         {/* Collapse toggle */}
         <button
           onClick={toggleCollapse}
-          className="absolute -right-3 top-8 z-10 p-1.5 rounded-full bg-gray-900 border border-gray-700 text-gray-400 hover:bg-gray-800 hover:text-emerald-400 shadow-md transition-colors"
+          className="absolute -right-3 top-8 z-10 rounded-full border border-slate-200 bg-white p-1.5 text-slate-500 shadow-md transition-colors hover:bg-slate-100 hover:text-emerald-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-emerald-400"
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
@@ -304,8 +297,8 @@ function SidebarLink({
         cn(
           'group relative flex items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors',
           isActive
-            ? 'bg-emerald-950/40 text-emerald-400'
-            : 'text-gray-300 hover:bg-gray-800/70 hover:text-emerald-300',
+            ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400'
+            : 'text-slate-700 hover:bg-slate-100 hover:text-emerald-800 dark:text-gray-300 dark:hover:bg-gray-800/70 dark:hover:text-emerald-300',
           isCollapsed && 'justify-center px-2',
           className
         )
@@ -342,7 +335,7 @@ const AccordionTrigger = React.forwardRef<
     <Accordion.Trigger
       ref={ref}
       className={cn(
-        'group flex w-full items-center rounded-md px-3 py-2.5 text-sm font-medium text-gray-300 transition-colors hover:bg-gray-800/70 hover:text-emerald-300',
+        'group flex w-full items-center rounded-md px-3 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-emerald-800 dark:text-gray-300 dark:hover:bg-gray-800/70 dark:hover:text-emerald-300',
         className
       )}
       {...props}

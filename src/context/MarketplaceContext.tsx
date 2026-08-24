@@ -61,6 +61,9 @@ export interface FarmerProfile {
 
 interface MarketplaceContextValue {
   products: Product[];
+  listingsLoading: boolean;
+  hasMoreListings: boolean;
+  loadMoreListings: () => Promise<void>;
   reviews: Review[];
   farmers: Record<string, FarmerProfile>;
   addBid: (productId: number, bidderName: string, amount: number) => { success: boolean; error?: string };
@@ -74,6 +77,7 @@ const MarketplaceContext = createContext<MarketplaceContextValue | undefined>(un
 const MARKETPLACE_STORAGE_KEY = "mc_marketplace_products";
 const REVIEWS_STORAGE_KEY = "mc_marketplace_reviews";
 const demoDataEnabled = import.meta.env.VITE_DEMO_DATA_ENABLED === "true";
+const normalizeProducts = (items: Array<Product & { price: string | number }>) => items.map(product => ({ ...product, price: Number(product.price), image: product.image || "/logo.png" }));
 
 // Default Initial Farmers
 const DEFAULT_FARMERS: Record<string, FarmerProfile> = {
@@ -356,13 +360,27 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
   });
 
   const [farmers, setFarmers] = useState<Record<string, FarmerProfile>>(DEFAULT_FARMERS);
+  const [listingsLoading, setListingsLoading] = useState(!demoDataEnabled);
+  const [nextListingsUrl, setNextListingsUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (demoDataEnabled) return;
-    api.get<Array<Product & { price: string | number }>>("/api/marketplace/public-listings/")
-      .then(({ data }) => setProducts(data.map(product => ({ ...product, price: Number(product.price), image: product.image || "/logo.png" }))))
-      .catch(() => setProducts([]));
+    setListingsLoading(true);
+    api.get<Array<Product & { price: string | number }> | { results: Array<Product & { price: string | number }>; next: string | null }>("/api/marketplace/public-listings/", { params: { page_size: 24 } })
+      .then(({ data }) => { if (Array.isArray(data)) { setProducts(normalizeProducts(data)); setNextListingsUrl(null); } else { setProducts(normalizeProducts(data.results)); setNextListingsUrl(data.next); } })
+      .catch(() => setProducts([]))
+      .finally(() => setListingsLoading(false));
   }, []);
+
+  const loadMoreListings = async () => {
+    if (!nextListingsUrl || listingsLoading) return;
+    setListingsLoading(true);
+    try {
+      const { data } = await api.get<{ results: Array<Product & { price: string | number }>; next: string | null }>(nextListingsUrl);
+      setProducts(current => { const known = new Set(current.map(item => item.id)); return [...current, ...normalizeProducts(data.results).filter(item => !known.has(item.id))]; });
+      setNextListingsUrl(data.next);
+    } finally { setListingsLoading(false); }
+  };
 
   // Sync to local storage
   useEffect(() => {
@@ -519,6 +537,9 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   const value = {
     products,
+    listingsLoading,
+    hasMoreListings: Boolean(nextListingsUrl),
+    loadMoreListings,
     reviews,
     farmers,
     addBid,

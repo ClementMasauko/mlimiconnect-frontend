@@ -1,97 +1,18 @@
-// src/pages/admin/Analytics.tsx
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import {
-  TrendingUp,
-  Users,
-  DollarSign,
-  Package,
-  ShoppingCart,
-  ArrowUpRight,
-  ArrowDownRight,
-} from "lucide-react";
+import { useEffect, useState } from "react";
+import { BarChart3, DollarSign, Package, ShoppingCart, Users } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import Card from "../../components/ui/Card";
-import Button from "../../components/ui/Button";
+import api from "../../lib/api";
 
-const mockStats = [
-  { icon: DollarSign, label: "Total Revenue", value: "MWK 12.8M", change: "+22%", trend: "up" },
-  { icon: Users, label: "Registered Users", value: "2,341", change: "+14%", trend: "up" },
-  { icon: Package, label: "Active Listings", value: "4,892", change: "+9%", trend: "up" },
-  { icon: ShoppingCart, label: "Orders Completed", value: "1,673", change: "-3%", trend: "down" },
-];
+type AnalyticsData = { users: number; activeListings: number; orders: number; volume: number; disputes: number; revenueTrend: { period: string; value: number; orders: number }[]; categories: { category: string; value: number }[] };
+const demo: AnalyticsData = { users: 2341, activeListings: 4892, orders: 1673, volume: 12800000, disputes: 7, revenueTrend: [{ period: "2026-01-01", value: 5600000, orders: 620 }, { period: "2026-02-01", value: 7100000, orders: 810 }, { period: "2026-03-01", value: 8400000, orders: 940 }, { period: "2026-04-01", value: 9800000, orders: 1080 }, { period: "2026-05-01", value: 11200000, orders: 1320 }, { period: "2026-06-01", value: 12800000, orders: 1673 }], categories: [{ category: "Produce", value: 2840 }, { category: "Seeds", value: 810 }, { category: "Inputs", value: 640 }, { category: "Equipment", value: 602 }] };
 
 export default function Analytics() {
-  const [timeRange, setTimeRange] = useState<"week" | "month" | "year">("month");
-
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-10 gap-4">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <TrendingUp className="text-green-600" size={32} />
-            Platform Analytics
-          </h1>
-
-          <div className="flex gap-2 bg-white dark:bg-gray-800 rounded-lg p-1 border border-gray-200 dark:border-gray-700 shadow-sm">
-            {(["week", "month", "year"] as const).map((range) => (
-              <Button
-                key={range}
-                variant={timeRange === range ? "primary" : "ghost"}
-                size="sm"
-                onClick={() => setTimeRange(range)}
-                className="capitalize"
-              >
-                {range}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        {/* Key Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          {mockStats.map((stat, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-            >
-              <Card className="p-6 hover:shadow-lg transition-all">
-                <div className="flex items-start justify-between">
-                  <div className={`${stat.trend === "up" ? "text-green-600" : "text-red-600"} p-3 rounded-lg bg-opacity-10 bg-current`}>
-                    <stat.icon size={28} />
-                  </div>
-                  <div className="text-right">
-                    <p className={`text-sm font-medium flex items-center gap-1 ${stat.trend === "up" ? "text-green-600" : "text-red-600"}`}>
-                      {stat.change}
-                      {stat.trend === "up" ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                    </p>
-                  </div>
-                </div>
-                <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
-                <p className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mt-1">{stat.value}</p>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Placeholder for charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="p-6">
-            <h3 className="text-xl font-semibold mb-6">Revenue Trend</h3>
-            <div className="h-80 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center text-gray-500">
-              [Revenue Line Chart Placeholder]
-            </div>
-          </Card>
-
-          <Card className="p-6">
-            <h3 className="text-xl font-semibold mb-6">Top Categories</h3>
-            <div className="h-80 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center text-gray-500">
-              [Pie Chart / Bar Chart Placeholder]
-            </div>
-          </Card>
-        </div>
-      </div>
-    </div>
-  );
+  const demoEnabled = import.meta.env.VITE_DEMO_DATA_ENABLED === "true";
+  const [data, setData] = useState<AnalyticsData | null>(demoEnabled ? demo : null);
+  const [error, setError] = useState("");
+  useEffect(() => { if (demoEnabled) return; api.get<AnalyticsData>("/api/admin/overview/").then(({ data }) => setData({ ...data, volume: Number(data.volume), revenueTrend: data.revenueTrend.map(row => ({ ...row, value: Number(row.value) })) })).catch(() => setError("Platform analytics are temporarily unavailable.")); }, [demoEnabled]);
+  if (!data) return <div className="p-8 text-center">{error || "Loading analytics…"}</div>;
+  const stats = [{ label: "Transaction volume", value: `MWK ${data.volume.toLocaleString()}`, icon: DollarSign }, { label: "Registered users", value: data.users.toLocaleString(), icon: Users }, { label: "Active listings", value: data.activeListings.toLocaleString(), icon: Package }, { label: "Orders", value: data.orders.toLocaleString(), icon: ShoppingCart }];
+  return <div className="mx-auto max-w-7xl py-4 sm:py-8"><div className="mb-6"><h1 className="flex items-center gap-3 text-3xl font-bold"><BarChart3 className="text-green-700" /> Platform analytics</h1><p className="mt-1 text-slate-500">{demoEnabled ? "Demonstration dataset with realistic monthly trends" : "Aggregated from marketplace users, listings and orders"}</p></div>{error && <p className="mb-4 rounded-lg bg-red-50 p-3 text-red-700">{error}</p>}<div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">{stats.map(item => <Card key={item.label} className="p-4"><item.icon className="text-green-700" size={22} /><p className="mt-3 text-xs text-slate-500">{item.label}</p><p className="mt-1 text-xl font-black sm:text-2xl">{item.value}</p></Card>)}</div><div className="grid gap-5 lg:grid-cols-2"><Card className="p-4 sm:p-6"><h2 className="mb-4 text-lg font-bold">Revenue and order trend</h2><div className="h-72"><ResponsiveContainer width="100%" height="100%"><LineChart data={data.revenueTrend}><CartesianGrid strokeDasharray="3 3" vertical={false} /><XAxis dataKey="period" tickFormatter={value => new Date(value).toLocaleDateString(undefined, { month: "short" })} /><YAxis width={50} /><Tooltip formatter={value => Number(value).toLocaleString()} /><Line type="monotone" dataKey="value" stroke="#15803d" strokeWidth={3} dot={false} /><Line type="monotone" dataKey="orders" stroke="#f59e0b" strokeWidth={2} /></LineChart></ResponsiveContainer></div></Card><Card className="p-4 sm:p-6"><h2 className="mb-4 text-lg font-bold">Listings by category</h2><div className="h-72"><ResponsiveContainer width="100%" height="100%"><BarChart data={data.categories}><CartesianGrid strokeDasharray="3 3" vertical={false} /><XAxis dataKey="category" /><YAxis /><Tooltip /><Bar dataKey="value" fill="#15803d" radius={[6, 6, 0, 0]} /></BarChart></ResponsiveContainer></div></Card></div></div>;
 }

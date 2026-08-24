@@ -14,7 +14,7 @@ const inputs: CartProduct[] = [
   { id: "hand-hoe", name: "Heavy-duty hand hoe", price: 14500, category: "tool" },
 ];
 
-const icons = { seed: Sprout, chemical: FlaskConical, tool: Wrench, produce: ShoppingCart, other: ShoppingCart };
+const icons = { seed: Sprout, seeds: Sprout, chemical: FlaskConical, tool: Wrench, tools: Wrench, "farm-inputs": FlaskConical, equipment: Wrench, machinery: Wrench, produce: ShoppingCart, other: ShoppingCart };
 
 export default function FarmInputs() {
   const { addItem } = useCart();

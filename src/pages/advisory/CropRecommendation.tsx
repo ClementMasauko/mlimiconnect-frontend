@@ -7,6 +7,8 @@ import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import { Leaf, MapPin, Calendar, TrendingUp, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
+import api, { getApiError } from "../../lib/api";
+import { getAdvisoryAccess } from "../../lib/access";
 
 const mockRecommendations = [
   {
@@ -40,6 +42,7 @@ const mockRecommendations = [
 
 export default function CropRecommendation() {
   const { user } = useAuth();
+  const access = getAdvisoryAccess(user);
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -49,15 +52,19 @@ export default function CropRecommendation() {
     season: "Rainy",
   });
 
-  const [recommendations, setRecommendations] = useState(mockRecommendations);
+  const [recommendations, setRecommendations] = useState<typeof mockRecommendations>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setLoading(true);
-    setTimeout(() => {
-      setRecommendations(mockRecommendations); // Simulate AI/smart recommendation
-      setLoading(false);
-    }, 1500);
+    setError("");
+    try {
+      const { data } = await api.post<{ recommendations: typeof mockRecommendations }>("/api/advisory/ai/", { task: "crop_recommendation", ...form });
+      setRecommendations(data.recommendations || []);
+    } catch (reason) {
+      setError(getApiError(reason, "AI advisory is temporarily unavailable. No request was charged."));
+    } finally { setLoading(false); }
   };
 
   return (
@@ -73,6 +80,7 @@ export default function CropRecommendation() {
           <p className="text-gray-600 dark:text-gray-400 mt-2">
             Get AI-powered crop suggestions based on your location, soil, and season.
           </p>
+          <p className="mt-2 text-sm text-slate-500">{access.aiMonthlyLimit ? `${access.aiMonthlyLimit} AI requests are included monthly on Free.` : "Unlimited AI requests are included with your active plan."} Recommendations are decision support, not a substitute for local agronomic inspection.</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -126,6 +134,7 @@ export default function CropRecommendation() {
               >
                 {loading ? "Generating..." : "Get Recommendations"}
               </Button>
+              {error && <p role="alert" className="text-sm text-red-700 dark:text-red-300">{error}</p>}
             </div>
           </Card>
 

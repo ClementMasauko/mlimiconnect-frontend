@@ -4,8 +4,9 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
-import { Leaf, AlertTriangle, CloudRain, TrendingUp, Bug, Globe, Calendar, Search, Plus, ShieldCheck } from "lucide-react";
+import { Leaf, CloudRain, TrendingUp, Bug, Globe, Search, Plus, ShieldCheck, Sparkles, UserRound } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import { getAdvisoryAccess } from "../../lib/access";
 
 const mockAdvisories = [
   {
@@ -45,6 +46,7 @@ const mockAdvisories = [
 export default function AdvisoryDashboard() {
   const { user } = useAuth();
   const isFarmer = user?.can_sell === true || user?.user_type === "farmer";
+  const access = getAdvisoryAccess(user);
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredAdvisories = mockAdvisories.filter(a =>
@@ -78,6 +80,11 @@ export default function AdvisoryDashboard() {
             )}
           </div>
         </motion.div>
+
+        <div className="mb-6 grid gap-3 sm:grid-cols-2">
+          <Card className="flex items-start gap-3 border-green-200 p-4"><Sparkles className="shrink-0 text-green-700" /><div><h2 className="font-bold">AI agricultural advisory</h2><p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Available to every verified account{access.aiMonthlyLimit ? ` with ${access.aiMonthlyLimit} requests each month on Free` : " without a monthly limit on your plan"}. AI guidance should be checked against local conditions and safety labels.</p></div></Card>
+          <Card className="flex items-start gap-3 p-4"><UserRound className="shrink-0 text-green-700" /><div><h2 className="font-bold">Human agricultural experts</h2><p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{access.expertConsultations ? `${access.expertMonthlyCredits || "Managed"} consultation credits are available through your plan.` : "Available with Farmer Plus, Cooperative, Organization and Enterprise plans."}</p><Link to={access.expertConsultations ? "/app/advisory/expert-connect" : "/app/subscription"} className="mt-2 inline-block text-sm font-bold text-green-700">{access.expertConsultations ? "Connect with an expert" : "Compare plans"}</Link></div></Card>
+        </div>
 
         {/* Search */}
         <Card className="p-4 mb-8">
@@ -152,6 +159,9 @@ export default function AdvisoryDashboard() {
               <Button variant="primary" className="w-full flex items-center gap-2">
                 <ShieldCheck size={20} /> Manage Smart Contracts
               </Button>
+            </Link>
+            <Link to="/app/advisory/expert-connect">
+              <Button variant="outline" className="w-full"><UserRound size={20} /> Expert consultation</Button>
             </Link>
           </div>
         </Card>

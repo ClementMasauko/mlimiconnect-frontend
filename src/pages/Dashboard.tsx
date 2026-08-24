@@ -148,7 +148,7 @@ export default function Dashboard() {
         <div className="mb-8 md:mb-10">
           <div className="flex items-center gap-3 mb-3">
             <div className="bg-green-100 dark:bg-green-900/40 p-3 rounded-full">
-              <Leaf className="text-green-600 dark:text-green-500" size={28} />
+              <img src="/logo-mark.png" alt="" className="h-9 w-9 object-contain" />
             </div>
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
@@ -492,13 +492,9 @@ export default function Dashboard() {
       setError(null);
 
       try {
-        // You can create role-specific endpoints or use one with conditional response
-        const endpoint = isFarmer
-          ? "/api/analytics/farmer/summary/"
-          : "/api/analytics/buyer/summary/";
-
-        const res = await api.get(endpoint);
-        setStats(res.data || {});
+        const res = await api.get("/api/dashboard/overview/");
+        const summary = res.data?.stats || {};
+        setStats({ activeListings: summary.activeListings, totalOrders: isFarmer ? summary.sales : summary.ordersPlaced, totalRevenue: summary.revenue, pendingOrders: summary.pendingOrders || 0, unreadMessages: summary.unreadMessages });
       } catch (err: any) {
         console.error("Dashboard data fetch failed:", err);
         setError("Could not load your dashboard data right now.");
@@ -547,7 +543,7 @@ export default function Dashboard() {
         <div className="mb-8 md:mb-10">
           <div className="flex items-center gap-3 mb-3">
             <div className="bg-green-100 dark:bg-green-900/40 p-3 rounded-full">
-              <Leaf className="text-green-600 dark:text-green-500" size={28} />
+              <img src="/logo-mark.png" alt="" className="h-9 w-9 object-contain" />
             </div>
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">

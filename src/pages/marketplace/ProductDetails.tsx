@@ -82,7 +82,7 @@ export default function ProductDetails() {
       id: product.id, 
       name: product.name, 
       price: product.price, 
-      category: "produce", 
+      category: product.category as import("../../context/CartContext").ProductCategory,
       image: product.image 
     }, quantity);
     setAdded(true);

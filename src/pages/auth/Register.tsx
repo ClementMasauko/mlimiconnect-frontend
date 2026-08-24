@@ -21,7 +21,7 @@ const registerSchema = z.object({
     .regex(/^(?:|0(?:88|89|98|99)\d{7})$/, "Enter 10 digits starting with 088, 089, 098 or 099")
     .optional(),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  account_type: z.enum(["individual", "cooperative", "company"]),
+  account_type: z.enum(["individual", "cooperative", "company", "ngo", "government", "institution"]),
   trading_mode: z.enum(["buy", "sell", "both"]),
   legal_name: z.string().optional(),
   registration_number: z.string().optional(),
@@ -103,6 +103,8 @@ export default function Register() {
         user_type: data.trading_mode === "sell" ? "farmer" : "buyer",
         account_type: data.account_type,
         trading_mode: data.trading_mode,
+        can_buy: data.trading_mode === "buy" || data.trading_mode === "both",
+        can_sell: data.trading_mode === "sell" || data.trading_mode === "both",
         organization: data.account_type === "individual" ? undefined : {
           legal_name: data.legal_name?.trim(),
           registration_number: data.registration_number?.trim(),
@@ -236,6 +238,9 @@ export default function Register() {
                 <option value="individual">{t("individual")}</option>
                 <option value="cooperative">{t("cooperative")}</option>
                 <option value="company">{t("company")}</option>
+                <option value="ngo">NGO / development organization</option>
+                <option value="government">Government department or agency</option>
+                <option value="institution">Institution / research / education</option>
               </select>
             </div>
 

@@ -1,8 +1,9 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import { ShoppingBag, PackageCheck, Star, TrendingUp, Clock } from "lucide-react";
+import api from "../../lib/api";
 
 const mockBuyerStats = {
   ordersPlaced: 18,
@@ -17,6 +18,10 @@ const mockRecentOrders = [
 ];
 
 export default function BuyerDashboard() {
+  const demoEnabled = import.meta.env.VITE_DEMO_DATA_ENABLED === "true";
+  const [stats, setStats] = useState(mockBuyerStats);
+  const [orders, setOrders] = useState(mockRecentOrders);
+  useEffect(() => { if (demoEnabled) return; Promise.all([api.get("/api/dashboard/overview/"), api.get("/api/marketplace/orders/")]).then(([overview, orderResponse]) => { const summary = overview.data.stats; setStats({ ordersPlaced: summary.ordersPlaced || 0, totalSpent: Number(orderResponse.data.results?.reduce((sum: number, order: { total: string | number }) => sum + Number(order.total), 0) || 0), activeOrders: orderResponse.data.results?.filter((order: { status: string }) => ["pending", "paid"].includes(order.status)).length || 0, favoriteFarmers: 0 }); setOrders((orderResponse.data.results || []).slice(0, 5).map((order: any) => ({ id: `ORD-${order.id}`, product: order.items?.[0]?.name || "Marketplace order", farmer: order.items?.[0]?.seller || "Seller", amount: Number(order.total), status: order.status, date: new Date(order.created_at).toLocaleDateString() }))); }).catch(() => { setStats({ ordersPlaced: 0, totalSpent: 0, activeOrders: 0, favoriteFarmers: 0 }); setOrders([]); }); }, [demoEnabled]);
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -33,24 +38,24 @@ export default function BuyerDashboard() {
           <Card className="p-6 text-center">
             <PackageCheck className="mx-auto text-blue-600 mb-3" size={32} />
             <p className="text-sm text-gray-600 dark:text-gray-400">Orders Placed</p>
-            <p className="text-3xl font-bold mt-1">{mockBuyerStats.ordersPlaced}</p>
+            <p className="text-3xl font-bold mt-1">{stats.ordersPlaced}</p>
           </Card>
           <Card className="p-6 text-center">
             <TrendingUp className="mx-auto text-emerald-600 mb-3" size={32} />
             <p className="text-sm text-gray-600 dark:text-gray-400">Total Spent</p>
             <p className="text-3xl font-bold text-emerald-600 mt-1">
-              MWK {mockBuyerStats.totalSpent.toLocaleString()}
+              MWK {stats.totalSpent.toLocaleString()}
             </p>
           </Card>
           <Card className="p-6 text-center">
             <Clock className="mx-auto text-amber-600 mb-3" size={32} />
             <p className="text-sm text-gray-600 dark:text-gray-400">Active Orders</p>
-            <p className="text-3xl font-bold mt-1">{mockBuyerStats.activeOrders}</p>
+            <p className="text-3xl font-bold mt-1">{stats.activeOrders}</p>
           </Card>
           <Card className="p-6 text-center">
             <Star className="mx-auto text-purple-600 mb-3" size={32} />
             <p className="text-sm text-gray-600 dark:text-gray-400">Favorite Farmers</p>
-            <p className="text-3xl font-bold mt-1">{mockBuyerStats.favoriteFarmers}</p>
+            <p className="text-3xl font-bold mt-1">{stats.favoriteFarmers}</p>
           </Card>
         </div>
 
@@ -59,7 +64,7 @@ export default function BuyerDashboard() {
             <Clock size={24} /> Recent Orders
           </h2>
           <div className="space-y-4">
-            {mockRecentOrders.map(order => (
+            {orders.map(order => (
               <div
                 key={order.id}
                 className="flex justify-between items-center p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50"

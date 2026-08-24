@@ -1,10 +1,15 @@
 // src/pages/admin/AdminSettings.tsx
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
-import { Save, Globe, DollarSign, Percent, Bell, Shield, Mail, Smartphone, Settings } from "lucide-react";
+import { Save, Globe, DollarSign, Bell, Shield, Settings, LogOut } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import api from "../../lib/api";
 
 export default function AdminSettings() {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const [settings, setSettings] = useState({
     platformName: "MlimiConnect",
     commissionRate: 3.5,
@@ -24,11 +29,8 @@ export default function AdminSettings() {
 
   const handleSave = async () => {
     setSaving(true);
-    // Simulate API save
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setSaving(false);
-    setSuccess(true);
-    setTimeout(() => setSuccess(false), 3000);
+    try { await api.put("/api/admin/settings/", settings); setSuccess(true); setTimeout(() => setSuccess(false), 3000); }
+    finally { setSaving(false); }
   };
 
   const handleChange = (key: keyof typeof settings, value: any) => {
@@ -273,11 +275,22 @@ export default function AdminSettings() {
         </div>
 
         {/* Save Button */}
-        <div className="mt-10 flex justify-end">
+        <div className="mt-10 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <Button
+            variant="outline"
+            onClick={async () => {
+              await logout();
+              navigate("/login", { replace: true });
+            }}
+            className="min-h-11 justify-center text-red-700 dark:text-red-400"
+          >
+            <LogOut size={19} />
+            Log out of this account
+          </Button>
           <Button
             onClick={handleSave}
             disabled={saving}
-            className="px-8 py-4 text-lg flex items-center gap-3"
+            className="min-h-11 justify-center px-8 py-3 text-base sm:text-lg flex items-center gap-3"
           >
             <Save size={20} />
             {saving ? "Saving..." : "Save All Settings"}

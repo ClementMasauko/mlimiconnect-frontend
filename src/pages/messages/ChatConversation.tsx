@@ -1,108 +1,43 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Send, Paperclip, Smile, ArrowLeft } from "lucide-react";
-import Card from "../../components/ui/Card";
+import { ArrowLeft, Send } from "lucide-react";
 import Button from "../../components/ui/Button";
-
-const mockChatPartner = {
-  name: "Shoprite Lilongwe",
-  avatar: "S",
-  status: "Active now",
-};
-
-const mockMessages = [
-  { id: 1, sender: "buyer", text: "Hello, do you still have 50kg of maize available?", time: "10:32 AM" },
-  { id: 2, sender: "farmer", text: "Yes, fresh from yesterday's harvest. Price is MWK 18,000", time: "10:35 AM" },
-  { id: 3, sender: "buyer", text: "Can you do MWK 17,000? I need it delivered tomorrow.", time: "10:37 AM" },
-  { id: 4, sender: "farmer", text: "Best I can do is MWK 17,500. Delivery to Lilongwe possible for extra MWK 1,500.", time: "10:40 AM" },
-  { id: 5, sender: "buyer", text: "Deal. I'll place the order now.", time: "10:42 AM" },
-];
+import { useAuth } from "../../context/AuthContext";
+import { communicationsApi, formatRelativeTime, type ChatMessage } from "../../lib/communications";
+import { getApiError } from "../../lib/api";
 
 export default function ChatConversation() {
-  const { chatId } = useParams();
-  const [messages, setMessages] = useState(mockMessages);
+  const { chatId = "" } = useParams();
+  const { user } = useAuth();
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
+  const endRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  const load = useCallback(async (silent = false) => {
+    if (!chatId) return;
+    if (!silent) setLoading(true);
+    try { const page = await communicationsApi.messages(chatId); setMessages(page.results); await communicationsApi.markConversationRead(chatId); }
+    catch (reason) { if (!silent) setError(getApiError(reason, "This conversation could not be loaded.")); }
+    finally { if (!silent) setLoading(false); }
+  }, [chatId]);
 
-  const sendMessage = () => {
-    if (!input.trim()) return;
-    setMessages([
-      ...messages,
-      { id: Date.now(), sender: "farmer", text: input, time: "Now" },
-    ]);
-    setInput("");
+  useEffect(() => { void load(); const timer = window.setInterval(() => void load(true), 8000); return () => window.clearInterval(timer); }, [load]);
+  useEffect(() => endRef.current?.scrollIntoView({ behavior: "smooth" }), [messages]);
+
+  const send = async () => {
+    const text = input.trim(); if (!text || sending) return;
+    setSending(true); setError(""); setInput("");
+    const optimistic: ChatMessage = { id: `pending-${Date.now()}`, sender_id: user?.id || 0, text, created_at: new Date().toISOString(), pending: true };
+    setMessages(current => [...current, optimistic]);
+    try { const saved = await communicationsApi.send(chatId, text); setMessages(current => current.map(item => item.id === optimistic.id ? saved : item)); }
+    catch (reason) { setMessages(current => current.filter(item => item.id !== optimistic.id)); setInput(text); setError(getApiError(reason, "Message was not sent. Please try again.")); }
+    finally { setSending(false); }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
-      {/* Header */}
-      <div className="bg-green-600 dark:bg-green-700 text-white px-4 py-3 sm:py-4 flex items-center gap-3 shadow-md">
-        <Link to="/app/messages" className="text-white hover:opacity-80">
-          <ArrowLeft size={24} />
-        </Link>
-        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold text-green-600 text-xl">
-          {mockChatPartner.avatar}
-        </div>
-        <div>
-          <h2 className="font-semibold text-lg">{mockChatPartner.name}</h2>
-          <p className="text-xs opacity-90">{mockChatPartner.status}</p>
-        </div>
-      </div>
-
-      {/* Messages Area */}
-      <div className="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4 bg-gray-100 dark:bg-gray-900">
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex ${msg.sender === "farmer" ? "justify-end" : "justify-start"}`}
-          >
-            <div
-              className={`max-w-[80%] sm:max-w-[70%] p-3 sm:p-4 rounded-2xl ${
-                msg.sender === "farmer"
-                  ? "bg-green-600 text-white rounded-br-none"
-                  : "bg-white dark:bg-gray-800 shadow-sm rounded-bl-none border border-gray-200 dark:border-gray-700"
-              }`}
-            >
-              <p className="text-base">{msg.text}</p>
-              <p className="text-xs mt-1 opacity-70 text-right">{msg.time}</p>
-            </div>
-          </div>
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Input Area */}
-      <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4">
-        <div className="max-w-5xl mx-auto flex items-center gap-3">
-          <button className="text-gray-500 dark:text-gray-400 hover:text-green-600 p-2">
-            <Paperclip size={24} />
-          </button>
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your message..."
-            className="flex-1 px-4 py-3 border rounded-full dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-green-500 focus:outline-none"
-            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-          />
-          <button className="text-gray-500 dark:text-gray-400 hover:text-green-600 p-2">
-            <Smile size={24} />
-          </button>
-          <Button
-            variant="primary"
-            size="icon"
-            className="rounded-full h-11 w-11"
-            onClick={sendMessage}
-            disabled={!input.trim()}
-          >
-            <Send size={20} />
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
+  return <div className="flex h-[calc(100dvh-12rem)] min-h-[32rem] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-gray-800 dark:bg-gray-900"><header className="flex min-h-16 items-center gap-3 border-b border-slate-200 px-3 dark:border-gray-800"><Link to="/app/messages" className="grid min-h-11 min-w-11 place-items-center rounded-full hover:bg-slate-100 dark:hover:bg-gray-800" aria-label="Back to messages"><ArrowLeft /></Link><div><h1 className="font-bold">Conversation</h1><p className="text-xs text-slate-500">Messages refresh automatically</p></div></header>
+    <div className="flex-1 space-y-3 overflow-y-auto bg-slate-50 p-3 sm:p-5 dark:bg-gray-950">{loading ? <p className="text-center text-sm text-slate-500">Loading conversation…</p> : messages.map(message => { const mine = message.sender_id === user?.id; return <div key={message.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}><div className={`max-w-[85%] rounded-2xl px-4 py-3 sm:max-w-[70%] ${mine ? "rounded-br-sm bg-green-700 text-white" : "rounded-bl-sm border border-slate-200 bg-white dark:border-gray-700 dark:bg-gray-800"}`}><p className="whitespace-pre-wrap break-words">{message.text}</p><p className="mt-1 text-right text-[10px] opacity-70">{message.pending ? "Sending…" : formatRelativeTime(message.created_at)}{mine && message.read_at ? " · Read" : ""}</p></div></div>; })}<div ref={endRef} /></div>
+    {error && <p role="alert" className="border-t border-red-100 bg-red-50 px-4 py-2 text-sm text-red-700">{error}</p>}<form onSubmit={event => { event.preventDefault(); void send(); }} className="flex items-end gap-2 border-t border-slate-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-900"><textarea value={input} onChange={event => setInput(event.target.value)} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); void send(); } }} rows={1} maxLength={2000} placeholder="Type a message" className="min-h-11 flex-1 resize-none rounded-2xl border border-slate-300 px-4 py-2.5 dark:border-gray-700 dark:bg-gray-800" /><Button type="submit" size="icon" disabled={!input.trim() || sending} aria-label="Send message"><Send size={19} /></Button></form></div>;
 }

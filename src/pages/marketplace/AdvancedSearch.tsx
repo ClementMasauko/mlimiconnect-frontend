@@ -112,6 +112,9 @@ export default function AdvancedSearch() {
                   <option value="produce">Produce</option>
                   <option value="seeds">Seeds & Grains</option>
                   <option value="equipment">Farm Equipment</option>
+                  <option value="tools">Hand Tools</option>
+                  <option value="machinery">Machinery & Vehicles</option>
+                  <option value="farm-inputs">Fertilizer & Farm Inputs</option>
                 </select>
               </div>
 

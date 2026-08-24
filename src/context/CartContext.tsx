@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
-export type ProductCategory = "produce" | "seed" | "chemical" | "tool" | "other";
+export type ProductCategory = "produce" | "seed" | "seeds" | "chemical" | "tool" | "tools" | "farm-inputs" | "equipment" | "machinery" | "other";
 
 export interface CartProduct {
   id: string | number;

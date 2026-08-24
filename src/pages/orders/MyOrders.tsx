@@ -5,6 +5,7 @@ import Button from "../../components/ui/Button";
 import { Clock, CheckCircle, Truck, AlertCircle, Package, Gavel, ShoppingBag, Eye } from "lucide-react";
 import { useMarketplace } from "../../context/MarketplaceContext";
 import { useAuth } from "../../context/AuthContext";
+import api, { getApiError } from "../../lib/api";
 
 // Mock orders data
 const mockOrders = [
@@ -36,7 +37,27 @@ export default function MyOrders() {
   const { user } = useAuth();
   
   const [activeTab, setActiveTab] = useState<"purchases" | "bids">("purchases");
-  const [orders] = useState(mockOrders);
+  const [orders, setOrders] = useState(mockOrders);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    if (import.meta.env.VITE_DEMO_DATA_ENABLED === "true") return;
+    api.get("/api/marketplace/orders/")
+      .then(({ data }) => {
+        const rows = Array.isArray(data) ? data : data.results ?? [];
+        setOrders(rows.map((order: { id: number; created_at: string; status: string; total: string | number; items?: unknown[] }) => ({
+          id: order.id,
+          created_at: order.created_at,
+          status: order.status,
+          total: Number(order.total),
+          items_count: order.items?.length ?? 0,
+        })));
+      })
+      .catch((error) => {
+        setOrders([]);
+        setLoadError(getApiError(error, "Orders could not be loaded."));
+      });
+  }, []);
 
   // Time Tick for countdowns
   const [, setTimeTick] = useState(0);
@@ -157,6 +178,7 @@ export default function MyOrders() {
         {/* Purchases Tab Content */}
         {activeTab === "purchases" && (
           <div className="space-y-4 animate-fade-in">
+            {loadError && <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-300">{loadError}</p>}
             {orders.length === 0 ? (
               <Card className="p-12 text-center border border-slate-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
                 <Package className="mx-auto text-gray-300 mb-4" size={48} />

@@ -279,7 +279,10 @@ export default function CreateListing() {
                   >
                     <option value="produce">Produce & Crops</option>
                     <option value="seeds">Seeds & Grains</option>
-                    <option value="equipment">Farm Tools & Machinery</option>
+                    <option value="farm-inputs">Fertilizer & Farm Inputs</option>
+                    <option value="tools">Hand Tools</option>
+                    <option value="equipment">Farm Equipment</option>
+                    <option value="machinery">Machinery & Vehicles</option>
                   </select>
                 </div>
               </div>

@@ -1,10 +1,11 @@
 // src/pages/orders/FarmerOrders.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import Modal from "../../components/ui/Modal";
 import { Truck, CheckCircle, AlertCircle, DollarSign, MessageSquare, ShieldCheck } from "lucide-react";
+import api, { getApiError } from "../../lib/api";
 
 const mockIncomingOrders = [
   {
@@ -33,18 +34,36 @@ const mockIncomingOrders = [
 
 export default function FarmerOrders() {
   const [orders, setOrders] = useState(mockIncomingOrders);
+  const [loadError, setLoadError] = useState("");
   const [deliveryOrder, setDeliveryOrder] = useState<number | null>(null);
   const navigate = useNavigate();
 
-  const confirmDelivery = (id: number) => {
-    setOrders(prev => prev.map(o => o.id === id ? { ...o, status: "delivered", escrowStatus: "released" } : o));
-    setDeliveryOrder(null);
+  useEffect(() => {
+    if (import.meta.env.VITE_DEMO_DATA_ENABLED === "true") return;
+    api.get("/api/marketplace/seller-orders/").then(({ data }) => {
+      const rows = Array.isArray(data) ? data : data.results ?? [];
+      setOrders(rows.map((order: { id: number; created_at: string; status: string; total: string | number; items?: Array<{ name: string; quantity: number }> }) => ({
+        id: order.id, buyer: "Verified buyer", product: order.items?.[0]?.name ?? "Agricultural order",
+        quantity: order.items?.reduce((sum, item) => sum + item.quantity, 0) ?? 0,
+        total: Number(order.total), status: order.status, escrowStatus: order.status === "delivered" ? "released" : "held",
+        disputeWindow: "24 hours after delivery", date: order.created_at,
+      })));
+    }).catch(error => { setOrders([]); setLoadError(getApiError(error, "Incoming orders could not be loaded.")); });
+  }, []);
+
+  const confirmDelivery = async (id: number) => {
+    try {
+      if (import.meta.env.VITE_DEMO_DATA_ENABLED !== "true") await api.patch(`/api/marketplace/orders/${id}/status/`, { status: "delivered" });
+      setOrders(prev => prev.map(o => o.id === id ? { ...o, status: "delivered", escrowStatus: "released" } : o));
+      setDeliveryOrder(null);
+    } catch (error) { setLoadError(getApiError(error, "Delivery could not be confirmed.")); }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Incoming Orders</h1>
+        {loadError && <p role="alert" className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-300">{loadError}</p>}
         {orders.length === 0 ? (
           <Card className="p-12 text-center">
             <DollarSign className="mx-auto text-gray-400 mb-4" size={64} />

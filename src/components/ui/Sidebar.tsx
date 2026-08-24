@@ -18,7 +18,6 @@ import {
   Crown,
   ShieldCheck,
   ChevronDown,
-  Menu,
   X,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
@@ -34,6 +33,12 @@ export default function Sidebar() {
   useEffect(() => {
     setIsMobileOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    const open = () => setIsMobileOpen(true);
+    window.addEventListener("mc:open-app-nav", open);
+    return () => window.removeEventListener("mc:open-app-nav", open);
+  }, []);
 
   if (isLoading) {
     return (
@@ -213,15 +218,6 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Mobile trigger button */}
-      <button
-        className="fixed left-4 top-20 z-40 rounded-lg border border-gray-200 bg-white p-2.5 shadow-md transition-colors dark:border-gray-700 dark:bg-gray-900 lg:hidden"
-        onClick={() => setIsMobileOpen(true)}
-        aria-label="Open navigation menu"
-      >
-        <Menu className="w-6 h-6" />
-      </button>
-
       {/* Mobile drawer */}
       <div
         className={cn(

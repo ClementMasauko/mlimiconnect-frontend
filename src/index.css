@@ -24,6 +24,17 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+:root {
+  --mc-brand: #15803d;
+  --mc-brand-strong: #166534;
+  --mc-accent: #f59e0b;
+  --mc-danger: #dc2626;
+  --mc-surface: #ffffff;
+  --mc-canvas: #f8fafc;
+  --mc-border: #e2e8f0;
+  --mc-muted: #64748b;
+}
+
 html { scroll-behavior: smooth; }
 input, select, textarea { font: inherit; }
 
@@ -36,6 +47,10 @@ button, a, input, select, textarea {
 }
 
 button:not(:disabled), a, [role="button"] { touch-action: manipulation; }
+
+button, select, input, textarea { max-width: 100%; }
+
+img { max-width: 100%; }
 
 .low-data *, .low-data *::before, .low-data *::after {
   animation-duration: 0.01ms !important;
@@ -60,7 +75,12 @@ button:not(:disabled), a, [role="button"] { touch-action: manipulation; }
 
 .marketplace-app h1 {
   letter-spacing: -0.025em;
+  text-wrap: balance;
 }
+
+.marketplace-app h2, .marketplace-app h3 { text-wrap: pretty; }
+
+.marketplace-app p { text-wrap: pretty; }
 
 .marketplace-app input:not([type="checkbox"]):not([type="radio"]),
 .marketplace-app select,
@@ -103,7 +123,7 @@ button:not(:disabled), a, [role="button"] { touch-action: manipulation; }
 
 .marketplace-app .shadow-xl,
 .marketplace-app .shadow-lg {
-  box-shadow: 0 8px 24px rgb(15 23 42 / 0.08);
+  box-shadow: 0 6px 18px rgb(15 23 42 / 0.07);
 }
 
 .marketplace-app .bg-green-50 {
@@ -125,6 +145,53 @@ button:not(:disabled), a, [role="button"] { touch-action: manipulation; }
 .dark .marketplace-app .rounded-xl.border,
 .dark .marketplace-app .rounded-2xl.border {
   border-color: #1f2937;
+}
+
+/* Phone defaults: compact, product-led, and comfortable for one-handed use. */
+@media (max-width: 639px) {
+  html { scroll-padding-bottom: 5rem; }
+
+  .marketplace-app main h1 { font-size: clamp(1.5rem, 7vw, 2rem); line-height: 1.15; }
+  .marketplace-app main h2 { line-height: 1.25; }
+
+  .marketplace-app .ui-card { box-shadow: none; }
+  .marketplace-app .ui-card.p-8,
+  .marketplace-app .ui-card.p-10,
+  .marketplace-app .ui-card.p-12 { padding: 1rem; }
+  .marketplace-app .ui-card.p-6 { padding: 1rem; }
+  .marketplace-app .gap-8 { gap: 1.25rem; }
+  .marketplace-app .gap-10 { gap: 1.5rem; }
+  .marketplace-app .space-y-8 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.25rem; }
+
+  .marketplace-app table { min-width: 42rem; font-size: .8125rem; }
+  .marketplace-app th, .marketplace-app td { padding: .75rem !important; }
+
+  .marketplace-app input:not([type="checkbox"]):not([type="radio"]),
+  .marketplace-app select,
+  .marketplace-app textarea { min-height: 2.75rem; font-size: 1rem; }
+
+  .marketplace-app .product-card .product-card-body { padding: .75rem; }
+  .marketplace-app .product-card .product-price { font-size: 1rem; line-height: 1.25; }
+  .marketplace-app .product-card .product-secondary { display: none; }
+}
+
+@media (hover: hover) {
+  .marketplace-app .ui-card:hover { border-color: #cbd5e1; }
+  .dark .marketplace-app .ui-card:hover { border-color: #374151; }
+}
+
+/* Brand discipline: admin uses green for actions, amber for attention and red for risk. */
+.admin-app .text-blue-600, .admin-app .text-purple-600 { color: var(--mc-brand); }
+.admin-app .bg-blue-600, .admin-app .bg-purple-600 { background-color: var(--mc-brand); }
+.admin-app .focus\:ring-blue-500:focus, .admin-app .focus\:ring-purple-500:focus { --tw-ring-color: rgb(21 128 61 / .35); }
+
+.admin-app main > div > [role="status"],
+.marketplace-app main > div > [role="status"] { border-radius: .5rem; }
+
+@media (max-width: 767px) {
+  .admin-app main { overflow-x: hidden; }
+  .admin-app main [class*="min-h-screen"] { padding-left: 0; padding-right: 0; }
+  .admin-app main .grid { row-gap: 1rem; }
 }
 
 .logo-loader-mark { position: relative; display: grid; height: 6rem; width: 6rem; place-items: center; animation: logo-breathe 1.6s ease-in-out infinite; }

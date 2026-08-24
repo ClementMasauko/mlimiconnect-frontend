@@ -19,7 +19,7 @@ export default function Button({
   asChild = false,
   ...rest
 }: Props) {
-  const base = "inline-flex items-center justify-center rounded-lg font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[.98]";
+  const base = "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[.98]";
   const variants: Record<ButtonVariant, string> = {
     primary: "bg-green-700 text-white shadow-sm hover:bg-green-800 hover:shadow",
     solid: "bg-green-700 text-white shadow-sm hover:bg-green-800 hover:shadow",
@@ -29,10 +29,10 @@ export default function Button({
     link: "bg-transparent text-green-700 underline-offset-4 hover:underline dark:text-green-400",
   };
   const sizes: Record<ButtonSize, string> = {
-    sm: "px-3 py-1.5 text-sm",
-    md: "px-4 py-2 text-base",
+    sm: "min-h-10 px-3 py-2 text-sm",
+    md: "px-4 py-2 text-sm sm:text-base",
     lg: "px-5 py-2.5 text-lg",
-    icon: "h-10 w-10 p-0",
+    icon: "h-11 w-11 p-0",
   };
   const classes = classNames(base, variants[variant], sizes[size], className);
 

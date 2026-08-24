@@ -10,10 +10,17 @@ export interface User {
   isBuyerVerified?: boolean;
   twoFactorEnabled?: boolean;
   user_type: "farmer" | "buyer" | "admin" | string;
-  account_type?: "individual" | "cooperative" | "company";
+  account_type?: "individual" | "cooperative" | "company" | "ngo" | "government" | "institution";
   can_buy?: boolean;
   can_sell?: boolean;
   organization_status?: "pending" | "verified" | "rejected" | null;
+  subscription?: {
+    plan_id: "free" | "farmer-plus" | "buyer-pro" | "cooperative" | "organization" | "enterprise";
+    status: "pending_payment" | "active" | "cancelled" | "past_due";
+    billing_cycle?: "monthly" | "annual";
+    renews_at?: string | null;
+    enabled_features?: string[];
+  };
 }
 
 interface AuthContextType {
@@ -22,7 +29,7 @@ interface AuthContextType {
   isLoading: boolean;
   error: string | null;
   login: (identifier: string, password: string) => Promise<User>;
-  logout: () => void;
+  logout: () => Promise<void>;
   refreshUserProfile: () => Promise<void>;
 }
 
@@ -72,10 +79,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  const logout = useCallback(() => {
-    void api.post("/api/auth/logout/").catch(() => undefined);
-    setUser(null);
-    setError(null);
+  const logout = useCallback(async () => {
+    try {
+      await api.post("/api/auth/logout/");
+    } catch {
+      // Clear the local session even when the server session has already expired.
+    } finally {
+      setUser(null);
+      setError(null);
+    }
   }, []);
 
   const refreshUserProfile = useCallback(async () => {

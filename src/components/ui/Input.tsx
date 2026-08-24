@@ -16,7 +16,7 @@ const Input = forwardRef<HTMLInputElement, Props>(({ className, leftIcon, icon, 
         <input
           ref={ref}
           className={classNames(
-            "w-full rounded-md border bg-white px-3 py-2 text-gray-900 outline-none transition focus:border-green-600 focus:ring-2 focus:ring-green-600/20 dark:bg-transparent dark:text-white",
+            "min-h-11 w-full rounded-lg border bg-white px-3 py-2 text-base text-gray-900 outline-none transition focus:border-green-600 focus:ring-2 focus:ring-green-600/20 sm:text-sm dark:bg-transparent dark:text-white",
             Boolean(leadingIcon) && "pl-10",
             error ? "border-red-500" : "border-gray-200 dark:border-gray-700",
             className,

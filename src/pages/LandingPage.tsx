@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, MessageCircle, Leaf, CheckCircle, Menu, X, MapPin, ShieldCheck, ShoppingBag } from "lucide-react";
+import { ArrowRight, MessageCircle, CheckCircle, Menu, X, MapPin, ShieldCheck, ShoppingBag } from "lucide-react";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet";
 import ThemeToggle from "../components/ThemeToggle";
@@ -304,7 +304,7 @@ export default function LandingPage() {
         >
           <div className="absolute inset-0 bg-green-900/65" /> {/* Darker overlay for text readability */}
           <div className="relative max-w-4xl mx-auto px-6 z-10">
-            <Leaf className="mx-auto mb-8" size={72} strokeWidth={1.2} />
+            <img src="/logo-mark.png" alt="" className="mx-auto mb-8 h-20 w-20 object-contain" />
             <h2 className="text-4xl lg:text-5xl font-extrabold mb-6 leading-tight">
               Join Malawi's Fastest Growing Farmer Network Today
             </h2>
@@ -329,7 +329,7 @@ export default function LandingPage() {
             {/* Brand */}
             <div>
               <div className="mb-3 flex items-center gap-2 sm:mb-6 sm:gap-3">
-                <Leaf className="text-green-500" size={32} />
+                <img src="/logo-mark.png" alt="" className="h-10 w-10 object-contain" />
                 <span className="text-base font-bold text-gray-900 dark:text-white sm:text-2xl">MlimiConnect</span>
               </div>
               <p className="mb-3 text-xs leading-relaxed text-gray-400 sm:mb-6 sm:text-sm">

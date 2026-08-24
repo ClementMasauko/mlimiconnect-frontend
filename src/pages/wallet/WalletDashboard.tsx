@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import Card from "../../components/ui/Card";
@@ -11,6 +11,7 @@ import {
   DollarSign,
   TrendingUp,
 } from "lucide-react";
+import api from "../../lib/api";
 
 const mockBalance = {
   available: 1250000,
@@ -27,6 +28,11 @@ const mockTransactions = [
 ];
 
 export default function WalletDashboard() {
+  const demoEnabled = import.meta.env.VITE_DEMO_DATA_ENABLED === "true";
+  const [balance, setBalance] = useState(mockBalance);
+  const [transactions, setTransactions] = useState(mockTransactions);
+  const [error, setError] = useState("");
+  useEffect(() => { if (demoEnabled) return; api.get("/api/wallet/").then(({ data }) => { setBalance({ available: Number(data.available), pendingEscrow: Number(data.pending), totalEarned: Number(data.available) + Math.max(0, Number(data.pending)), currency: "MWK" }); setTransactions(data.transactions.map((item: any) => ({ id: item.id, date: new Date(item.created_at).toLocaleDateString(), type: item.type, amount: Number(item.amount), status: item.status, desc: `${item.type} · ${item.reference}` }))); }).catch(() => setError("Wallet data is temporarily unavailable.")); }, [demoEnabled]);
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
@@ -51,7 +57,7 @@ export default function WalletDashboard() {
               <DollarSign className="mx-auto text-green-600 mb-3" size={32} />
               <p className="text-sm text-gray-600 dark:text-gray-400">Available</p>
               <p className="text-3xl font-bold text-green-700 dark:text-green-400 mt-1">
-                MWK {mockBalance.available.toLocaleString()}
+                MWK {balance.available.toLocaleString()}
               </p>
             </Card>
           </motion.div>
@@ -61,7 +67,7 @@ export default function WalletDashboard() {
               <Clock className="mx-auto text-amber-600 mb-3" size={32} />
               <p className="text-sm text-gray-600 dark:text-gray-400">Pending (Escrow)</p>
               <p className="text-3xl font-bold text-amber-600 mt-1">
-                MWK {mockBalance.pendingEscrow.toLocaleString()}
+                MWK {balance.pendingEscrow.toLocaleString()}
               </p>
             </Card>
           </motion.div>
@@ -71,7 +77,7 @@ export default function WalletDashboard() {
               <TrendingUp className="mx-auto text-blue-600 mb-3" size={32} />
               <p className="text-sm text-gray-600 dark:text-gray-400">Total Earned</p>
               <p className="text-3xl font-bold text-blue-700 dark:text-blue-400 mt-1">
-                MWK {mockBalance.totalEarned.toLocaleString()}
+                MWK {balance.totalEarned.toLocaleString()}
               </p>
             </Card>
           </motion.div>
@@ -94,7 +100,8 @@ export default function WalletDashboard() {
         <Card className="p-6">
           <h2 className="text-2xl font-semibold mb-6">Recent Transactions</h2>
           <div className="space-y-4">
-            {mockTransactions.map((tx) => (
+            {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+            {transactions.map((tx) => (
               <div
                 key={tx.id}
                 className="flex justify-between items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"

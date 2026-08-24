@@ -1,32 +1,63 @@
-import { useMemo, useState } from "react";
-import { CheckCircle2, Crown, Info, Megaphone, Smartphone } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Building2, CheckCircle2, Crown, FileText, Info, Smartphone, Users } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import api, { getApiError } from "../lib/api";
+import type { AccountType, PlanId } from "../lib/access";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 
-type Plan = { id: string; name: string; price: number; role: "farmer" | "buyer"; features: string[] };
+type BillingCycle = "monthly" | "annual";
+type PaymentMethod = "airtel_money" | "tnm_mpamba" | "bank_transfer" | "card" | "invoice";
+type Plan = { id: PlanId; name: string; monthlyPrice: number | null; audiences: AccountType[]; icon: typeof Crown; features: string[] };
+
 const plans: Plan[] = [
-  { id: "farmer-plus", name: "Farmer Plus", price: 3500, role: "farmer", features: ["Priority listing placement", "Advanced farm analytics", "Crop-planning and expert support"] },
-  { id: "buyer-pro", name: "Buyer Pro", price: 7500, role: "buyer", features: ["Verified supplier insights", "Bulk-order tools", "Priority support and reports"] },
+  { id: "free", name: "Free", monthlyPrice: 0, audiences: ["individual"], icon: CheckCircle2, features: ["Buy and sell in the marketplace", "5 AI advisory requests each month", "Orders, messages and basic market prices"] },
+  { id: "farmer-plus", name: "Farmer Plus", monthlyPrice: 3500, audiences: ["individual"], icon: Crown, features: ["Unlimited AI agricultural advisory", "1 expert consultation credit monthly", "Farm analytics, traceability and promotion discounts"] },
+  { id: "buyer-pro", name: "Buyer Pro", monthlyPrice: 7500, audiences: ["individual"], icon: Crown, features: ["Bulk procurement and recurring orders", "Saved suppliers, searches and reports", "Priority support"] },
+  { id: "cooperative", name: "Cooperative", monthlyPrice: 15000, audiences: ["cooperative"], icon: Users, features: ["Member and combined inventory management", "3 expert consultation credits monthly", "Member payout allocation and cooperative reports"] },
+  { id: "organization", name: "Organization", monthlyPrice: 25000, audiences: ["company", "ngo", "institution"], icon: Building2, features: ["5 staff seats and multiple locations", "5 expert consultation credits monthly", "Procurement approvals, invoices and impact reports"] },
+  { id: "enterprise", name: "Government & Enterprise", monthlyPrice: null, audiences: ["company", "ngo", "government", "institution"], icon: FileText, features: ["Custom seats, branches and permissions", "Institutional dashboards and data exports", "10 expert credits, account manager and negotiated terms"] },
 ];
 const format = (value: number) => `MWK ${value.toLocaleString()}`;
 
 export default function Subscription() {
-  const { user } = useAuth();
-  const role = user?.user_type === "farmer" ? "farmer" : "buyer";
-  const available = useMemo(() => plans.filter((plan) => plan.role === role), [role]);
-  const [selected, setSelected] = useState(available[0]?.id ?? "farmer-plus");
+  const { user, refreshUserProfile } = useAuth();
+  const accountType = (user?.account_type || "individual") as AccountType;
+  const available = useMemo(() => plans.filter(plan => plan.audiences.includes(accountType) && (accountType !== "individual" || plan.id !== "buyer-pro" || user?.can_buy !== false) && (accountType !== "individual" || plan.id !== "farmer-plus" || user?.can_sell === true || user?.user_type === "farmer")), [accountType, user?.can_buy, user?.can_sell, user?.user_type]);
+  const [selected, setSelected] = useState<PlanId>(available[0]?.id || "free");
+  const [cycle, setCycle] = useState<BillingCycle>("monthly");
+  const [method, setMethod] = useState<PaymentMethod>("airtel_money");
+  const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
-  const [promotionRequested, setPromotionRequested] = useState(false);
-  const plan = available.find((item) => item.id === selected) ?? available[0];
+  const [error, setError] = useState("");
+  const paymentsEnabled = import.meta.env.VITE_PAYMENTS_ENABLED === "true";
+  const plan = available.find(item => item.id === selected) || available[0];
+  const active = user?.subscription;
 
-  function requestActivation() {
-    if (!plan) return;
-    // The API must create the subscription and verify mobile-money payment server-side.
-    // This local pending state lets the demo communicate the complete price before charging.
-    localStorage.setItem("mc_subscription_request", JSON.stringify({ planId: plan.id, status: "pending_payment", requestedAt: new Date().toISOString() }));
-    setNotice(`Your ${plan.name} request is ready. Complete payment by Airtel Money or TNM Mpamba when the secure payment service is connected.`);
+  useEffect(() => { if (!available.some(item => item.id === selected)) setSelected(available[0]?.id || "free"); }, [available, selected]);
+  useEffect(() => { if (paymentsEnabled) void refreshUserProfile().catch(() => undefined); }, [paymentsEnabled, refreshUserProfile]);
+
+  const price = plan?.monthlyPrice == null ? null : Math.round(plan.monthlyPrice * (cycle === "annual" ? 10 : 1));
+  const allowedMethods: PaymentMethod[] = accountType === "individual" ? ["airtel_money", "tnm_mpamba", "card"] : ["airtel_money", "tnm_mpamba", "bank_transfer", "card", "invoice"];
+
+  async function continueBilling() {
+    if (!plan || plan.id === "free") { setNotice("The free plan does not require payment."); return; }
+    if (plan.monthlyPrice == null) { setNotice("Your enterprise request is ready. Our team will confirm scope, pricing and authorized invoice contacts before activation."); return; }
+    if (!paymentsEnabled) { setError("Secure subscription billing is not enabled yet. No payment has been requested."); return; }
+    setBusy(true); setError(""); setNotice("");
+    try {
+      const { data } = await api.post("/api/subscriptions/checkout-sessions/", { plan_id: plan.id, billing_cycle: cycle, payment_method: method });
+      if (data.checkout_url) window.location.assign(data.checkout_url);
+      else setNotice(`Payment request created. Reference: ${data.payment_reference || "pending"}`);
+    } catch (reason) { setError(getApiError(reason, "We could not start subscription billing. No money has been collected.")); }
+    finally { setBusy(false); }
   }
 
-  return <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6"><div className="mb-8"><p className="font-semibold text-green-700 dark:text-green-400">Your MlimiConnect plan</p><h1 className="mt-1 text-3xl font-bold text-gray-900 dark:text-white">Optional tools for {role === "farmer" ? "your farm" : "your buying business"}</h1><p className="mt-2 text-gray-600 dark:text-gray-300">You remain on the free plan unless you confirm a subscription payment.</p></div><div className="grid gap-6 md:grid-cols-[1fr_0.9fr]">{available.map((item) => <button key={item.id} type="button" onClick={() => setSelected(item.id)} className={`text-left rounded-xl border-2 p-6 transition ${selected === item.id ? "border-green-600 bg-green-50 dark:bg-green-950/30" : "border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900"}`}><div className="flex items-center justify-between"><h2 className="flex items-center gap-2 text-xl font-bold"><Crown className="text-amber-500" /> {item.name}</h2><span className="font-bold text-green-700 dark:text-green-400">{format(item.price)}/mo</span></div><ul className="mt-5 space-y-3 text-sm">{item.features.map((feature) => <li key={feature} className="flex gap-2"><CheckCircle2 className="h-4 w-4 shrink-0 text-green-600" />{feature}</li>)}</ul></button>)}<Card className="p-6"><h2 className="text-xl font-semibold">Confirm subscription</h2>{plan && <><div className="mt-5 rounded-lg bg-gray-50 p-4 dark:bg-gray-800"><p className="font-medium">{plan.name}</p><p className="mt-1 text-2xl font-bold">{format(plan.price)} <span className="text-sm font-normal text-gray-500">per month</span></p><p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Renewal is monthly. You can cancel before the next renewal.</p></div><div className="mt-5 flex gap-3 text-sm text-gray-600 dark:text-gray-300"><Smartphone className="shrink-0 text-green-700" size={20} /><p>Payment will be requested through Airtel Money or TNM Mpamba. MlimiConnect never asks for your mobile-money PIN.</p></div><Button className="mt-6 w-full" onClick={requestActivation}>Request {plan.name}</Button></>}{notice && <p role="status" className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-800 dark:bg-green-950/30 dark:text-green-200">{notice}</p>}<p className="mt-4 flex gap-2 text-xs text-gray-500"><Info size={15} className="shrink-0" /> Payment confirmation and feature activation must be verified by the server before access is granted.</p></Card></div>{role === "farmer" && <Card className="mt-6 border-amber-200 p-6 dark:border-amber-900/50"><div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="flex items-center gap-2 text-xl font-extrabold"><Megaphone className="text-amber-500" /> Promote a listing</h2><p className="mt-2 max-w-xl text-sm text-gray-600 dark:text-gray-300">Optional featured placement starts from MWK 1,500. Full price and campaign duration are shown before any payment request.</p></div><Button variant="outline" onClick={() => { localStorage.setItem("mc_promotion_request", JSON.stringify({ status: "draft", requestedAt: new Date().toISOString() })); setPromotionRequested(true); }}>Request promotion</Button></div>{promotionRequested && <p role="status" className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-950/30 dark:text-amber-200">Promotion request saved. Choose a listing and confirm payment when campaign billing is connected.</p>}</Card>}</main>;
+  return <main className="mx-auto max-w-6xl py-4 sm:py-8"><div className="mb-6"><p className="font-semibold text-green-700">Plans and billing</p><h1 className="mt-1 text-3xl font-bold">Choose tools for your {accountType} account</h1><p className="mt-2 text-slate-600 dark:text-slate-300">Trading capability, legal account type and subscription are managed separately. Paid access is activated only after server-confirmed payment.</p></div>
+    {active && <Card className="mb-6 flex flex-wrap items-center justify-between gap-3 p-4"><div><p className="text-xs font-bold uppercase text-slate-500">Current plan</p><p className="font-bold capitalize">{active.plan_id.replaceAll("-", " ")} · {active.status.replaceAll("_", " ")}</p></div>{active.renews_at && <p className="text-sm text-slate-500">Renews {new Date(active.renews_at).toLocaleDateString()}</p>}</Card>}
+    <div className="mb-5 flex rounded-lg bg-slate-100 p-1 sm:w-fit dark:bg-gray-800"><button onClick={() => setCycle("monthly")} className={`min-h-10 flex-1 rounded-md px-4 text-sm font-bold sm:flex-none ${cycle === "monthly" ? "bg-white shadow-sm dark:bg-gray-900" : "text-slate-500"}`}>Monthly</button><button onClick={() => setCycle("annual")} className={`min-h-10 flex-1 rounded-md px-4 text-sm font-bold sm:flex-none ${cycle === "annual" ? "bg-white shadow-sm dark:bg-gray-900" : "text-slate-500"}`}>Annual · 2 months free</button></div>
+    <div className="grid gap-5 lg:grid-cols-[1fr_360px]"><div className="grid gap-4 sm:grid-cols-2">{available.map(item => { const Icon = item.icon; const selectedPlan = item.id === plan?.id; return <button key={item.id} onClick={() => setSelected(item.id)} className={`rounded-xl border-2 p-5 text-left ${selectedPlan ? "border-green-700 bg-green-50 dark:bg-green-950/20" : "border-slate-200 bg-white dark:border-gray-700 dark:bg-gray-900"}`}><div className="flex items-start justify-between gap-2"><h2 className="flex items-center gap-2 text-lg font-bold"><Icon className="text-green-700" size={21} />{item.name}</h2><span className="text-right text-sm font-bold text-green-700">{item.monthlyPrice == null ? "Contact us" : item.monthlyPrice === 0 ? "Free" : `${format(cycle === "annual" ? item.monthlyPrice * 10 : item.monthlyPrice)}/${cycle === "annual" ? "yr" : "mo"}`}</span></div><ul className="mt-4 space-y-2 text-sm">{item.features.map(feature => <li key={feature} className="flex gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-700" />{feature}</li>)}</ul></button>; })}</div>
+      <Card className="h-fit p-5"><h2 className="text-xl font-bold">Billing details</h2>{plan && <><div className="mt-4 rounded-lg bg-slate-50 p-4 dark:bg-gray-800"><p className="font-bold">{plan.name}</p><p className="mt-1 text-2xl font-black">{price == null ? "Custom quote" : price === 0 ? "Free" : format(price)}</p>{cycle === "annual" && price !== null && price > 0 && <p className="text-xs text-green-700">Includes two months free</p>}</div>{price !== 0 && price !== null && <div className="mt-4"><label className="text-sm font-bold">Payment method</label><select value={method} onChange={event => setMethod(event.target.value as PaymentMethod)} className="mt-2 w-full rounded-lg border p-3 dark:bg-gray-800">{allowedMethods.map(value => <option key={value} value={value}>{value.replaceAll("_", " ")}</option>)}</select></div>}<Button onClick={continueBilling} disabled={busy} className="mt-5 w-full">{busy ? "Opening secure billing…" : price == null ? "Request enterprise quote" : price === 0 ? "Continue with Free" : `Continue · ${format(price)}`}</Button></>}
+        {notice && <p role="status" className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-800">{notice}</p>}{error && <p role="alert" className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}<p className="mt-4 flex gap-2 text-xs text-slate-500"><Smartphone size={15} className="shrink-0" />Never enter a mobile-money PIN inside MlimiConnect. Provider fees, taxes and the full renewal price must be shown before approval.</p><p className="mt-3 flex gap-2 text-xs text-slate-500"><Info size={15} className="shrink-0" />Subscriptions and marketplace commissions are recorded separately.</p></Card></div>
+  </main>;
 }
