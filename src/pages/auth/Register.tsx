@@ -5,12 +5,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, User, Mail, Lock, Phone, Building2, CheckCircle2 } from "lucide-react";
+import { ArrowRight, User, Mail, Lock, Phone, Building2, CheckCircle2, Eye, EyeOff } from "lucide-react";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import api, { getApiError } from "../../lib/api";
 import AuthShell from "../../components/AuthShell";
 import { useTranslation } from "react-i18next";
+import LogoLoader from "../../components/LogoLoader";
 
 // ── Zod Schemas ────────────────────────────────────────────────────────
 const registerSchema = z.object({
@@ -64,6 +65,7 @@ export default function Register() {
   const [step, setStep] = useState<"register" | "verify" | "success">("register");
   const [userData, setUserData] = useState<{ email: string; phone?: string } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
   // ── Register Form ─────────────────────────────────────────────
@@ -144,6 +146,10 @@ export default function Register() {
     }
   };
 
+  if (loading) {
+    return <LogoLoader fullScreen label={step === "register" ? t("creatingAccount") : "Verifying your account"} />;
+  }
+
   return (
     <AuthShell title={step === "register" ? t("createAccount") : step === "success" ? t("accountReady") : "Verify your account"} description={step === "register" ? t("registerDescription") : step === "success" ? t("accountReadyDescription") : `We sent a 6-digit code to ${userData?.phone || userData?.email}`}>
       <motion.div
@@ -205,10 +211,12 @@ export default function Register() {
               </label>
               <Input
                 {...registerForm("password")}
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
                 leftIcon={<Lock size={18} />}
                 error={regErrors.password?.message}
+                autoComplete="new-password"
+                rightElement={<button type="button" onClick={() => setShowPassword(value => !value)} className="inline-flex h-9 w-9 items-center justify-center rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-600 dark:hover:bg-gray-800 dark:hover:text-white" aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword}>{showPassword ? <EyeOff size={19} /> : <Eye size={19} />}</button>}
               />
               {strength && <div className="mt-2" aria-live="polite"><div className="h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700"><div className={`h-full ${strength.color} transition-all`} style={{ width: strength.width }} /></div><p className={`mt-1 text-xs font-semibold ${strength.text}`}>{t(strength.key)}</p></div>}
             </div>
@@ -256,8 +264,8 @@ export default function Register() {
               className="w-full mt-3 shadow-md hover:shadow-lg"
               disabled={loading}
             >
-              {loading ? t("creatingAccount") : t("createFreeAccount")}
-              {!loading && <ArrowRight className="ml-2 h-5 w-5" />}
+              {t("createFreeAccount")}
+              <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </form>
         ) : (

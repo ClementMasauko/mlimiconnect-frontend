@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Mail, Lock } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { demoLoginEnabled, useAuth } from "../../context/AuthContext";   // ← use the hook
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
@@ -29,6 +29,7 @@ export default function Login() {
   const location = useLocation();
 
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
   const {
@@ -116,12 +117,13 @@ export default function Login() {
               {t("password")}
             </label>
             <Input
-              type="password"
+              type={showPassword ? "text" : "password"}
               {...register("password")}
               placeholder="••••••••"
               leftIcon={<Lock size={18} />}
               error={errors.password?.message}
               autoComplete="current-password"
+              rightElement={<button type="button" onClick={() => setShowPassword(value => !value)} className="inline-flex h-9 w-9 items-center justify-center rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-600 dark:hover:bg-gray-800 dark:hover:text-white" aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword}>{showPassword ? <EyeOff size={19} /> : <Eye size={19} />}</button>}
             />
           </div>
 

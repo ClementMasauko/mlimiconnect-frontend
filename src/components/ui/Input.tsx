@@ -4,10 +4,11 @@ import classNames from "classnames";
 type Props = InputHTMLAttributes<HTMLInputElement> & {
   leftIcon?: ReactNode;
   icon?: ReactNode;
+  rightElement?: ReactNode;
   error?: string;
 };
 
-const Input = forwardRef<HTMLInputElement, Props>(({ className, leftIcon, icon, error, ...props }, ref) => {
+const Input = forwardRef<HTMLInputElement, Props>(({ className, leftIcon, icon, rightElement, error, ...props }, ref) => {
   const leadingIcon = leftIcon ?? icon;
   return (
     <div className="w-full">
@@ -18,12 +19,14 @@ const Input = forwardRef<HTMLInputElement, Props>(({ className, leftIcon, icon, 
           className={classNames(
             "min-h-11 w-full rounded-lg border bg-white px-3 py-2 text-base text-gray-900 outline-none transition focus:border-green-600 focus:ring-2 focus:ring-green-600/20 sm:text-sm dark:bg-transparent dark:text-white",
             Boolean(leadingIcon) && "pl-10",
+            Boolean(rightElement) && "pr-11",
             error ? "border-red-500" : "border-gray-200 dark:border-gray-700",
             className,
           )}
           aria-invalid={Boolean(error)}
           {...props}
         />
+        {rightElement && <span className="absolute inset-y-0 right-1 flex items-center">{rightElement}</span>}
       </div>
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>
