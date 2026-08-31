@@ -1,38 +1,64 @@
 // src/pages/traceability/VerifyTraceability.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import { motion } from "framer-motion";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
-import { QrCode, Search, ShieldCheck, CheckCircle, AlertTriangle, Camera, X, Link } from "lucide-react";
+import { QrCode, Search, ShieldCheck, CheckCircle, AlertTriangle, Camera, X } from "lucide-react";
+import api, { getApiError } from "../../lib/api";
+import { extractPublicTraceabilityCode } from "../../lib/traceability";
+
+interface VerificationRecord {
+  id: number;
+  batch_code: string;
+  product: string;
+  quantity: string;
+  status: string;
+  public_data?: { origin?: string; producer?: string };
+  updated_at?: string;
+  events?: Array<{ id: number; stage: string; description: string; location: string; occurred_at: string; actor: string }>;
+}
 
 export default function VerifyTraceability() {
-  const [productId, setProductId] = useState("");
+  const { publicCode } = useParams();
+  const [searchParams] = useSearchParams();
+  const initialCode = publicCode || searchParams.get("product") || "";
+  const [productId, setProductId] = useState(initialCode);
   const [verifying, setVerifying] = useState(false);
-  const [result, setResult] = useState<"success" | "failed" | null>(null);
+  const [record, setRecord] = useState<VerificationRecord | null>(null);
+  const [error, setError] = useState("");
   const [showScanner, setShowScanner] = useState(false);
 
-  const handleScan = (result: any) => {
-  if (result && result.length > 0) {
-    const value = result[0].rawValue;
-    setProductId(value);
-    setShowScanner(false);
-    handleVerify();
-  }
-};
-
-
-  const handleVerify = () => {
+  const handleVerify = async (value = productId) => {
+    const code = extractPublicTraceabilityCode(value);
+    if (!code) return;
+    setProductId(code);
     setVerifying(true);
-    setTimeout(() => {
+    setError("");
+    setRecord(null);
+    try {
+      const { data } = await api.get<VerificationRecord>(`/api/traceability/verify/${encodeURIComponent(code)}/`);
+      setRecord(data);
+    } catch (requestError) {
+      setError(getApiError(requestError, "No public traceability record was found for this code."));
+    } finally {
       setVerifying(false);
-      if (productId.trim()) {
-        setResult("success");
-      } else {
-        setResult("failed");
-      }
-    }, 1500);
+    }
   };
+
+  const handleScan = (results: Array<{ rawValue: string }>) => {
+    const value = results[0]?.rawValue;
+    if (!value) return;
+    setShowScanner(false);
+    void handleVerify(value);
+  };
+
+  useEffect(() => {
+    if (initialCode) void handleVerify(initialCode);
+    // The route/query value is intentionally verified only when it changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialCode]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-12 px-4 sm:px-6 lg:px-8">
@@ -48,7 +74,7 @@ export default function VerifyTraceability() {
             Verify Product Traceability
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-400">
-            Scan QR or enter ID for blockchain-verified journey
+            Scan a MlimiConnect QR code or enter a public batch number
           </p>
         </motion.div>
 
@@ -62,13 +88,14 @@ export default function VerifyTraceability() {
               >
                 <Scanner
   onScan={handleScan}
-  onError={(error) => console.error(error)}
+  onError={() => setError("The camera could not be started. Enter the batch number instead.")}
   constraints={{ facingMode: "environment" }}
   styles={{ container: { width: "100%" } }}
 />
 
                 <button
                   onClick={() => setShowScanner(false)}
+                  aria-label="Close QR scanner"
                   className="absolute top-4 right-4 bg-white text-gray-600 rounded-full p-2 shadow"
                 >
                   <X size={24} />
@@ -97,7 +124,7 @@ export default function VerifyTraceability() {
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
-                onClick={handleVerify}
+                onClick={() => void handleVerify()}
                 disabled={verifying || !productId.trim()}
                 className="flex-1 py-4 text-lg flex items-center justify-center gap-3"
               >
@@ -112,7 +139,7 @@ export default function VerifyTraceability() {
               </Button>
             </div>
 
-            {result === "success" && (
+            {record && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -120,18 +147,22 @@ export default function VerifyTraceability() {
               >
                 <CheckCircle className="mx-auto text-green-600 mb-4" size={48} />
                 <h2 className="text-2xl font-bold text-green-800 dark:text-green-300 mb-3">
-                  Verified!
+                  Public record found
                 </h2>
                 <p className="text-green-700 dark:text-green-400">
-                  This product has a complete, blockchain-verified journey.
+                  {record.product} · {record.status}
                 </p>
-                <Link to={`/app/traceability/PRD-4782`}>
-                  <Button className="mt-6">View Full Journey</Button>
-                </Link>
+                <dl className="mt-5 grid gap-2 text-left text-sm text-green-900 dark:text-green-200">
+                  <div><dt className="font-semibold">Batch code</dt><dd>{record.batch_code}</dd></div>
+                  <div><dt className="font-semibold">Quantity</dt><dd>{record.quantity}</dd></div>
+                  {record.public_data?.origin && <div><dt className="font-semibold">Origin</dt><dd>{record.public_data.origin}</dd></div>}
+                  {record.public_data?.producer && <div><dt className="font-semibold">Producer</dt><dd>{record.public_data.producer}</dd></div>}
+                  {record.updated_at && <div><dt className="font-semibold">Last updated</dt><dd>{new Date(record.updated_at).toLocaleDateString()}</dd></div>}
+                </dl>
               </motion.div>
             )}
 
-            {result === "failed" && (
+            {error && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -139,10 +170,10 @@ export default function VerifyTraceability() {
               >
                 <AlertTriangle className="mx-auto text-red-600 mb-4" size={48} />
                 <h2 className="text-2xl font-bold text-red-800 dark:text-red-300 mb-3">
-                  Not Found
+                  Verification unavailable
                 </h2>
                 <p className="text-red-700 dark:text-red-400">
-                  No record found. Please check the ID or QR code.
+                  {error}
                 </p>
               </motion.div>
             )}

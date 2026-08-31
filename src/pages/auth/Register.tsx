@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, User, Mail, Lock, Phone, Building2, CheckCircle2 } from "lucide-react";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
-import api from "../../lib/api";
+import api, { getApiError } from "../../lib/api";
 import AuthShell from "../../components/AuthShell";
 import { useTranslation } from "react-i18next";
 
@@ -43,17 +43,6 @@ type OTPForm = z.infer<typeof otpSchema>;
 const normalizeMalawiPhone = (phone?: string) => {
   const compact = phone?.replace(/[\s-]/g, "") || "";
   return compact ? `+265${compact.slice(1)}` : "";
-};
-
-const registrationError = (error: any, fallback: string) => {
-  const data = error.response?.data;
-  if (!data || typeof data !== "object") return fallback;
-  if (typeof data.detail === "string") return data.detail;
-  const messages = Object.entries(data).flatMap(([field, value]) => {
-    const values = Array.isArray(value) ? value : [value];
-    return values.filter(item => typeof item === "string").map(item => `${field.replaceAll("_", " ")}: ${item}`);
-  });
-  return messages.join(" ") || fallback;
 };
 
 const passwordStrength = (password: string) => {
@@ -117,9 +106,9 @@ export default function Register() {
       });
 
       setUserData({ email: data.email.trim(), phone: normalizeMalawiPhone(data.phone) });
-      setStep("success");
-    } catch (err: any) {
-      setServerError(registrationError(err, t("registrationFailed")));
+      setStep("verify");
+    } catch (err: unknown) {
+      setServerError(getApiError(err, t("registrationFailed")));
     } finally {
       setLoading(false);
     }
@@ -147,12 +136,9 @@ export default function Register() {
 
       // You could also auto-login here if you want to skip the login step
       // But for now we follow standard flow
-      alert("Account verified successfully! Please sign in.");
-      navigate("/login");
-    } catch (err: any) {
-      setServerError(
-        err.response?.data?.detail || "Invalid or expired OTP. Please try again."
-      );
+      setStep("success");
+    } catch (err: unknown) {
+      setServerError(getApiError(err, t("invalidOtp")));
     } finally {
       setLoading(false);
     }

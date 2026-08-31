@@ -225,6 +225,9 @@ export default function MyOrders() {
                           View Details
                         </Button>
                       </Link>
+                      <Link to={`/app/orders/${order.id}/delivery`}>
+                        <Button variant="outline" size="sm" className="font-bold">Delivery</Button>
+                      </Link>
                     </div>
                   </div>
                 </Card>

@@ -1,4 +1,5 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
+import { ApiErrorResponseSchema } from "../generated/schemas";
 
 const apiBaseUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://localhost:8000" : window.location.origin);
 const api = axios.create({ baseURL: apiBaseUrl, withCredentials: true, headers: { "Content-Type": "application/json" } });
@@ -18,15 +19,17 @@ api.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
 });
 
 api.interceptors.response.use(response => response, (error: AxiosError) => {
-  const detail = (error.response?.data as { detail?: string } | undefined)?.detail;
+  const parsed = ApiErrorResponseSchema.safeParse(error.response?.data);
+  const detail = parsed.success ? parsed.data.detail : undefined;
   if (error.response?.status === 401 || (error.response?.status === 403 && detail === "Authentication credentials were not provided.")) window.dispatchEvent(new CustomEvent("mc:session-expired"));
   return Promise.reject(error);
 });
 
 export function getApiError(error: unknown, fallback: string) {
   if (!axios.isAxiosError(error)) return error instanceof Error ? error.message : fallback;
-  const data = error.response?.data as { detail?: string; non_field_errors?: string[] } | undefined;
-  return data?.detail || data?.non_field_errors?.[0] || error.message || fallback;
+  const parsed = ApiErrorResponseSchema.safeParse(error.response?.data);
+  if (parsed.success) return parsed.data.error?.message || parsed.data.detail || fallback;
+  return error.message || fallback;
 }
 
 export default api;

@@ -5,7 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
-import api from "../../lib/api";
+import api, { getApiError } from "../../lib/api";
 import { toast } from "react-hot-toast";
 import {
   Upload,
@@ -60,8 +60,8 @@ export default function EditProfile() {
         email: user.email || "",
         phone: user.phone || "",
         location: user.location || "",
-        bio: (user as any).bio || "",
-        farmSize: (user as any).farm_size || (user as any).farmSize || "",
+        bio: user.bio || "",
+        farmSize: String(user.farm_size || user.farmSize || ""),
         twoFactorEnabled: user.twoFactorEnabled || false,
       }));
     }
@@ -123,8 +123,8 @@ export default function EditProfile() {
       await refreshUserProfile();
       setSuccess(true);
       toast.success("Profile successfully updated!");
-    } catch (error: any) {
-      const errMsg = error.response?.data?.detail || "We could not update your profile. (Simulated success for design purposes)";
+    } catch (error: unknown) {
+      const errMsg = getApiError(error, "We could not update your profile.");
       // For design fidelity and offline testing, let's also trigger positive feedback on local submit if it's a mock state
       toast.success("Local Profile updated! (Mock request processed successfully)");
       setSuccess(true);

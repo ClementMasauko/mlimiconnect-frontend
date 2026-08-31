@@ -1,206 +1,54 @@
-// src/pages/advisory/PestDetection.tsx
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
+import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { AlertTriangle, Bug, Camera, CheckCircle, Loader2, ShieldCheck, Trash2, UserRound, X } from "lucide-react";
+import api, { getApiError } from "../../lib/api";
+import { compressImage, formatFileSize } from "../../lib/lowData";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
-import { Bug, Camera, Leaf, AlertTriangle, CheckCircle, Loader2, ShieldCheck, X } from "lucide-react";
+
+const CONSENT_VERSION = "2026-08-30";
+type Suggestion = { name: string; scientific_name: string; confidence: number; type: string; severity: string };
+type Diagnosis = { id:number; crop:string; provider:string; status:string; created_at:string; deleted_at:string|null; results:{crops?:Suggestion[];possibilities?:Suggestion[];warning?:string}; warning:string; expert_escalated:boolean; harmful_reported:boolean };
+type HistoryResponse = { results:Diagnosis[]; supported_crops:string[]; warning:string };
 
 export default function PestDetection() {
-  const [image, setImage] = useState<string | null>(null);
-  const [analyzing, setAnalyzing] = useState(false);
-  const [result, setResult] = useState<{
-    pest: string;
-    severity: "low" | "medium" | "high";
-    recommendation: string;
-  } | null>(null);
+  const [imageUrl,setImageUrl]=useState<string|null>(null),[file,setFile]=useState<File|null>(null),[crop,setCrop]=useState(""),[consent,setConsent]=useState(false),[analyzing,setAnalyzing]=useState(false),[error,setError]=useState(""),[status,setStatus]=useState("");
+  const [history,setHistory]=useState<Diagnosis[]>([]),[supportedCrops,setSupportedCrops]=useState<string[]>([]),[result,setResult]=useState<Diagnosis|null>(null),[action,setAction]=useState<"report"|"expert"|null>(null);
+  const loadHistory=async()=>{try{const response=await api.get<HistoryResponse>("/api/advisory/diagnoses/");setHistory(response.data.results);setSupportedCrops(response.data.supported_crops);}catch(e){setError(getApiError(e,"Diagnosis history could not be loaded."));}};
+  useEffect(()=>{void loadHistory();},[]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setImage(url);
-      analyzeImage();
-    }
-  };
+  const selectImage=async(selected?:File)=>{if(!selected)return;setError("");setResult(null);setConsent(false);if(!["image/jpeg","image/png","image/webp"].includes(selected.type)){setError("Choose a JPG, PNG or WebP image.");return;}if(selected.size>8*1024*1024){setError("The image must be no larger than 8 MB.");return;}try{const prepared=await compressImage(selected,900_000);if(imageUrl?.startsWith("blob:"))URL.revokeObjectURL(imageUrl);setFile(prepared);setImageUrl(URL.createObjectURL(prepared));}catch{setError("The image could not be prepared safely.");}};
+  const analyze=async()=>{if(!file||!consent)return;setAnalyzing(true);setError("");setStatus("");const body=new FormData();body.append("image",file);body.append("crop",crop);body.append("consent","true");body.append("consent_version",CONSENT_VERSION);try{const response=await api.post<Diagnosis>("/api/advisory/diagnoses/",body);setResult(response.data);setStatus("Analysis completed. Review all possibilities and the safety warning.");await loadHistory();}catch(e){setError(getApiError(e,"The photograph could not be analysed."));}finally{setAnalyzing(false);}};
+  const removeImage=()=>{if(imageUrl?.startsWith("blob:"))URL.revokeObjectURL(imageUrl);setImageUrl(null);setFile(null);setResult(null);setConsent(false);setError("");};
+  const removeDiagnosis=async(id:number)=>{try{const response=await api.delete<{status:string}>(`/api/advisory/diagnoses/${id}/`);setStatus(response.data.status==="deletion_pending"?"Local data was erased. Provider deletion will be retried.":"Diagnosis data was deleted.");if(result?.id===id)setResult(null);await loadHistory();}catch(e){setError(getApiError(e,"The diagnosis could not be deleted."));}};
+  const submitAction=async(event:FormEvent<HTMLFormElement>)=>{event.preventDefault();if(!result||!action)return;const values=Object.fromEntries(new FormData(event.currentTarget));try{if(action==="report")await api.post(`/api/advisory/diagnoses/${result.id}/reports/`,values);else await api.post(`/api/advisory/diagnoses/${result.id}/escalations/`,values);setStatus(action==="report"?"Safety report submitted for review.":"Human expert review requested.");setAction(null);await loadHistory();}catch(e){setError(getApiError(e,"The request could not be submitted."));}};
+  const unsupported=crop&&supportedCrops.length>0&&!supportedCrops.some(item=>item.toLowerCase().includes(crop.toLowerCase())||(crop.toLowerCase()==="maize"&&item.startsWith("corn")));
 
-  const analyzeImage = () => {
-    setAnalyzing(true);
-    setResult(null);
-
-    // Simulate AI analysis (replace with real API call later)
-    setTimeout(() => {
-      setAnalyzing(false);
-      setResult({
-        pest: "Fall Armyworm",
-        severity: "high",
-        recommendation: "Apply organic neem-based pesticide immediately. Monitor neighboring fields. Avoid chemical overuse to protect pollinators.",
-      });
-    }, 2500);
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8"
-        >
-          <Link to="/app/advisory" className="text-green-700 dark:text-green-400 hover:underline flex items-center gap-2 mb-4">
-            ← Back to Advisory
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <Bug className="text-red-600" size={32} /> Pest & Disease Detection
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Upload leaf/plant photo — get instant AI-powered diagnosis and treatment advice
-          </p>
-        </motion.div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Upload & Preview */}
-          <Card className="p-6 md:p-8">
-            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-3">
-              <Camera className="text-green-600" size={24} /> Upload Photo
-            </h2>
-
-            <div className="space-y-6">
-              <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-8 text-center hover:border-green-500 transition-colors">
-                {image ? (
-                  <div className="relative">
-                    <img
-                      src={image}
-                      alt="Uploaded plant"
-                      className="max-h-80 mx-auto rounded-lg shadow-lg object-contain"
-                    />
-                    <button
-                      onClick={() => setImage(null)}
-                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ) : (
-                  <label className="cursor-pointer">
-                    <div className="flex flex-col items-center gap-3">
-                      <Camera size={48} className="text-gray-400" />
-                      <p className="text-gray-600 dark:text-gray-400">
-                        Click or drag photo here
-                      </p>
-                      <p className="text-sm text-gray-500">Supported: JPG, PNG</p>
-                    </div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                    />
-                  </label>
-                )}
-              </div>
-
-              <Button
-                onClick={analyzeImage}
-                disabled={!image || analyzing}
-                className="w-full flex items-center justify-center gap-2 py-4"
-              >
-                {analyzing ? (
-                  <>
-                    <Loader2 size={20} className="animate-spin" />
-                    Analyzing...
-                  </>
-                ) : (
-                  <>
-                    <Bug size={20} /> Detect Pests & Diseases
-                  </>
-                )}
-              </Button>
-            </div>
-          </Card>
-
-          {/* Results */}
-          <AnimatePresence mode="wait">
-            {result ? (
-              <motion.div
-                key="result"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.4 }}
-              >
-                <Card className="p-6 md:p-8 h-full">
-                  <div className="flex items-center gap-3 mb-6">
-                    <AlertTriangle className="text-red-600" size={28} />
-                    <h2 className="text-2xl font-semibold">Detection Result</h2>
-                  </div>
-
-                  <div className="space-y-6">
-                    <div className="p-4 bg-red-50 dark:bg-red-950/30 rounded-lg">
-                      <p className="text-lg font-medium text-red-800 dark:text-red-300">
-                        Pest/Disease: <strong>{result.pest}</strong>
-                      </p>
-                      <p className="text-sm text-red-700 dark:text-red-400 mt-1">
-                        Severity: <strong className="uppercase">{result.severity}</strong>
-                      </p>
-                    </div>
-
-                    <div>
-                      <h3 className="text-lg font-semibold mb-3">Recommended Actions</h3>
-                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                        {result.recommendation}
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <Button variant="outline" className="flex items-center justify-center gap-2">
-                        <Leaf size={18} /> Organic Solutions
-                      </Button>
-                      <Button variant="outline" className="flex items-center justify-center gap-2">
-                        <ShieldCheck size={18} /> Report to Experts
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              </motion.div>
-            ) : analyzing ? (
-              <motion.div
-                key="loading"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="h-full flex items-center justify-center"
-              >
-                <div className="text-center">
-                  <Loader2 className="animate-spin mx-auto text-green-600 mb-4" size={48} />
-                  <p className="text-lg font-medium text-gray-600 dark:text-gray-400">
-                    Analyzing your photo...
-                  </p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    This may take a few seconds
-                  </p>
-                </div>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="empty"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="h-full flex items-center justify-center text-center"
-              >
-                <div>
-                  <Bug className="mx-auto text-gray-400 mb-4" size={64} />
-                  <p className="text-xl font-medium text-gray-600 dark:text-gray-400">
-                    Upload a clear photo of affected leaves or stems
-                  </p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
+  return <div className="mx-auto max-w-6xl px-4 py-8">
+    <Link to="/app/advisory" className="font-semibold text-green-700">← Back to advisory</Link>
+    <h1 className="mt-4 flex items-center gap-3 text-3xl font-black"><Bug className="text-red-600"/>Crop health possibilities</h1>
+    <p className="mt-2 text-slate-600 dark:text-slate-300">Photographs are stripped of metadata by MlimiConnect, then transferred to Kindwise Crop.health only after your explicit consent.</p>
+    {error&&<p role="alert" className="mt-5 rounded-lg bg-red-50 p-4 text-red-800">{error}</p>}{status&&<p role="status" className="mt-5 rounded-lg bg-green-50 p-4 text-green-800"><CheckCircle className="mr-2 inline" size={18}/>{status}</p>}
+    <div className="mt-7 grid gap-6 lg:grid-cols-2">
+      <Card className="p-6"><h2 className="flex items-center gap-2 text-xl font-bold"><Camera/>Prepare photograph</h2>
+        <label className="mt-5 block font-semibold" htmlFor="diagnosis-crop">Crop, if known</label><input id="diagnosis-crop" value={crop} onChange={e=>setCrop(e.target.value)} placeholder="For example: maize or cassava" className="mt-2 w-full rounded-lg border p-3 dark:bg-slate-900"/>
+        {unsupported&&<p className="mt-2 rounded bg-amber-50 p-3 text-sm text-amber-900"><AlertTriangle className="mr-1 inline" size={16}/>Kindwise does not list this crop in its published coverage. Results may be unavailable or unreliable.</p>}
+        <div className="mt-5 rounded-xl border-2 border-dashed p-6 text-center">{imageUrl?<div className="relative"><img src={imageUrl} alt="Plant selected for analysis" className="mx-auto max-h-72 rounded-lg"/><button type="button" onClick={removeImage} aria-label="Remove photograph" className="absolute right-2 top-2 rounded-full bg-red-600 p-2 text-white"><X size={16}/></button></div>:<label className="cursor-pointer"><Camera className="mx-auto text-slate-400" size={46}/><span className="mt-2 block">Select a clear JPG, PNG or WebP photograph</span><input type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>void selectImage(e.target.files?.[0])} className="sr-only"/></label>}</div>
+        {file&&<p className="mt-2 text-sm text-slate-500">Prepared file: {formatFileSize(file.size)}</p>}
+        <label className="mt-5 flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950"><input type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)} className="mt-1"/><span>I consent to MlimiConnect transferring this metadata-stripped photograph to <strong>Kindwise Crop.health</strong> for automated analysis. Kindwise may temporarily process and store it under its privacy terms. I understand the result is not a confirmed diagnosis.</span></label>
+        <Button onClick={()=>void analyze()} disabled={!file||!consent||analyzing} className="mt-5 w-full">{analyzing?<><Loader2 className="mr-2 inline animate-spin"/>Analysing…</>:"Show possible crop problems"}</Button>
+      </Card>
+      <Card className="p-6"><h2 className="text-xl font-bold">Result</h2>{!result?<p className="mt-5 text-slate-500">No automated result yet.</p>:<>
+        <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-4 text-amber-950"><strong>Not a confirmed diagnosis.</strong> {result.warning}</div>
+        <h3 className="mt-5 font-bold">Possible crop</h3><SuggestionList rows={result.results.crops??[]}/><h3 className="mt-5 font-bold">Top three possible problems</h3><SuggestionList rows={result.results.possibilities??[]}/>
+        <p className="mt-5 rounded bg-red-50 p-4 text-sm text-red-900"><ShieldCheck className="mr-1 inline" size={17}/>MlimiConnect does not provide pesticide selection, dosage or mixing instructions from automated results. Confirm with a qualified extension worker and follow Malawi-approved product labels.</p>
+        <div className="mt-5 flex flex-wrap gap-3"><Button variant="outline" onClick={()=>setAction("expert")}><UserRound className="mr-2" size={17}/>Ask an expert</Button><Button variant="outline" onClick={()=>setAction("report")}><AlertTriangle className="mr-2" size={17}/>Report harmful result</Button><Button variant="outline" onClick={()=>void removeDiagnosis(result.id)}><Trash2 className="mr-2" size={17}/>Delete</Button></div>
+        {action&&<form onSubmit={submitAction} className="mt-5 space-y-3 rounded-lg border p-4">{action==="report"&&<select name="category" required className="w-full rounded border p-3 dark:bg-slate-900"><option value="">Report category</option><option value="harmful_advice">Harmful advice</option><option value="incorrect_result">Incorrect result</option><option value="unsafe_pesticide">Unsafe pesticide information</option><option value="privacy">Privacy concern</option><option value="other">Other</option></select>}<textarea name={action==="report"?"details":"reason"} required minLength={10} maxLength={2000} placeholder={action==="report"?"Explain the safety concern":"Explain what the expert should review"} className="min-h-28 w-full rounded border p-3 dark:bg-slate-900"/><div className="flex gap-2"><Button type="submit">Submit</Button><Button type="button" variant="outline" onClick={()=>setAction(null)}>Cancel</Button></div></form>}
+      </>}</Card>
     </div>
-  );
+    <Card className="mt-6 p-6"><h2 className="text-xl font-bold">Diagnosis history</h2>{history.length===0?<p className="mt-3 text-slate-500">No saved diagnoses.</p>:<div className="mt-4 space-y-3">{history.map(item=><div key={item.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4"><button className="text-left" onClick={()=>item.status!=="deleted"&&setResult(item)}><strong>{item.crop||"Crop photograph"}</strong><span className="ml-2 text-sm text-slate-500">{new Date(item.created_at).toLocaleString()} · {item.status.replaceAll("_"," ")}</span></button>{!item.deleted_at&&<Button variant="outline" onClick={()=>void removeDiagnosis(item.id)}><Trash2 size={16}/></Button>}</div>)}</div>}</Card>
+  </div>;
 }
+
+function SuggestionList({rows}:{rows:Suggestion[]}){if(!rows.length)return <p className="mt-2 text-sm text-slate-500">No reliable possibilities returned.</p>;return <ol className="mt-2 space-y-2">{rows.slice(0,3).map((row,index)=><li key={`${row.name}-${index}`} className="rounded-lg border p-3"><div className="flex justify-between gap-3"><strong>{index+1}. {row.name}</strong><span>{row.confidence.toFixed(1)}%</span></div>{row.scientific_name&&<p className="text-sm italic text-slate-500">{row.scientific_name}</p>}{(row.type||row.severity)&&<p className="mt-1 text-xs text-slate-500">{[row.type,row.severity].filter(Boolean).join(" · ")}</p>}</li>)}</ol>}

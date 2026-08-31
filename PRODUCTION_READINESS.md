@@ -12,10 +12,15 @@ The frontend now builds, but payments, orders, listings, and user data must not 
 
 1. Set `VITE_PAYMENTS_ENABLED=true` only after the payment API, webhook signature verification, idempotency, refunds, reconciliation, and provider sandbox tests are complete.
 2. Use a licensed payment partner; do not collect or hold customer funds in the frontend.
-3. Replace the current browser-token approach with secure `HttpOnly`, `Secure`, `SameSite` cookies once the API supports cookie authentication.
+3. Verify production session cookies are `HttpOnly`, `Secure`, and use an appropriate `SameSite` policy; verify CSRF protection on every state-changing route.
 4. Enforce authentication and role/ownership permissions on every API route. Frontend route guards are not authorization.
 5. Configure HTTPS, production CORS, secrets, database backups, audit logs, error monitoring, and an incident contact.
 6. Replace all marketplace, order, wallet, messaging, traceability, and advisory mock data before inviting public users.
+
+## Public traceability contract
+
+- `GET /api/traceability/verify/{batch_code}/` is unauthenticated and returns the batch's approved public verification record.
+- Public codes must be unguessable or rate-limited. Never expose private user contacts, exact private farm coordinates, internal notes, payment data, or unpublished documents.
 
 ## Pilot launch
 

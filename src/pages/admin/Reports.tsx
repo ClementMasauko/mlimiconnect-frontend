@@ -34,7 +34,7 @@ export default function Reports() {
                     <p className="text-xs text-gray-500 mt-2">Period: {report.date}</p>
                   </div>
                 </div>
-                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                <Button variant="outline" size="sm" disabled title="Report export API is not connected" className="flex items-center gap-2">
                   <Download size={16} />
                   Download
                 </Button>

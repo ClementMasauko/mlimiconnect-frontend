@@ -19,6 +19,7 @@ import Revenue from "./pages/admin/Revenue";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CookiePolicy from "./pages/CookiePolicy";
 import NotificationsCenter from "./pages/notifications/NotificationsCenter";
+import StatusPage from "./pages/StatusPage";
 
 // ────────────────────────────────────────────────────────────────
 // Lazy-loaded pages
@@ -68,11 +69,18 @@ const NotificationSettings = React.lazy(() => import("./pages/profile/Notificati
 const AddressBook = React.lazy(() => import("./pages/profile/AddressBook"));
 const BecomeBuyer = React.lazy(() => import("./pages/profile/BecomeBuyer"));
 const BecomeFarmer = React.lazy(() => import("./pages/profile/BecomeFarmer"));
+const BecomeTransporter = React.lazy(() => import("./pages/profile/BecomeTransporter"));
+const OrganizationWorkspace = React.lazy(() => import("./pages/profile/OrganizationWorkspace"));
+const TransporterDashboard = React.lazy(() => import("./pages/profile/TransporterDashboard"));
+const Impact = React.lazy(() => import("./pages/Impact"));
 
 // Listings
 const MyListings = React.lazy(() => import("./pages/listings/MyListings"));
 const CreateListing = React.lazy(() => import("./pages/listings/CreateListing"));
 const EditListing = React.lazy(() => import("./pages/listings/EditListing"));
+const DeliveryManagement = React.lazy(() => import("./pages/orders/DeliveryManagement"));
+const Comparison = React.lazy(() => import("./pages/marketplace/Comparison"));
+const MarketplaceLibrary = React.lazy(() => import("./pages/marketplace/MarketplaceLibrary"));
 
 // Messages
 const Inbox = React.lazy(() => import("./pages/messages/Inbox"));
@@ -107,6 +115,15 @@ const UserManagement = React.lazy(() => import("./pages/admin/UserManagement"));
 const Approvals = React.lazy(() => import("./pages/admin/Approvals"));
 const Analytics = React.lazy(() => import("./pages/admin/Analytics"));
 const Disputes = React.lazy(() => import("./pages/admin/Disputes"));
+const VerifyBuyers = React.lazy(() => import("./pages/admin/VerifyBuyers"));
+const AuditLogs = React.lazy(() => import("./pages/admin/AuditLogs"));
+const Reconciliations = React.lazy(() => import("./pages/admin/Reconciliations"));
+const DeliveryAssignments = React.lazy(() => import("./pages/admin/DeliveryAssignments"));
+const ProviderReadiness = React.lazy(() => import("./pages/admin/ProviderReadiness"));
+const TransporterAdmin = React.lazy(() => import("./pages/admin/TransporterAdmin"));
+const ListingApprovals = React.lazy(() => import("./pages/admin/ListingApprovals"));
+const OperationsDashboard = React.lazy(() => import("./pages/admin/OperationsDashboard"));
+const LivestockOperations = React.lazy(() => import("./pages/admin/LivestockOperations"));
 
 // Support
 const USSDGuide = React.lazy(() => import("./pages/support/USSDGuide"));
@@ -115,6 +132,8 @@ const VideoTutorials = React.lazy(() => import("./pages/support/VideoTutorials")
 const WalletDashboard = React.lazy(() => import("./pages/wallet/WalletDashboard"));
 const WithdrawPage = React.lazy(() => import("./pages/wallet/WithdrawPage"));
 const BuyerDashboard = React.lazy(() => import("./pages/buyer/BuyerDashboard"));
+const LivestockDashboard = React.lazy(() => import("./pages/livestock/LivestockDashboard"));
+const HerdRecord = React.lazy(() => import("./pages/livestock/HerdRecord"));
 
 // Loading fallback
 const Loading = () => (
@@ -140,11 +159,15 @@ export default function AppRoutes() {
           <Route path="/faq" element={<FAQ />} />
           <Route path="support"><Route index element={<Support />} /><Route path="ussd" element={<USSDGuide />} /></Route>
           <Route path="/privacy" element={<PrivacyPolicy />} />
-          <Route path="/cookie-policy" element={<CookiePolicy />} />
+        <Route path="/cookie-policy" element={<CookiePolicy />} />
+        <Route path="/status" element={<StatusPage />} />
           <Route path="/terms" element={<TermsAndConditions />} />
           <Route path="/disclaimer" element={<Disclaimer />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/blog" element={<Blog />} />
+          <Route path="/impact" element={<Impact />} />
+          <Route path="/verify" element={<VerifyTraceability />} />
+          <Route path="/verify/:publicCode" element={<VerifyTraceability />} />
         </Route>
 
         {/* ────────────────────────────────────────────────────────────────
@@ -162,6 +185,8 @@ export default function AppRoutes() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="subscription" element={<Subscription />} />
           <Route path="buyer-dashboard" element={<BuyerDashboard />} />
+          <Route path="livestock" element={<LivestockDashboard />} />
+          <Route path="livestock/herds/:id" element={<HerdRecord />} />
           <Route path="help" element={<HelpCenter />} />
 
           {/* Profile + Become flows */}
@@ -174,6 +199,9 @@ export default function AppRoutes() {
             <Route path="address-book" element={<AddressBook />} />
             <Route path="become-buyer" element={<BecomeBuyer />} />
             <Route path="become-farmer" element={<BecomeFarmer />} />
+            <Route path="become-transporter" element={<BecomeTransporter />} />
+            <Route path="organization" element={<OrganizationWorkspace />} />
+            <Route path="transporter-dashboard" element={<TransporterDashboard />} />
           </Route>
 
           {/* Marketplace */}
@@ -185,12 +213,15 @@ export default function AppRoutes() {
             <Route path="checkout" element={<Checkout />} />
             <Route path="farm-inputs" element={<FarmInputs />} />
             <Route path="search" element={<AdvancedSearch />} />
+            <Route path="compare" element={<Comparison />} />
+            <Route path="library" element={<MarketplaceLibrary />} />
           </Route>
 
           {/* Orders */}
           <Route path="orders">
             <Route index element={<MyOrders />} />
             <Route path=":id" element={<OrderDetails />} />
+            <Route path=":orderId/delivery" element={<DeliveryManagement />} />
             <Route path=":id/rate" element={<RateOrder />} />
             <Route path=":id/dispute" element={<FileDispute />} />
           </Route>
@@ -261,8 +292,17 @@ export default function AppRoutes() {
           <Route path="users/pending" element={<UserManagement />} />
           <Route path="users/banned" element={<UserManagement />} />
           <Route path="approvals" element={<Approvals />} />
+          <Route path="buyers/verify" element={<VerifyBuyers />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="disputes" element={<Disputes />} />
+          <Route path="listing-approvals" element={<ListingApprovals />} />
+          <Route path="audit-logs" element={<AuditLogs />} />
+          <Route path="reconciliation" element={<Reconciliations />} />
+          <Route path="deliveries" element={<DeliveryAssignments />} />
+          <Route path="providers" element={<ProviderReadiness />} />
+          <Route path="operations" element={<OperationsDashboard />} />
+          <Route path="livestock" element={<LivestockOperations />} />
+          <Route path="transporters" element={<TransporterAdmin />} />
           <Route path="settings" element={<AdminSettings />} />
           <Route path="analytics/revenue" element={<Revenue />} />
         </Route>

@@ -1,0 +1,24 @@
+name: Android release bundle
+on:
+  push: {tags: ["android-v*"]}
+  workflow_dispatch: {inputs: {version_name: {description: "SemVer version", required: true}, version_code: {description: "Increasing Play version code", required: true}}}
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 22, cache: npm}
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: 21, cache: gradle}
+      - run: npm ci
+      - run: npm run android:sync
+      - name: Restore upload key
+        env: {ANDROID_KEYSTORE_BASE64: "${{ secrets.ANDROID_KEYSTORE_BASE64 }}"}
+        run: echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/release.keystore
+      - name: Build signed AAB
+        working-directory: android
+        env: {APP_VERSION_NAME: "${{ inputs.version_name || github.ref_name }}", APP_VERSION_CODE: "${{ inputs.version_code || github.run_number }}", ANDROID_KEYSTORE_PATH: release.keystore, ANDROID_KEYSTORE_PASSWORD: "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}", ANDROID_KEY_ALIAS: "${{ secrets.ANDROID_KEY_ALIAS }}", ANDROID_KEY_PASSWORD: "${{ secrets.ANDROID_KEY_PASSWORD }}"}
+        run: ./gradlew bundleRelease
+      - uses: actions/upload-artifact@v4
+        with: {name: mlimiconnect-release-aab, path: android/app/build/outputs/bundle/release/app-release.aab, if-no-files-found: error}

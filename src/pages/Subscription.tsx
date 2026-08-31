@@ -11,12 +11,12 @@ type PaymentMethod = "airtel_money" | "tnm_mpamba" | "bank_transfer" | "card" | 
 type Plan = { id: PlanId; name: string; monthlyPrice: number | null; audiences: AccountType[]; icon: typeof Crown; features: string[] };
 
 const plans: Plan[] = [
-  { id: "free", name: "Free", monthlyPrice: 0, audiences: ["individual"], icon: CheckCircle2, features: ["Buy and sell in the marketplace", "5 AI advisory requests each month", "Orders, messages and basic market prices"] },
-  { id: "farmer-plus", name: "Farmer Plus", monthlyPrice: 3500, audiences: ["individual"], icon: Crown, features: ["Unlimited AI agricultural advisory", "1 expert consultation credit monthly", "Farm analytics, traceability and promotion discounts"] },
+  { id: "free", name: "Free", monthlyPrice: 0, audiences: ["individual"], icon: CheckCircle2, features: ["Buy and sell in the marketplace", "Source-backed crop planning tools", "Orders, messages and basic market prices"] },
+  { id: "farmer-plus", name: "Farmer Plus", monthlyPrice: 3500, audiences: ["individual"], icon: Crown, features: ["Farm planning and advisory history", "Managed expert escalation when available", "Farm analytics, traceability and promotion discounts"] },
   { id: "buyer-pro", name: "Buyer Pro", monthlyPrice: 7500, audiences: ["individual"], icon: Crown, features: ["Bulk procurement and recurring orders", "Saved suppliers, searches and reports", "Priority support"] },
-  { id: "cooperative", name: "Cooperative", monthlyPrice: 15000, audiences: ["cooperative"], icon: Users, features: ["Member and combined inventory management", "3 expert consultation credits monthly", "Member payout allocation and cooperative reports"] },
-  { id: "organization", name: "Organization", monthlyPrice: 25000, audiences: ["company", "ngo", "institution"], icon: Building2, features: ["5 staff seats and multiple locations", "5 expert consultation credits monthly", "Procurement approvals, invoices and impact reports"] },
-  { id: "enterprise", name: "Government & Enterprise", monthlyPrice: null, audiences: ["company", "ngo", "government", "institution"], icon: FileText, features: ["Custom seats, branches and permissions", "Institutional dashboards and data exports", "10 expert credits, account manager and negotiated terms"] },
+  { id: "cooperative", name: "Cooperative", monthlyPrice: 15000, audiences: ["cooperative"], icon: Users, features: ["Member and combined inventory management", "Managed advisory escalation when available", "Member payout allocation and cooperative reports"] },
+  { id: "organization", name: "Organization", monthlyPrice: 25000, audiences: ["company", "ngo", "institution"], icon: Building2, features: ["5 staff seats and multiple locations", "Managed advisory escalation when available", "Procurement approvals, invoices and impact reports"] },
+  { id: "enterprise", name: "Government & Enterprise", monthlyPrice: null, audiences: ["company", "ngo", "government", "institution"], icon: FileText, features: ["Custom seats, branches and permissions", "Institutional dashboards and data exports", "Account management and negotiated service terms"] },
 ];
 const format = (value: number) => `MWK ${value.toLocaleString()}`;
 

@@ -7,7 +7,7 @@ import MobileBottomNav from "../components/MobileBottomNav";
 
 export default function MainLayout() {
   const { pathname } = useLocation();
-  const previewPrefixes = ["/app/advisory", "/app/analytics", "/app/traceability", "/app/wallet"];
+  const previewPrefixes = ["/app/advisory", "/app/traceability"];
   const isPreviewFeature = previewPrefixes.some(prefix => pathname.startsWith(prefix));
   return (
     <div className="marketplace-app flex min-h-screen flex-col bg-slate-50 pb-16 text-slate-900 transition-colors dark:bg-gray-950 dark:text-gray-100 lg:pb-0">

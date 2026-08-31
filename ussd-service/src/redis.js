@@ -1,8 +1,1 @@
-const { Redis } = require('@upstash/redis');
-
-const url = process.env.UPSTASH_REDIS_REST_URL;
-const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-if (!url || !token) throw new Error('UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are required.');
-
-const redis = new Redis({ url, token });
-module.exports = redis;
+const memory=new Map(),now=()=>Date.now();const fallback={async get(key){const row=memory.get(key);if(!row||row.expires<=now()){memory.delete(key);return null}return row.value},async set(key,value,options={}){memory.set(key,{value,expires:now()+(Number(options.ex)||300)*1000});return"OK"},async ping(){return"memory-fallback"}};let remote=null;try{const{Redis}=require("@upstash/redis");if(process.env.UPSTASH_REDIS_REST_URL&&process.env.UPSTASH_REDIS_REST_TOKEN)remote=new Redis({url:process.env.UPSTASH_REDIS_REST_URL,token:process.env.UPSTASH_REDIS_REST_TOKEN})}catch{}async function call(method,...args){if(remote)try{return await remote[method](...args)}catch(error){console.error(JSON.stringify({level:"error",event:"redis.fallback",message:error instanceof Error?error.message:"redis error"}))}return fallback[method](...args)}module.exports={get:(...args)=>call("get",...args),set:(...args)=>call("set",...args),ping:(...args)=>call("ping",...args),mode:()=>remote?"redis-with-memory-fallback":"memory-fallback"};

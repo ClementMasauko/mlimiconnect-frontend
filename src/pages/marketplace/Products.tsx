@@ -7,6 +7,8 @@ import { useCart } from "../../context/CartContext";
 import { useMarketplace, type Product } from "../../context/MarketplaceContext";
 import { useTranslation } from "react-i18next";
 import type { ProductCategory } from "../../context/CartContext";
+import api,{getApiError}from"../../lib/api";
+import SmartImage from "../../components/SmartImage";
 
 export default function Products() {
   const { t } = useTranslation();
@@ -16,6 +18,8 @@ export default function Products() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [sortBy, setSortBy] = useState("best-match");
   const [visibleCount, setVisibleCount] = useState(12);
+  const [compareIds,setCompareIds]=useState<number[]>([]);
+  const favourite=async(product:Product)=>{try{await api.post("/api/marketplace/favourites/",{listing_id:product.id});setNotice(`${product.name} saved to favourites.`);}catch(e){setNotice(getApiError(e,"Favourite could not be saved."));}};
   
   // Local state to trigger rerender for countdowns every minute
   const [, setTimeTick] = useState(0);
@@ -115,6 +119,7 @@ export default function Products() {
               <Link to="/app/listings/new" className="flex min-h-11 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-center text-sm font-semibold text-slate-800 transition-all hover:bg-slate-100 sm:px-5 dark:border-white/20 dark:bg-white/5 dark:text-white dark:hover:bg-white/15">
                 <Gavel size={16} /> {t("startSelling")}
               </Link>
+              <Link to="/app/marketplace/library" className="flex min-h-11 items-center justify-center rounded-lg border px-4 text-sm font-semibold">Favourites, recent and wanted</Link>
             </div>
           </div>
           <div className="hidden lg:block h-full">
@@ -166,6 +171,7 @@ export default function Products() {
           {notice}
         </div>
       )}
+      {compareIds.length>=2&&<Link to={`/app/marketplace/compare?ids=${compareIds.join(",")}`} className="fixed bottom-5 right-5 z-40 rounded-full bg-blue-700 px-5 py-3 font-bold text-white shadow-xl">Compare {compareIds.length} products</Link>}
 
       {/* Product Listings Grid */}
       {listingsLoading && products.length === 0 && <div className="grid grid-cols-2 gap-2.5 sm:gap-5 lg:grid-cols-3" aria-label="Loading listings">{Array.from({ length: 6 }, (_, index) => <div key={index} className="aspect-[3/4] animate-pulse rounded-xl bg-slate-200 dark:bg-gray-800" />)}</div>}
@@ -178,12 +184,13 @@ export default function Products() {
           return (
             <Card 
               key={product.id} 
+              data-listing-card="true"
               className="product-card group flex h-full flex-col overflow-hidden border border-slate-200 bg-white p-0 transition-all duration-200 hover:shadow-lg dark:border-gray-800 dark:bg-gray-900"
             >
               {/* Product Image & Badges */}
-              <div className="relative aspect-square overflow-hidden bg-slate-100 sm:aspect-[4/3] dark:bg-gray-850">
+              <div data-listing-image="true" className="relative aspect-square overflow-hidden bg-slate-100 sm:aspect-[4/3] dark:bg-gray-850">
                 <Link to={`/app/marketplace/product/${product.id}`} className="block h-full">
-                  <img 
+                  <SmartImage
                     src={product.image} 
                     alt={product.name} 
                     className="h-full w-full object-cover transition duration-500 group-hover:scale-105" 
@@ -211,6 +218,7 @@ export default function Products() {
                 <button 
                   className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-white/95 text-slate-700 shadow-md hover:text-red-500 transition-colors dark:bg-gray-800 dark:text-gray-300" 
                   aria-label={t("saveProduct", { name: product.name })}
+                  onClick={()=>void favourite(product)}
                 >
                   <Heart size={18} />
                 </button>
@@ -224,6 +232,7 @@ export default function Products() {
                 >
                   {product.name}
                 </Link>
+                <label className="mt-2 flex items-center gap-2 text-xs"><input type="checkbox" checked={compareIds.includes(product.id)} onChange={e=>setCompareIds(ids=>e.target.checked?[...ids,product.id].slice(-4):ids.filter(id=>id!==product.id))}/>Compare</label>
                 <div className="product-secondary mt-1 flex items-center gap-2">
                   <span className="text-xs text-slate-500 font-medium capitalize">{t("condition")}: <strong className="text-slate-800 dark:text-slate-200">{product.condition?.replace("-", " ") || t("new")}</strong></span>
                 </div>

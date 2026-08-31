@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { Mail, Phone, ArrowLeft, ShieldCheck } from "lucide-react";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
-import api from "../../lib/api";
+import api, { getApiError } from "../../lib/api";
 import AuthShell from "../../components/AuthShell";
 
 // ── Zod Schemas ────────────────────────────────────────────────────────
@@ -67,7 +67,7 @@ export default function ForgotPassword() {
     setLoading(true);
 
     try {
-      const payload: any = {
+      const payload: { method: "email" | "phone"; email?: string; phone?: string } = {
         method: data.method,
       };
 
@@ -84,11 +84,8 @@ export default function ForgotPassword() {
         response.data?.message ||
           `Reset code sent to your ${data.method === "email" ? "email" : "phone"}`
       );
-    } catch (err: any) {
-      const detail =
-        err.response?.data?.detail ||
-        err.response?.data?.non_field_errors?.[0] ||
-        "Failed to send reset code. Please check the details and try again.";
+    } catch (err: unknown) {
+      const detail = getApiError(err, "Failed to send reset code. Please check the details and try again.");
 
       setServerMessage(detail);
     } finally {

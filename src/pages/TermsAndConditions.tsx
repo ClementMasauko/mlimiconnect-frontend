@@ -33,7 +33,7 @@ export default function TermsAndConditions() {
             <ul className="list-disc pl-6 space-y-3">
               <li>All users must register with accurate information.</li>
               <li>Farmers and buyers may undergo verification (ID, farm photos, business docs).</li>
-              <li>Verified status grants higher trust and access to escrow, bulk orders, etc.</li>
+              <li>Verified status may provide access to additional marketplace capabilities when those capabilities are enabled.</li>
               <li>You are responsible for maintaining the confidentiality of your PIN and account.</li>
             </ul>
 
@@ -41,14 +41,14 @@ export default function TermsAndConditions() {
               <FileText className="text-purple-600" size={28} /> 3. Platform Services & Fees
             </h2>
             <p>
-              MlimiConnect provides a marketplace, advisory tools, traceability, and escrow payment system. We charge a commission of 3.5% on successful transactions (subject to change with 30 days' notice).
+              MlimiConnect is developing marketplace, advisory, traceability and payment-tracking services. Payment settlement is available only after integration with an approved provider. Where transaction charging is enabled, the applicable fee is shown before an order is confirmed.
             </p>
 
             <h2 className="text-3xl font-bold mt-12 mb-6 flex items-center gap-3">
               <Calendar className="text-amber-600" size={28} /> 4. Dispute Resolution & Escrow
             </h2>
             <p>
-              Buyers have 24 hours after delivery confirmation to file a dispute. Disputes are reviewed by our moderation team. Escrow funds are released only after mutual agreement or admin decision.
+              The applicable delivery-confirmation and dispute window will be shown during checkout when live transactions are enabled. Payment providers, refund rules and dispute procedures will be identified before a user commits to payment. Prototype screens do not create an escrow arrangement.
             </p>
 
             <div className="mt-16 p-6 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700">

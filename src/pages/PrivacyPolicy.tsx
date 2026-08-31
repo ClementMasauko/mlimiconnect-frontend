@@ -20,7 +20,7 @@ export default function PrivacyPolicy() {
 
         <Card className="p-8 md:p-12 prose dark:prose-invert max-w-none">
           <p className="text-lg leading-relaxed mb-8">
-            MlimiConnect ("we", "us", or "our") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application, website, USSD service (*1399#), and related services (collectively, the "Services").
+            MlimiConnect ("we", "us", or "our") is committed to protecting your privacy. This Privacy Policy explains how we plan to collect, use, disclose, and safeguard information when you use our website, mobile application, configured USSD channels, and related services (collectively, the "Services"). Features described here apply only when they are enabled and available.
           </p>
 
           <h2 className="text-3xl font-bold mt-12 mb-6 flex items-center gap-3">
@@ -28,10 +28,13 @@ export default function PrivacyPolicy() {
           </h2>
           <ul className="list-disc pl-6 space-y-3 mb-8">
             <li><strong>Personal Information:</strong> Name, phone number, email, physical address, National ID/passport (for verification), farm location coordinates (with consent), profile photo, business registration documents.</li>
-            <li><strong>Financial Information:</strong> Mobile money details (encrypted), wallet balance, transaction history (stored securely via escrow partners).</li>
+            <li><strong>Financial Information:</strong> Payment references, wallet balances and transaction history when payment services are enabled. Licensed payment providers process payment credentials under their own terms.</li>
             <li><strong>Usage & Device Data:</strong> IP address, browser type, device ID, app version, pages visited, time spent, crash logs.</li>
             <li><strong>Location Data:</strong> Approximate location (via IP or device) for weather/pest alerts, precise GPS (only with explicit consent for traceability).</li>
             <li><strong>Voice Data:</strong> Audio recordings from voice input (Chichewa recognition) are processed locally or deleted immediately after transcription.</li>
+            <li><strong>Crop photographs:</strong> When you explicitly consent to automated crop-health analysis, MlimiConnect removes embedded metadata and sends the prepared photograph to Kindwise Crop.health. MlimiConnect stores the resulting possibilities, confidence scores, consent record and a non-reversible image fingerprint, but does not retain the submitted photograph in diagnosis history.</li>
+            <li><strong>Address searches:</strong> When you press Search in a pickup or delivery form, the place text is sent through the MlimiConnect backend to the OpenStreetMap Nominatim service. Do not enter names, phone numbers or confidential information. Confirmed labels and coordinates may be stored with the delivery.</li>
+            <li><strong>Error diagnostics:</strong> When production error reporting is enabled, MlimiConnect sends privacy-filtered technical error details to Sentry. Request bodies, cookies, account identity, passwords, PINs, messages, email addresses, full phone numbers and URL query strings are removed or redacted before transmission.</li>
           </ul>
 
           <h2 className="text-3xl font-bold mt-12 mb-6 flex items-center gap-3">
@@ -40,7 +43,7 @@ export default function PrivacyPolicy() {
           <ul className="list-disc pl-6 space-y-3 mb-8">
             <li>To provide, maintain, and improve the Services (marketplace, advisory, traceability, payments)</li>
             <li>To verify identity and prevent fraud (KYC for farmers/buyers)</li>
-            <li>To process transactions and release escrow funds</li>
+            <li>To initiate and track transactions through approved payment providers when payment services are enabled</li>
             <li>To send order updates, price alerts, weather notifications (SMS/push)</li>
             <li>To generate anonymized analytics and improve platform performance</li>
             <li>To comply with legal obligations in Malawi (Data Protection Act, financial regulations)</li>
@@ -55,6 +58,9 @@ export default function PrivacyPolicy() {
           <ul className="list-disc pl-6 space-y-3 mb-8">
             <li>With verified buyers/farmers for order fulfillment (name, phone, delivery location)</li>
             <li>With payment processors (Airtel, TNM) for transaction processing</li>
+            <li>With Kindwise Crop.health only when you explicitly request automated crop-health analysis and consent to the transfer. Kindwise acts as an external image-analysis provider and may temporarily retain provider-side identification data under its own privacy and retention terms.</li>
+            <li>With the OpenStreetMap Foundation public Nominatim service when you explicitly submit a location search. Search results are cached to reduce repeated external requests and displayed with OpenStreetMap attribution.</li>
+            <li>With Sentry when production error reporting is enabled, solely for application reliability and incident investigation. Session replay is not enabled and MlimiConnect configures both frontend and backend SDKs not to send default personally identifiable information.</li>
             <li>With government authorities when required by law</li>
             <li>In anonymized form for research or impact reporting</li>
           </ul>
@@ -63,10 +69,10 @@ export default function PrivacyPolicy() {
             <Calendar className="text-amber-600" size={28} /> 4. Data Retention & Security
           </h2>
           <ul className="list-disc pl-6 space-y-3 mb-8">
-            <li>We keep personal data only as long as necessary (account active + 7 years for financial records)</li>
-            <li>Data is encrypted in transit (TLS 1.3) and at rest (AES-256)</li>
-            <li>Access is strictly role-based (least privilege principle)</li>
-            <li>Regular security audits and penetration testing</li>
+            <li>We retain personal data only as long as necessary for the stated purpose and applicable legal obligations</li>
+            <li>Production services use encrypted network connections and provider-appropriate storage controls</li>
+            <li>Access to production data is restricted according to operational roles</li>
+            <li>Security controls are reviewed as the service moves through pilot and production readiness</li>
           </ul>
 
           <h2 className="text-3xl font-bold mt-12 mb-6 flex items-center gap-3">
@@ -76,13 +82,14 @@ export default function PrivacyPolicy() {
             <li><strong>Access:</strong> Request a copy of your data</li>
             <li><strong>Correction:</strong> Update inaccurate information</li>
             <li><strong>Deletion:</strong> Request account deletion (subject to legal retention)</li>
+            <li><strong>Crop diagnosis deletion:</strong> Delete a diagnosis from its history. MlimiConnect immediately erases the local result and requests provider-side deletion; if Kindwise is temporarily unavailable, the record is marked for deletion retry.</li>
             <li><strong>Opt-out:</strong> Unsubscribe from marketing SMS/emails</li>
-            <li><strong>Complaints:</strong> Contact the Malawi Communications Regulatory Authority (MACRA) if needed</li>
+            <li><strong>Complaints:</strong> Contact us first so that we can investigate, without limiting your right to approach the appropriate Malawi authority</li>
           </ul>
 
           <div className="mt-16 p-8 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 text-center">
             <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-6">
-              Questions about privacy? Reach out to our Data Protection Officer:
+              Questions about privacy? Contact the MlimiConnect privacy team:
             </p>
             <a
               href="mailto:privacy@mlimiconnect.mw"

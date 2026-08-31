@@ -45,7 +45,7 @@ export default function BecomeFarmer() {
 
   // Web Speech API setup
   useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = SpeechRecognition ? new SpeechRecognition() : null;
 
     if (!recognition) {
@@ -112,7 +112,8 @@ export default function BecomeFarmer() {
     toast.loading("Listening (Chichewa/English)...", { id: "voice-toast-farmer" });
 
     try {
-      const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) throw new Error("Speech recognition is unavailable.");
       const rec = new SpeechRecognition();
       rec.lang = "ny-MW";
       rec.start();
@@ -130,7 +131,8 @@ export default function BecomeFarmer() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLInputElement>
   ) => {
-    const { name, value, type, checked } = e.target as any;
+    const { name, value, type } = e.target;
+    const checked = e.target instanceof HTMLInputElement ? e.target.checked : false;
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,

@@ -19,6 +19,7 @@ import {
   ShieldCheck,
   ChevronDown,
   X,
+  Bird,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { useTranslation } from "react-i18next";
@@ -145,6 +146,11 @@ export default function Sidebar() {
                   label={t("traceability")}
                   badge={notificationCounts.pendingDisputes}
                   badgeColor="bg-amber-500"
+                />
+                <SidebarLink
+                  to="/app/livestock"
+                  icon={<Bird className="w-5 h-5" />}
+                  label="Livestock & poultry"
                 />
               </AccordionContent>
             </Accordion.Item>

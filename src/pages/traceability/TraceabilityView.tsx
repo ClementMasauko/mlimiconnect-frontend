@@ -1,244 +1,33 @@
-// src/pages/traceability/TraceabilityOverview.tsx (updated with QR generator for farmers)
-import React, { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Download, Leaf, QrCode, Search, ShieldCheck, X } from "lucide-react";
+import { QRCodeCanvas } from "qrcode.react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import Card from "../../components/ui/Card";
+import api, { getApiError } from "../../lib/api";
+import { publicTraceabilityUrl } from "../../lib/traceability";
 import Button from "../../components/ui/Button";
-import { QRCodeCanvas } from "qrcode.react";
-import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle, Clock, Truck, Sprout, Search, QrCode, ShieldCheck, Leaf, Download, X } from "lucide-react";
+import Card from "../../components/ui/Card";
 
-const mockProducts = [
-  {
-    id: 1,
-    name: "Yellow Maize (50kg)",
-    farmer: "Chikondi Phiri",
-    batch: "BATCH-MZ-2025-06",
-    status: "In Transit",
-    completedStages: 4,
-    totalStages: 7,
-    lastUpdate: "2025-06-12",
-    qrUrl: "http://localhost:5173/verify?product=BATCH-MZ-2025-06", // Mock QR URL
-  },
-  {
-    id: 2,
-    name: "Fresh Tomatoes (10kg crate)",
-    farmer: "Mary Banda",
-    batch: "BATCH-TM-2025-06",
-    status: "Quality Check",
-    completedStages: 3,
-    totalStages: 7,
-    lastUpdate: "2025-06-10",
-    qrUrl: "http://localhost:5173/verify?product=BATCH-TM-2025-06",
-  },
-];
+type Batch = { id: number; batch_code: string; product: string; quantity: string; status: string; created_at: string; updated_at: string; events: Array<{id:number}>; integrity: { valid: boolean; event_count: number } };
 
 export default function TraceabilityOverview() {
   const { user } = useAuth();
   const isFarmer = user?.can_sell === true || user?.user_type === "farmer";
+  const [batches, setBatches] = useState<Batch[]>([]);
+  const [query, setQuery] = useState("");
+  const [selected, setSelected] = useState<Batch | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showQrModal, setShowQrModal] = useState<number | null>(null);
+  useEffect(() => { let active = true; api.get<Batch[] | {results: Batch[]}>("/api/traceability/batches/").then(({data}) => { if (active) setBatches(Array.isArray(data) ? data : data.results); }).catch(e => { if (active) setError(getApiError(e, "Traceability batches could not be loaded.")); }).finally(() => { if (active) setLoading(false); }); return () => { active = false; }; }, []);
+  const filtered = useMemo(() => { const needle = query.trim().toLowerCase(); return needle ? batches.filter(item => `${item.product} ${item.batch_code} ${item.status}`.toLowerCase().includes(needle)) : batches; }, [batches, query]);
+  const downloadQr = () => { if (!selected) return; const canvas = document.getElementById("batch-qr") as HTMLCanvasElement | null; if (!canvas) return; const link = document.createElement("a"); link.href = canvas.toDataURL("image/png"); link.download = `${selected.batch_code}-qr.png`; link.click(); };
 
-  const filteredProducts = mockProducts.filter(p =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.batch.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const downloadQR = (productId: number) => {
-    const canvas = document.getElementById(`qr-canvas-${productId}`) as HTMLCanvasElement;
-    if (canvas) {
-      const pngUrl = canvas.toDataURL("image/png");
-      const downloadLink = document.createElement("a");
-      downloadLink.href = pngUrl;
-      downloadLink.download = `qr_${productId}.png`;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8"
-        >
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                <ShieldCheck className="text-green-600" size={32} /> Traceability
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">
-                Track every step of your produce — from seed to sale. Secured on Polygon blockchain.
-              </p>
-            </div>
-
-            {isFarmer && (
-              <Link to="/app/traceability/batch/new">
-                <Button className="flex items-center gap-2">
-                  <Leaf size={16} /> Register New Batch
-                </Button>
-              </Link>
-            )}
-          </div>
-        </motion.div>
-
-        <Card className="p-4 mb-8">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-            <input
-              type="text"
-              placeholder="Search by product name, ID or batch..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:ring-2 focus:ring-green-500"
-            />
-          </div>
-        </Card>
-
-        <AnimatePresence>
-          <div className="space-y-6">
-            {filteredProducts.length === 0 ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                <Card className="p-12 text-center">
-                  <QrCode className="mx-auto text-gray-400 mb-4" size={64} />
-                  <h2 className="text-2xl font-semibold mb-3">No traceable products found</h2>
-                  <p className="text-gray-600 dark:text-gray-400 mb-6">
-                    {isFarmer ? "Register your first batch to start tracking." : "Scan a QR code or search for a product."}
-                  </p>
-                  {isFarmer && (
-                    <Link to="/app/traceability/batch/new">
-                      <Button>Register Batch</Button>
-                    </Link>
-                  )}
-                </Card>
-              </motion.div>
-            ) : (
-              filteredProducts.map(product => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <Card className="p-6 hover:shadow-lg transition-all duration-300 hover:border-green-500">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                      <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-                          <Leaf className="text-green-600" size={28} />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                            {product.name}
-                          </h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                            Batch: {product.batch} • Farmer: {product.farmer}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          product.status === "Delivered" ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" :
-                          product.status === "In Transit" ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400" :
-                          "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
-                        }`}>
-                          {product.status}
-                        </span>
-                        <span className="text-sm text-gray-500">
-                          {product.completedStages}/{product.totalStages} stages
-                        </span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setShowQrModal(product.id)}
-                          className="flex items-center gap-2"
-                        >
-                          <QrCode size={16} /> Generate QR
-                        </Button>
-                      </div>
-                    </div>
-                  </Card>
-                </motion.div>
-              ))
-            )}
-          </div>
-        </AnimatePresence>
-
-        {/* QR Modal */}
-        <AnimatePresence>
-          {showQrModal && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-            >
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                transition={{ type: "spring", damping: 15 }}
-                className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-sm w-full"
-              >
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-bold">QR Code for Product</h2>
-                  <button onClick={() => setShowQrModal(null)} className="text-gray-500 hover:text-gray-700">
-                    <X size={24} />
-                  </button>
-                </div>
-                <div className="flex justify-center mb-6">
-                  <QRCodeCanvas
-  id={`qr-canvas-${showQrModal}`}
-  value={mockProducts.find(p => p.id === showQrModal)?.qrUrl || ""}
-  size={256}
-  className="p-4 bg-white rounded-lg shadow-inner"
-/>
-
-                </div>
-                <Button
-                  onClick={() => downloadQR(showQrModal)}
-                  className="w-full flex items-center justify-center gap-2"
-                >
-                  <Download size={16} /> Download QR
-                </Button>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Public Scanner CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="mt-12"
-        >
-          <Card className="p-8 text-center bg-gradient-to-r from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/30 border border-green-200 dark:border-green-800">
-            <QrCode className="mx-auto text-green-600 mb-4" size={64} />
-            <h2 className="text-2xl font-bold mb-3 text-gray-900 dark:text-white">
-              Verify Any Product
-            </h2>
-            <p className="text-gray-700 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
-              Scan a QR code on packaging or enter product ID to view full blockchain-verified journey.
-            </p>
-            <Link to="/app/traceability/verify">
-              <Button size="lg" className="flex items-center gap-2 mx-auto">
-                <QrCode size={18} /> Verify Product Now
-              </Button>
-            </Link>
-          </Card>
-        </motion.div>
-      </div>
-    </div>
-  );
+  return <main className="min-h-screen bg-slate-50 px-4 py-8 dark:bg-slate-950 sm:px-6"><div className="mx-auto max-w-7xl">
+    <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><h1 className="flex items-center gap-3 text-3xl font-black"><ShieldCheck className="text-emerald-700"/>Traceability batches</h1><p className="mt-2 text-slate-600 dark:text-slate-300">Persisted, integrity-checked records from registration through movement and delivery.</p></div>{isFarmer && <Link to="/app/traceability/batch/new"><Button><Leaf className="mr-2" size={17}/>Register new batch</Button></Link>}</header>
+    <Card className="mt-7 p-4"><label className="sr-only" htmlFor="batch-search">Search traceability batches</label><div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/><input id="batch-search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search by product, batch code or status" className="w-full rounded-lg border border-slate-300 bg-white py-3 pl-11 pr-4 dark:border-slate-700 dark:bg-slate-900"/></div></Card>
+    {error && <p role="alert" className="mt-5 rounded-xl bg-red-50 p-4 text-red-800">{error} <button className="ml-2 font-bold underline" onClick={() => window.location.reload()}>Try again</button></p>}
+    {loading ? <div role="status" className="mt-8 grid gap-4" aria-label="Loading traceability batches">{[1,2,3].map(i => <div key={i} className="h-28 animate-pulse rounded-2xl bg-slate-200 dark:bg-slate-800"/>)}</div> : !error && filtered.length === 0 ? <Card className="mt-8 p-12 text-center"><QrCode className="mx-auto text-slate-400" size={54}/><h2 className="mt-4 text-xl font-bold">{query ? "No matching batches" : "No traceability batches yet"}</h2><p className="mt-2 text-slate-600 dark:text-slate-300">{query ? "Try another product name or batch code." : isFarmer ? "Register your first batch to begin its event history." : "Ask the producer for a public batch code to verify."}</p>{isFarmer && !query && <Link to="/app/traceability/batch/new" className={`${"mt-5 inline-flex rounded-lg bg-emerald-700 px-5 py-3 font-bold text-white"}`}>Register a batch</Link>}</Card> : <div className="mt-7 grid gap-4">{filtered.map(batch => <Card key={batch.id} className="p-5"><div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center"><div className="flex gap-4"><div className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950"><Leaf/></div><div><h2 className="text-lg font-black">{batch.product}</h2><p className="mt-1 text-sm text-slate-500">{batch.batch_code} · {batch.quantity}</p><p className="mt-2 text-sm"><span className={batch.integrity.valid ? "font-bold text-emerald-700" : "font-bold text-red-700"}>{batch.integrity.valid ? "Integrity verified" : "Integrity review required"}</span> · {batch.integrity.event_count} events · {batch.status}</p></div></div><div className="flex flex-wrap gap-2"><Link to={`/app/traceability/batch/${batch.id}`} className="inline-flex min-h-10 items-center rounded-lg border border-emerald-700 px-4 py-2 font-bold text-emerald-700">View history</Link><Button size="sm" onClick={() => setSelected(batch)}><QrCode className="mr-2" size={16}/>QR code</Button></div></div></Card>)}</div>}
+    <Card className="mt-10 bg-emerald-50 p-8 text-center dark:bg-emerald-950/30"><QrCode className="mx-auto text-emerald-700" size={48}/><h2 className="mt-3 text-2xl font-black">Verify a public batch</h2><p className="mx-auto mt-2 max-w-2xl text-slate-600 dark:text-slate-300">Scan a packaging QR code or enter its batch code to see the public, integrity-checked journey.</p><Link to="/app/traceability/verify" className="mt-5 inline-flex rounded-lg bg-emerald-700 px-5 py-3 font-bold text-white">Verify now</Link></Card>
+  </div>{selected && <div role="dialog" aria-modal="true" aria-labelledby="qr-title" className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4"><div className="w-full max-w-sm rounded-2xl bg-white p-7 text-slate-950"><div className="flex justify-between"><div><h2 id="qr-title" className="text-xl font-black">{selected.product}</h2><p className="text-sm text-slate-500">{selected.batch_code}</p></div><button aria-label="Close QR code" onClick={() => setSelected(null)}><X/></button></div><div className="mt-5 flex justify-center"><QRCodeCanvas id="batch-qr" value={publicTraceabilityUrl(selected.batch_code)} size={240}/></div><Button className="mt-6 w-full" onClick={downloadQr}><Download className="mr-2" size={17}/>Download QR code</Button></div></div>}</main>;
 }

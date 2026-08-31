@@ -1,0 +1,3 @@
+const test=require('node:test'),assert=require('node:assert/strict');const{createUSSDHandler}=require('../src/handlers');
+function store(){const values=new Map();return{get:async key=>values.get(key)||null,set:async(key,value)=>{values.set(key,value)}}}
+test('handles 250 concurrent independent sessions without data leakage',async()=>{const handler=createUSSDHandler({store:store(),authenticate:async()=>true});const calls=Array.from({length:250},(_,i)=>handler({sessionId:`load-${i}`,phoneNumber:`+265999${String(i).padStart(6,'0')}`,text:''}));const responses=await Promise.all(calls);assert.equal(responses.length,250);assert.ok(responses.every(value=>value.startsWith('CON Welcome')))});

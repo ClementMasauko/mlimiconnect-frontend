@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { Lock, ShieldCheck, ArrowLeft, CheckCircle } from "lucide-react";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
-import api from "../../lib/api";
+import api, { getApiError } from "../../lib/api";
 import AuthShell from "../../components/AuthShell";
 
 // ── Zod Schemas ────────────────────────────────────────────────────────
@@ -67,11 +67,8 @@ export default function ResetPassword() {
       });
 
       setStep("reset");
-    } catch (err: any) {
-      setServerError(
-        err.response?.data?.detail ||
-          "Invalid or expired code. Please request a new one."
-      );
+    } catch (err: unknown) {
+      setServerError(getApiError(err, "Invalid or expired code. Please request a new one."));
     } finally {
       setLoading(false);
     }
@@ -89,11 +86,8 @@ export default function ResetPassword() {
       });
 
       setSuccess(true);
-    } catch (err: any) {
-      setServerError(
-        err.response?.data?.detail ||
-          "Failed to reset password. The code may have expired."
-      );
+    } catch (err: unknown) {
+      setServerError(getApiError(err, "Failed to reset password. The code may have expired."));
     } finally {
       setLoading(false);
     }

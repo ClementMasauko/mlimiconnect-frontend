@@ -15,6 +15,14 @@ test('USSD flow authenticates only through the verifier', async () => {
   assert.match(await handler({ sessionId: 'a', phoneNumber: '0999000000', text: '1*1234' }), /Welcome! Choose action/);
 });
 
+test('passes the provider correlation ID to backend authentication', async () => {
+  let observed;
+  const handler = createUSSDHandler({ store: memoryStore(), authenticate: async (input) => { observed = input.correlationId; return true; } });
+  await handler({ sessionId: 'correlated', phoneNumber: '0999000000', text: '1', correlationId: 'trace-123' });
+  await handler({ sessionId: 'correlated', phoneNumber: '0999000000', text: '1*1234', correlationId: 'trace-123' });
+  assert.equal(observed, 'trace-123');
+});
+
 test('USSD locks the session after repeated invalid PIN attempts', async () => {
   const handler = createUSSDHandler({ store: memoryStore(), authenticate: async () => false, now: () => 0 });
   await handler({ sessionId: 'b', phoneNumber: '0999000000', text: '1' });
@@ -59,7 +67,7 @@ test('complete Chichewa advisory journey stays in Chichewa', async () => {
   assert.match(await handler({ sessionId: 'ny', phoneNumber: '0999000000', text: '2*1234' }), /Mwalandiridwa! Sankhani/);
   assert.match(await handler({ sessionId: 'ny', phoneNumber: '0999000000', text: '2*1234*2' }), /^CON Menu ya Upangiri/);
   assert.match(await handler({ sessionId: 'ny', phoneNumber: '0999000000', text: '2*1234*2*1' }), /^CON Lowetsani boma lanu/);
-  assert.equal(await handler({ sessionId: 'ny', phoneNumber: '0999000000', text: '2*1234*2*1*Lilongwe' }), 'END Nyengo ya Lilongwe sikupezeka panopa.');
+  assert.equal(await handler({ sessionId: 'ny', phoneNumber: '0999000000', text: '2*1234*2*1*Lilongwe' }), 'END Nyengo yatanganidwa.');
 });
 
 test('invalid advisory choice stays in the advisory menu', async () => {

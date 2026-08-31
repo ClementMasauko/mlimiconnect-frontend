@@ -40,7 +40,7 @@ export default function MarketForecast() {
             <TrendingUp className="text-green-600" size={32} /> Market Forecast
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Price trends and predictions for major crops in Malawi
+            Demonstration forecast layout — these values are not live observations or validated predictions
           </p>
         </div>
 
@@ -63,7 +63,7 @@ export default function MarketForecast() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <Card className="lg:col-span-2 p-6">
             <h2 className="text-2xl font-semibold mb-6 flex items-center gap-3">
-              <BarChart3 className="text-green-600" size={24} /> {crop} Price Forecast
+              <BarChart3 className="text-green-600" size={24} /> Example {crop} price forecast
             </h2>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">

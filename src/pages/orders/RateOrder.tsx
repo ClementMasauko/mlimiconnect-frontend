@@ -3,7 +3,8 @@ import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
-import { Star, Send, X } from "lucide-react";
+import { Star, Send } from "lucide-react";
+import api, { getApiError } from "../../lib/api";
 
 export default function RateOrder() {
   const { id } = useParams();
@@ -11,11 +12,19 @@ export default function RateOrder() {
 
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-  const submitReview = () => {
-    // POST /api/marketplace/orders/{id}/review/ { rating, comment }
-    alert("Review submitted! (Mock)");
-    navigate(`/app/orders/${id}`);
+  const submitReview = async () => {
+    if (!id || !rating) return;
+    setSubmitting(true); setError("");
+    try {
+      await api.post("/api/marketplace/order-reviews/", { order: Number(id), rating, comment: comment.trim() });
+      navigate(`/app/orders/${id}`, { replace: true });
+    } catch (requestError) {
+      setError(getApiError(requestError, "The review could not be submitted."));
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -23,6 +32,7 @@ export default function RateOrder() {
       <div className="max-w-md mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center">Rate Order #{id}</h1>
         <Card className="p-6">
+          {error && <p role="alert" className="mb-5 rounded-lg bg-red-50 p-3 text-sm font-medium text-red-700">{error}</p>}
           <div className="space-y-6">
             <div className="text-center">
               <h2 className="text-xl font-semibold mb-4">How was your experience?</h2>
@@ -57,9 +67,9 @@ export default function RateOrder() {
               variant="primary"
               className="w-full py-6 text-lg flex items-center justify-center gap-2"
               onClick={submitReview}
-              disabled={!rating}
+              disabled={!rating || submitting}
             >
-              <Send size={18} /> Submit Review
+              <Send size={18} /> {submitting ? "Submitting..." : "Submit Review"}
             </Button>
           </div>
         </Card>

@@ -1,0 +1,19 @@
+name: External uptime monitor
+on:
+  schedule: [{cron: "*/10 * * * *"}]
+  workflow_dispatch:
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe public services
+        env: {API_HEALTH_URL: "${{ vars.API_HEALTH_URL }}", FRONTEND_STATUS_URL: "${{ vars.FRONTEND_STATUS_URL }}", USSD_HEALTH_URL: "${{ vars.USSD_HEALTH_URL }}"}
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --max-time 15 "$API_HEALTH_URL"
+          curl --fail --silent --show-error --max-time 15 "$FRONTEND_STATUS_URL"
+          if [ -n "${USSD_HEALTH_URL:-}" ]; then curl --fail --silent --show-error --max-time 15 "$USSD_HEALTH_URL"; fi
+      - name: Alert on failure
+        if: failure()
+        env: {ALERT_WEBHOOK_URL: "${{ secrets.ALERT_WEBHOOK_URL }}"}
+        run: curl --fail --silent --show-error -X POST -H 'Content-Type: application/json' --data '{"title":"MlimiConnect uptime probe failed","run":"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' "$ALERT_WEBHOOK_URL"

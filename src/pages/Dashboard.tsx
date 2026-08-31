@@ -20,6 +20,7 @@ import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import { useAuth } from "../context/AuthContext";
 import GettingStartedChecklist from "../components/GettingStartedChecklist";
+import api, { getApiError } from "../lib/api";
 
 // Mock stats
 const mockStats = {
@@ -100,11 +101,22 @@ interface DashboardStats {
 export default function Dashboard() {
   const { user, isLoading: authLoading } = useAuth();
 
-  const [stats] = useState<DashboardStats>(mockStats);
-  const [recentActivity] = useState(mockRecentActivity);
-  const [loading] = useState(false); // mock — no real loading
+  const demoEnabled = import.meta.env.VITE_DEMO_DATA_ENABLED === "true";
+  const [stats, setStats] = useState<DashboardStats>(demoEnabled ? mockStats : {});
+  const [recentActivity, setRecentActivity] = useState(demoEnabled ? mockRecentActivity : []);
+  const [loading, setLoading] = useState(!demoEnabled);
+  const [loadError, setLoadError] = useState("");
 
   const isFarmer = user?.can_sell === true || user?.user_type === "farmer" || user?.user_type === "admin";
+
+  useEffect(() => {
+    if (demoEnabled) return;
+    api.get("/api/dashboard/overview/").then(({ data }) => {
+      const summary = data.stats ?? {};
+      setStats({ activeListings: summary.activeListings ?? 0, totalOrders: summary.ordersPlaced ?? 0, totalRevenue: Number(summary.revenue ?? 0), pendingOrders: 0, unreadMessages: summary.unreadMessages ?? 0, savedItems: 0, totalProducts: summary.sales ?? 0 });
+      setRecentActivity((data.recentActivity ?? []).map((item: { id: number; status: string; total: string | number; created_at: string }) => ({ id: item.id, type: "order", title: `Order #${item.id}`, description: `Marketplace order · ${item.status.replaceAll("_", " ")}`, amount: `MWK ${Number(item.total).toLocaleString()}`, status: item.status, time: new Date(item.created_at).toLocaleString(), icon: Package, color: "text-green-700" })));
+    }).catch(requestError => setLoadError(getApiError(requestError, "Dashboard information could not be loaded."))).finally(() => setLoading(false));
+  }, [demoEnabled]);
 
   // ────────────────────────────────────────────────────────────────
   // COMMENTED OUT — no "Please sign in" screen
@@ -130,7 +142,7 @@ export default function Dashboard() {
   }
   */
 
-  if (authLoading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
         <div className="text-center">
@@ -144,6 +156,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
+        {loadError && <p role="alert" className="mb-5 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">{loadError}</p>}
         {/* Welcome Section */}
         <div className="mb-8 md:mb-10">
           <div className="flex items-center gap-3 mb-3">
@@ -379,7 +392,7 @@ function QuickAction({
 }: {
   to: string;
   label: string;
-  icon: any;
+  icon: React.ElementType;
   primary?: boolean;
   badge?: number;
 }) {
@@ -495,7 +508,7 @@ export default function Dashboard() {
         const res = await api.get("/api/dashboard/overview/");
         const summary = res.data?.stats || {};
         setStats({ activeListings: summary.activeListings, totalOrders: isFarmer ? summary.sales : summary.ordersPlaced, totalRevenue: summary.revenue, pendingOrders: summary.pendingOrders || 0, unreadMessages: summary.unreadMessages });
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Dashboard data fetch failed:", err);
         setError("Could not load your dashboard data right now.");
       } finally {
@@ -735,7 +748,7 @@ function QuickAction({
 }: {
   to: string;
   label: string;
-  icon: any;
+  icon: React.ElementType;
   primary?: boolean;
   badge?: number;
 }) {

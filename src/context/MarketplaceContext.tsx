@@ -43,6 +43,14 @@ export interface Product {
   isClosed?: boolean;
   winner?: string;
   condition?: "new" | "used-excellent" | "used-good" | "used-fair";
+  unit?: "kg"|"tonne"|"bag"|"crate"|"litre"|"item";
+  pack_size?: number;
+  minimum_order?: number;
+  harvest_date?: string; available_from?: string; expiry_date?: string;
+  grade?: string; variety?: string; moisture_content?: number|null; certification?: string;
+  is_organic?: boolean; storage_conditions?: string; delivery_radius_km?: number|null;
+  allow_partial_fulfilment?: boolean; normalized_price?: string|null; seller_verified?: boolean;
+  wholesale_tiers?: Array<{minimum_quantity:number;price_per_unit:string}>;
 }
 
 export interface FarmerProfile {
@@ -77,7 +85,7 @@ const MarketplaceContext = createContext<MarketplaceContextValue | undefined>(un
 const MARKETPLACE_STORAGE_KEY = "mc_marketplace_products";
 const REVIEWS_STORAGE_KEY = "mc_marketplace_reviews";
 const demoDataEnabled = import.meta.env.VITE_DEMO_DATA_ENABLED === "true";
-const normalizeProducts = (items: Array<Product & { price: string | number }>) => items.map(product => ({ ...product, price: Number(product.price), image: product.image || "/logo.png" }));
+const normalizeProducts = (items: Array<Product & { price: string | number }>) => items.map(product => ({ ...product, price: Number(product.price), pack_size:Number(product.pack_size||1), minimum_order:Number(product.minimum_order||1), moisture_content:product.moisture_content==null?null:Number(product.moisture_content), image: product.image || "/logo.png" }));
 
 // Default Initial Farmers
 const DEFAULT_FARMERS: Record<string, FarmerProfile> = {

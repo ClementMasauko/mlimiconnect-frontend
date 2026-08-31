@@ -6,6 +6,7 @@ import Button from "../../components/ui/Button";
 import { useCart } from "../../context/CartContext";
 import { useMarketplace } from "../../context/MarketplaceContext";
 import { useAuth } from "../../context/AuthContext";
+import api from "../../lib/api";
 
 export default function ProductDetails() {
   const { id } = useParams();
@@ -15,6 +16,7 @@ export default function ProductDetails() {
   
   const product = products.find((p) => p.id === Number(id));
   const productReviews = reviews.filter((r) => r.productName === product?.name);
+  useEffect(()=>{if(product?.id)void api.post("/api/marketplace/recently-viewed/",{listing_id:product.id}).catch(()=>undefined);},[product?.id]);
 
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);

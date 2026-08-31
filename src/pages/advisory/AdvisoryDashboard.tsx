@@ -4,9 +4,8 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
-import { Leaf, CloudRain, TrendingUp, Bug, Globe, Search, Plus, ShieldCheck, Sparkles, UserRound } from "lucide-react";
+import { Leaf, CloudRain, TrendingUp, Bug, Globe, Search, Plus, ShieldCheck, BookOpenCheck, UserRound } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { getAdvisoryAccess } from "../../lib/access";
 
 const mockAdvisories = [
   {
@@ -46,7 +45,6 @@ const mockAdvisories = [
 export default function AdvisoryDashboard() {
   const { user } = useAuth();
   const isFarmer = user?.can_sell === true || user?.user_type === "farmer";
-  const access = getAdvisoryAccess(user);
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredAdvisories = mockAdvisories.filter(a =>
@@ -82,8 +80,8 @@ export default function AdvisoryDashboard() {
         </motion.div>
 
         <div className="mb-6 grid gap-3 sm:grid-cols-2">
-          <Card className="flex items-start gap-3 border-green-200 p-4"><Sparkles className="shrink-0 text-green-700" /><div><h2 className="font-bold">AI agricultural advisory</h2><p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Available to every verified account{access.aiMonthlyLimit ? ` with ${access.aiMonthlyLimit} requests each month on Free` : " without a monthly limit on your plan"}. AI guidance should be checked against local conditions and safety labels.</p></div></Card>
-          <Card className="flex items-start gap-3 p-4"><UserRound className="shrink-0 text-green-700" /><div><h2 className="font-bold">Human agricultural experts</h2><p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{access.expertConsultations ? `${access.expertMonthlyCredits || "Managed"} consultation credits are available through your plan.` : "Available with Farmer Plus, Cooperative, Organization and Enterprise plans."}</p><Link to={access.expertConsultations ? "/app/advisory/expert-connect" : "/app/subscription"} className="mt-2 inline-block text-sm font-bold text-green-700">{access.expertConsultations ? "Connect with an expert" : "Compare plans"}</Link></div></Card>
+          <Card className="flex items-start gap-3 border-green-200 p-4"><BookOpenCheck className="shrink-0 text-green-700" /><div><h2 className="font-bold">Crop planning assistant</h2><p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Combines attributed weather, historical market estimates and reviewed planning rules. It does not invent suitability, yield or profit scores.</p><Link to="/app/advisory/crop-recommendation" className="mt-2 inline-block text-sm font-bold text-green-700">Open planning assistant</Link></div></Card>
+          <Card className="flex items-start gap-3 p-4"><UserRound className="shrink-0 text-green-700" /><div><h2 className="font-bold">Human expert escalation</h2><p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Verified expert onboarding is in progress. You can record a request, but no professional or appointment is presented as confirmed until reviewed.</p><Link to="/app/advisory/expert-connect" className="mt-2 inline-block text-sm font-bold text-green-700">View expert-service status</Link></div></Card>
         </div>
 
         {/* Search */}
@@ -137,12 +135,12 @@ export default function AdvisoryDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <Link to="/app/advisory/crop-recommendation">
               <Button variant="primary" className="w-full flex items-center gap-2">
-                <Leaf size={20} /> Get Crop Recommendations
+                <Leaf size={20} /> Crop Planning Assistant
               </Button>
             </Link>
             <Link to="/app/advisory/pest-detection">
               <Button variant="primary" className="w-full flex items-center gap-2">
-                <Bug size={20} /> Detect Pests & Diseases
+                <Bug size={20} /> Screen Crop Health
               </Button>
             </Link>
             <Link to="/app/advisory/weather">

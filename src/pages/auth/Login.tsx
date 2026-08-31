@@ -11,6 +11,7 @@ import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import AuthShell from "../../components/AuthShell";
 import { useTranslation } from "react-i18next";
+import { getApiError } from "../../lib/api";
 
 const loginSchema = z.object({
   identifier: z.string().min(1, "Email or username is required"),
@@ -68,14 +69,9 @@ export default function Login() {
       }
 
       navigate(redirectTo, { replace: true });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Login error:", err);
-      setServerError(
-        err.message ||
-        err.response?.data?.detail ||
-        err.response?.data?.non_field_errors?.[0] ||
-        "Invalid username/email or password. Please try again."
-      );
+      setServerError(getApiError(err, "Invalid username/email or password. Please try again."));
     } finally {
       setLoading(false);
     }

@@ -18,6 +18,12 @@ import {
   LogOut,
   Clock,
   TrendingUp,
+  ScrollText,
+  Truck,
+  PlugZap,
+  ReceiptText,
+  PackageCheck,
+  Bird,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
@@ -54,15 +60,7 @@ export default function AdminSidebar({
   };
 
   // Mock counts – → real data later (context / query / ws)
-  const counts = {
-    newUsers: 28,
-    pendingVerifications: 5,
-    pendingApprovals: 12,
-    activeDisputes: 7,
-    reportsReady: 3,
-  };
-
-  const totalAlerts = counts.pendingApprovals + counts.activeDisputes;
+  // Operational totals live on the server-backed Analytics and moderation pages.
 
   const sidebarContent = (
     <div className="flex h-full flex-col border-r border-slate-200 bg-white text-slate-800 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-100">
@@ -99,11 +97,6 @@ export default function AdminSidebar({
               <div className="flex items-center gap-3 w-full">
                 <Users className="h-5 w-5" />
                 {!isCollapsed && <span className="font-medium">Users</span>}
-                {counts.newUsers > 0 && !isCollapsed && (
-                  <span className="ml-auto bg-amber-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-                    +{counts.newUsers}
-                  </span>
-                )}
               </div>
             </AccordionTrigger>
             <Accordion.Content className="pt-1 space-y-1">
@@ -112,8 +105,6 @@ export default function AdminSidebar({
                 to="/admin/users/pending"
                 icon={<Clock className="h-4.5 w-4.5" />}
                 label="Pending Verifications"
-                badge={counts.pendingVerifications}
-                badgeColor="bg-amber-600"
                 isCollapsed={isCollapsed}
               />
               <SidebarLink
@@ -140,8 +131,6 @@ export default function AdminSidebar({
                 to="/admin/reports"
                 icon={<FileText className="h-4.5 w-4.5" />}
                 label="Reports"
-                badge={counts.reportsReady}
-                badgeColor="bg-emerald-700"
                 isCollapsed={isCollapsed}
               />
               <SidebarLink
@@ -160,11 +149,6 @@ export default function AdminSidebar({
               <div className="flex items-center gap-3 w-full">
                 <AlertTriangle className="h-5 w-5" />
                 {!isCollapsed && <span className="font-medium">Moderation</span>}
-                {totalAlerts > 0 && !isCollapsed && (
-                  <span className="ml-auto bg-red-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-                    {totalAlerts}
-                  </span>
-                )}
               </div>
             </AccordionTrigger>
             <Accordion.Content className="pt-1 space-y-1">
@@ -172,21 +156,26 @@ export default function AdminSidebar({
                 to="/admin/approvals"
                 icon={<CheckCircle className="h-4.5 w-4.5" />}
                 label="Pending Approvals"
-                badge={counts.pendingApprovals}
-                badgeColor="bg-amber-600"
                 isCollapsed={isCollapsed}
               />
               <SidebarLink
                 to="/admin/disputes"
                 icon={<AlertTriangle className="h-4.5 w-4.5" />}
                 label="Active Disputes"
-                badge={counts.activeDisputes}
-                badgeColor="bg-red-600"
                 isCollapsed={isCollapsed}
               />
+              <SidebarLink to="/admin/listing-approvals" icon={<PackageCheck className="h-4.5 w-4.5" />} label="Listing Approvals" isCollapsed={isCollapsed} />
             </Accordion.Content>
           </Accordion.Item>
         </Accordion.Root>
+
+        <SidebarLink to="/admin/transporters" icon={<Truck className="h-5 w-5" />} label="Transporters" isCollapsed={isCollapsed} />
+        <SidebarLink to="/admin/deliveries" icon={<Truck className="h-5 w-5" />} label="Delivery Assignments" isCollapsed={isCollapsed} />
+        <SidebarLink to="/admin/reconciliation" icon={<ReceiptText className="h-5 w-5" />} label="Reconciliation" isCollapsed={isCollapsed} />
+        <SidebarLink to="/admin/providers" icon={<PlugZap className="h-5 w-5" />} label="Provider Readiness" isCollapsed={isCollapsed} />
+        <SidebarLink to="/admin/operations" icon={<BarChart3 className="h-5 w-5" />} label="Operations Monitoring" isCollapsed={isCollapsed} />
+        <SidebarLink to="/admin/livestock" icon={<Bird className="h-5 w-5" />} label="Livestock Operations" isCollapsed={isCollapsed} />
+        <SidebarLink to="/admin/audit-logs" icon={<ScrollText className="h-5 w-5" />} label="Audit Logs" isCollapsed={isCollapsed} />
 
         <SidebarLink
           to="/admin/settings"
@@ -198,25 +187,7 @@ export default function AdminSidebar({
 
       {/* Footer / Quick stats + Back link */}
       <div className="mt-auto border-t border-slate-200 p-3 dark:border-gray-800 sm:p-4">
-        {!isCollapsed && (
-          <div className="mb-5 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm dark:border-gray-800/50 dark:bg-gray-900/60">
-            <h3 className="mb-3 font-medium text-slate-500 dark:text-gray-400">Platform Snapshot</h3>
-            <div className="space-y-2.5 text-slate-700 dark:text-gray-300">
-              <div className="flex justify-between">
-                <span>Users</span>
-                <span className="font-semibold">1,842</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Pending</span>
-                <span className="font-semibold text-amber-400">19</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Revenue (MTD)</span>
-                <span className="font-semibold text-emerald-400">MWK 8.4M</span>
-              </div>
-            </div>
-          </div>
-        )}
+        {!isCollapsed && <p className="mb-4 px-2 text-xs text-slate-500 dark:text-gray-400">Live totals and trends are available in Platform Stats.</p>}
 
         <SidebarLink
           to="/app/dashboard"

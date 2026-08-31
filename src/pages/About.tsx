@@ -14,7 +14,7 @@ const impactStats = {
 
 const coreValues = [
   { icon: <Leaf />, title: "Farmer-First", desc: "We exist to empower smallholder farmers with fair prices, knowledge, and direct market access." },
-  { icon: <ShieldCheck />, title: "Transparency & Trust", desc: "Blockchain traceability and escrow payments build confidence for every transaction." },
+  { icon: <ShieldCheck />, title: "Transparency & Trust", desc: "Append-only traceability records and clearly identified payment providers help build confidence." },
   { icon: <Globe />, title: "Sustainable Growth", desc: "Promoting organic practices, waste reduction, and climate-smart agriculture." },
   { icon: <Users />, title: "Community-Driven", desc: "Built with input from farmers, buyers, and extension officers across Malawi." },
 ];

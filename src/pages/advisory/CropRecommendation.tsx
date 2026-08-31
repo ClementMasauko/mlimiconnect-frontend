@@ -1,191 +1,38 @@
-// src/pages/advisory/CropRecommendation.tsx
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { AlertTriangle, BookOpenCheck, Calendar, CheckCircle2, CloudRain, Database, ExternalLink, Leaf, Loader2, MapPin } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
-import { Leaf, MapPin, Calendar, TrendingUp, AlertCircle } from "lucide-react";
-import { motion } from "framer-motion";
 import api, { getApiError } from "../../lib/api";
-import { getAdvisoryAccess } from "../../lib/access";
 
-const mockRecommendations = [
-  {
-    crop: "Maize",
-    suitability: 95,
-    plantingSeason: "November - December",
-    expectedYield: "4-6 tons/ha",
-    marketPrice: "MWK 28,500/50kg",
-    risks: "Low drought risk with current weather",
-    smartContract: "Available: Automatic insurance trigger on low rainfall",
-  },
-  {
-    crop: "Soybeans",
-    suitability: 88,
-    plantingSeason: "December - January",
-    expectedYield: "2-3 tons/ha",
-    marketPrice: "MWK 58,000/50kg",
-    risks: "Monitor for aphids",
-    smartContract: "Available: Yield-based payment",
-  },
-  {
-    crop: "Tomatoes",
-    suitability: 76,
-    plantingSeason: "Year-round with irrigation",
-    expectedYield: "20-30 tons/ha",
-    marketPrice: "MWK 15,000/10kg",
-    risks: "High pest risk - use organic control",
-    smartContract: "Available: Quality-based premium",
-  },
-];
+type MarketEvidence = { market:string;district:string;price:string;currency:string;unit:string;price_date:string;local_match:boolean;spatially_interpolated:boolean };
+type Recommendation = { crop:string;evidence:string[];water_note:string;cautions:string[];market:MarketEvidence|null;next_step:string };
+type Source = { name:string;kind:string;url?:string;dataset?:string;version?:string;collected_at:string|null;stale:boolean;available:boolean;notice:string };
+type PlanResponse = { recommendations:Recommendation[];context:{location:string;soil_type:string;season:string;preferred_crop:string|null;weather:null|{current?:{temperature_c?:number;humidity_percent?:number};forecast?:Array<{precipitation_mm?:number}>;stale?:boolean}};sources:Source[];generated_at:string;method:string;notice:string };
 
 export default function CropRecommendation() {
   const { user } = useAuth();
-  const access = getAdvisoryAccess(user);
-  const navigate = useNavigate();
+  const [form,setForm] = useState({location:user?.location || "Lilongwe",soilType:"Loamy",season:"Rainy",preferredCrop:""});
+  const [plan,setPlan] = useState<PlanResponse|null>(null);
+  const [loading,setLoading] = useState(false);
+  const [error,setError] = useState("");
 
-  const [form, setForm] = useState({
-    location: user?.location || "Lilongwe",
-    soilType: "Loamy",
-    farmSize: "3 hectares",
-    season: "Rainy",
-  });
+  async function createPlan() {
+    setLoading(true); setError(""); setPlan(null);
+    try { const {data}=await api.post<PlanResponse>("/api/advisory/crop-planning/",{task:"crop_planning",...form}); setPlan(data); }
+    catch(reason){setError(getApiError(reason,"The planning sources could not be combined. Please try again."));}
+    finally{setLoading(false);}
+  }
 
-  const [recommendations, setRecommendations] = useState<typeof mockRecommendations>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleSubmit = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const { data } = await api.post<{ recommendations: typeof mockRecommendations }>("/api/advisory/ai/", { task: "crop_recommendation", ...form });
-      setRecommendations(data.recommendations || []);
-    } catch (reason) {
-      setError(getApiError(reason, "AI advisory is temporarily unavailable. No request was charged."));
-    } finally { setLoading(false); }
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto">
-        <div className="mb-8">
-          <Link to="/app/advisory" className="text-green-700 dark:text-green-400 hover:underline flex items-center gap-2">
-            ← Back to Advisory
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mt-2 flex items-center gap-3">
-            <Leaf className="text-green-600" size={32} /> Crop Recommendations
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Get AI-powered crop suggestions based on your location, soil, and season.
-          </p>
-          <p className="mt-2 text-sm text-slate-500">{access.aiMonthlyLimit ? `${access.aiMonthlyLimit} AI requests are included monthly on Free.` : "Unlimited AI requests are included with your active plan."} Recommendations are decision support, not a substitute for local agronomic inspection.</p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Input Form */}
-          <Card className="p-6 lg:col-span-1 sticky top-24">
-            <h2 className="text-xl font-semibold mb-6">Your Farm Details</h2>
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium mb-2">Location</label>
-                <Input
-                  value={form.location}
-                  onChange={e => setForm({ ...form, location: e.target.value })}
-                  icon={<MapPin size={18} />}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Soil Type</label>
-                <select
-                  value={form.soilType}
-                  onChange={e => setForm({ ...form, soilType: e.target.value })}
-                  className="w-full px-4 py-3 border rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-                >
-                  <option>Loamy</option>
-                  <option>Sandy</option>
-                  <option>Clay</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Farm Size</label>
-                <Input
-                  value={form.farmSize}
-                  onChange={e => setForm({ ...form, farmSize: e.target.value })}
-                  icon={<Leaf size={18} />}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Season</label>
-                <select
-                  value={form.season}
-                  onChange={e => setForm({ ...form, season: e.target.value })}
-                  className="w-full px-4 py-3 border rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-                >
-                  <option>Rainy</option>
-                  <option>Dry</option>
-                </select>
-              </div>
-              <Button
-                onClick={handleSubmit}
-                disabled={loading}
-                className="w-full"
-              >
-                {loading ? "Generating..." : "Get Recommendations"}
-              </Button>
-              {error && <p role="alert" className="text-sm text-red-700 dark:text-red-300">{error}</p>}
-            </div>
-          </Card>
-
-          {/* Recommendations */}
-          <div className="lg:col-span-2 space-y-6">
-            {recommendations.map((rec, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card className="p-6 hover:shadow-lg transition-all duration-300">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-full">
-                      <Leaf className="text-green-600" size={24} />
-                    </div>
-                    <h3 className="text-xl font-semibold">{rec.crop}</h3>
-                  </div>
-                  <div className="space-y-4 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">Suitability:</span>
-                      <span className="font-medium text-green-700 dark:text-green-400">{rec.suitability}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">Planting Season:</span>
-                      <span className="font-medium">{rec.plantingSeason}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">Expected Yield:</span>
-                      <span className="font-medium">{rec.expectedYield}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">Market Price:</span>
-                      <span className="font-medium text-blue-700 dark:text-blue-400">{rec.marketPrice}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">Risks:</span>
-                      <span className="font-medium text-amber-700 dark:text-amber-400">{rec.risks}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">Smart Contract:</span>
-                      <span className="font-medium text-purple-700 dark:text-purple-400">{rec.smartContract}</span>
-                    </div>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </div>
+  return <main className="min-h-screen bg-slate-50 px-4 py-8 dark:bg-slate-950 sm:px-6"><div className="mx-auto max-w-6xl">
+    <Link to="/app/advisory" className="font-semibold text-emerald-700 dark:text-emerald-400">← Back to advisory</Link>
+    <header className="mt-3"><h1 className="flex items-center gap-3 text-3xl font-black"><Leaf className="text-emerald-700"/>Crop planning assistant</h1><p className="mt-2 max-w-3xl text-slate-600 dark:text-slate-300">Compare crop options using current Open-Meteo weather, imported World Bank historical market estimates and safety-reviewed planning rules.</p><p className="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-950 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-100"><strong>Evidence tool, not generative advice:</strong> agricultural facts come from the sources shown with each plan. Future AI may help explain or translate this evidence, but it will not replace the underlying sources.</p></header>
+    <div className="mt-7 grid gap-7 lg:grid-cols-[320px_1fr]"><Card className="h-fit p-6 lg:sticky lg:top-24"><h2 className="text-xl font-bold">Farm context</h2><div className="mt-5 space-y-5"><label className="block text-sm font-bold">Malawi district<Input value={form.location} onChange={e=>setForm({...form,location:e.target.value})} icon={<MapPin size={18}/>} placeholder="For example, Lilongwe"/></label><label className="block text-sm font-bold">Soil type<select value={form.soilType} onChange={e=>setForm({...form,soilType:e.target.value})} className="mt-2 w-full rounded-lg border p-3 dark:bg-slate-900"><option>Loamy</option><option>Sandy</option><option>Clay</option></select></label><label className="block text-sm font-bold">Planning season<select value={form.season} onChange={e=>setForm({...form,season:e.target.value})} className="mt-2 w-full rounded-lg border p-3 dark:bg-slate-900"><option>Rainy</option><option>Dry</option></select></label><label className="block text-sm font-bold">Crop to examine first (optional)<select value={form.preferredCrop} onChange={e=>setForm({...form,preferredCrop:e.target.value})} className="mt-2 w-full rounded-lg border p-3 dark:bg-slate-900"><option value="">Compare available crops</option>{["maize","beans","groundnuts","rice","cassava"].map(c=><option key={c} value={c}>{c[0].toUpperCase()+c.slice(1)}</option>)}</select></label><Button className="w-full" onClick={()=>void createPlan()} disabled={loading||!form.location.trim()}>{loading?<><Loader2 className="mr-2 animate-spin"/>Checking sources…</>:"Build evidence-based plan"}</Button>{error&&<p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800">{error}</p>}</div></Card>
+      <section aria-live="polite">{!plan&&!loading&&!error&&<Card className="p-10 text-center"><BookOpenCheck className="mx-auto text-emerald-700" size={48}/><h2 className="mt-4 text-xl font-bold">No plan generated yet</h2><p className="mt-2 text-slate-500">Enter the farm context to check available evidence. No suitability percentage, yield or profit guarantee will be invented.</p></Card>}{plan&&<><div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-950"><strong>Planning limitation:</strong> {plan.notice}</div><div className="mt-5 space-y-5">{plan.recommendations.map((rec,index)=><Card key={rec.crop} className="p-6"><div className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-full bg-emerald-700 font-black text-white">{index+1}</span><h2 className="text-2xl font-black">{rec.crop}</h2></div><div className="mt-5 grid gap-5 md:grid-cols-2"><div><h3 className="flex items-center gap-2 font-bold text-emerald-800 dark:text-emerald-300"><CheckCircle2 size={18}/>Evidence available</h3><ul className="mt-2 list-disc space-y-2 pl-5 text-sm">{rec.evidence.length?rec.evidence.map(x=><li key={x}>{x}</li>):<li>No matching evidence was found; treat this option cautiously.</li>}</ul><p className="mt-4 text-sm"><strong>Water:</strong> {rec.water_note}</p></div><div><h3 className="flex items-center gap-2 font-bold text-amber-800 dark:text-amber-300"><AlertTriangle size={18}/>Checks and cautions</h3><ul className="mt-2 list-disc space-y-2 pl-5 text-sm">{rec.cautions.map(x=><li key={x}>{x}</li>)}</ul></div></div>{rec.market?<div className="mt-5 rounded-lg bg-slate-100 p-4 text-sm dark:bg-slate-800"><strong>Historical market evidence:</strong> {rec.market.currency} {Number(rec.market.price).toLocaleString()} per {rec.market.unit}, {rec.market.market}, {rec.market.district}, dated {new Date(rec.market.price_date).toLocaleDateString()}. {!rec.market.local_match&&"This is not a district match. "}{rec.market.spatially_interpolated&&"The source marks this estimate as spatially interpolated. "}<strong>Not a live quote.</strong></div>:<div className="mt-5 rounded-lg bg-slate-100 p-4 text-sm dark:bg-slate-800">No imported historical price record is available for this crop.</div>}<p className="mt-5 border-t pt-4 text-sm"><strong>Recommended next step:</strong> {rec.next_step}</p></Card>)}</div><SourcePanel plan={plan}/></>}</section>
     </div>
-  );
+  </div></main>;
 }
+
+function SourcePanel({plan}:{plan:PlanResponse}) { return <Card className="mt-6 border-blue-200 p-6"><h2 className="flex items-center gap-2 text-xl font-black"><Database className="text-blue-700"/>Sources and freshness</h2><p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Generated {new Date(plan.generated_at).toLocaleString()}. {plan.method}</p><div className="mt-5 grid gap-3">{plan.sources.map(source=><article key={source.name} className="rounded-lg border p-4"><div className="flex flex-wrap items-start justify-between gap-2"><div><h3 className="font-bold">{source.url?<a href={source.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-blue-700 dark:text-blue-300">{source.name}<ExternalLink size={14}/></a>:source.name}</h3><p className="text-xs uppercase tracking-wide text-slate-500">{source.kind}{source.dataset?` · ${source.dataset}`:""}{source.version?` · version ${source.version}`:""}</p></div><span className={`rounded-full px-2 py-1 text-xs font-bold ${!source.available||source.stale?"bg-amber-100 text-amber-900":"bg-emerald-100 text-emerald-900"}`}>{!source.available?"Unavailable":source.stale?"Stale—use caution":"Available"}</span></div><p className="mt-2 text-sm">{source.notice}</p><p className="mt-2 flex items-center gap-1 text-xs text-slate-500">{source.kind.includes("weather")?<CloudRain size={14}/>:<Calendar size={14}/>}Reference date: {source.collected_at?new Date(source.collected_at).toLocaleString():"not available"}</p></article>)}</div></Card>; }

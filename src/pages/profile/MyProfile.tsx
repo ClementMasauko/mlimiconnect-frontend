@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
-import api from "../../lib/api";
+import api, { getApiError } from "../../lib/api";
 import { toast } from "react-hot-toast";
 import {
   User,
@@ -49,11 +49,11 @@ export default function MyProfile() {
     email: user?.email || "No email linked",
     phone: user?.phone || "No phone linked",
     location: user?.location || "No location set",
-    bio: (user as any)?.bio || "",
-    farmSize: (user as any)?.farm_size || (user as any)?.farmSize || null,
+    bio: user?.bio || "",
+    farmSize: user?.farm_size || user?.farmSize || null,
     verified: user?.isBuyerVerified === true || isFarmer, // Assume verified/approved status placeholder
     joinedDate: "August 2025", // Mock Joined date for high-fidelity representation
-    avatar: (user as any)?.avatar_url || null,
+    avatar: user?.avatar_url || null,
     savedContacts: isFarmer
       ? [
           { id: 1, name: "Chikondi Wholesale Foods", location: "Lilongwe Area 4", type: "Wholesaler" },
@@ -81,8 +81,8 @@ export default function MyProfile() {
       logout();
       toast.success("Your account has been deleted permanently.");
       navigate("/");
-    } catch (error: any) {
-      const errMsg = error.response?.data?.detail || "We could not delete your account. Please contact support.";
+    } catch (error: unknown) {
+      const errMsg = getApiError(error, "We could not delete your account. Please contact support.");
       setDeleteError(errMsg);
       toast.error(errMsg);
     } finally {
@@ -97,6 +97,7 @@ export default function MyProfile() {
           <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-wider text-blue-700">{user?.account_type} account</p><h2 className="mt-1 text-2xl font-bold">{organization.legal_name}</h2><p className="mt-1 text-sm text-gray-500">Registration: {organization.registration_number} · {organization.business_size} organization</p></div><span className={`rounded-full px-3 py-1 text-xs font-bold ${organization.verification_status === "verified" ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"}`}>{organization.verification_status}</span></div>
           <div className="mt-5 grid gap-4 text-sm sm:grid-cols-2"><p><strong>Authorized representative:</strong><br />{organization.representative_name}, {organization.representative_role}</p><p><strong>Trading capabilities:</strong><br />{user?.can_buy ? "Buy" : ""}{user?.can_buy && user?.can_sell ? " and " : ""}{user?.can_sell ? "Sell" : ""}</p>{organization.member_count && <p><strong>Cooperative members:</strong><br />{organization.member_count}</p>}<p><strong>Address:</strong><br />{organization.address}</p></div>
           {organization.verification_status === "pending" && <p className="mt-5 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">Verification is pending. MlimiConnect must confirm registration and representative authority before raising transaction limits.</p>}
+          <Link to="/app/profile/organization" className="mt-5 inline-flex rounded-lg bg-blue-700 px-4 py-2 font-semibold text-white">Open organisation workspace</Link>
         </Card>}
         
         {/* Header Title with quick edit & logout actions */}

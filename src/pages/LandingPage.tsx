@@ -1,392 +1,76 @@
-// src/pages/LandingPage.tsx
-
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { ArrowRight, MessageCircle, CheckCircle, Menu, X, MapPin, ShieldCheck, ShoppingBag } from "lucide-react";
-import { motion } from "framer-motion";
+import { useState } from "react";
 import { Helmet } from "react-helmet";
-import ThemeToggle from "../components/ThemeToggle";
+import { Link } from "react-router-dom";
+import { ArrowRight, BadgeCheck, BarChart3, Bird, Check, ChevronDown, Leaf, Menu, MessageCircle, PackageCheck, ShieldCheck, ShoppingBasket, Smartphone, Sprout, Truck, Users, X } from "lucide-react";
 import InstallAppButton from "../components/InstallAppButton";
+import ThemeToggle from "../components/ThemeToggle";
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "outline";
-  size?: "default" | "lg";
-  children: React.ReactNode;
-  className?: string;
-}
+const primary = "inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-6 py-3 font-bold text-white shadow-lg transition hover:bg-emerald-800 focus:outline-none focus:ring-4 focus:ring-emerald-300";
+const secondary = "inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-emerald-700 bg-white px-6 py-3 font-bold text-emerald-800 transition hover:bg-emerald-50 focus:outline-none focus:ring-4 focus:ring-emerald-200 dark:bg-transparent dark:text-emerald-300";
 
-const Button = ({
-  children,
-  variant = "primary",
-  size = "default",
-  className = "",
-  ...props
-}: ButtonProps) => {
-  const base =
-    "inline-flex items-center justify-center rounded-xl font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-95";
-  const variants = {
-    primary: "bg-green-600 text-white hover:bg-green-700 shadow-md hover:shadow-lg",
-    outline: "border-2 border-green-600 text-green-700 hover:bg-green-50 hover:border-green-700",
-  };
-  const sizes = {
-    default: "h-10 py-2 px-6",
-    lg: "h-12 px-8 text-lg",
-  };
+const audiences = [
+  { icon: Sprout, title: "Farmers", text: "List crops and animal products, follow orders, compare market information and keep farm records.", action: "Register as a farmer" },
+  { icon: ShoppingBasket, title: "Buyers", text: "Find agricultural products by location, quantity, availability and verification status.", action: "Register as a buyer" },
+  { icon: Truck, title: "Transporters", text: "Create a verified profile, quote for deliveries and record pickup and delivery evidence.", action: "Join as a transporter" },
+  { icon: Users, title: "Cooperatives & teams", text: "Manage members, delegated roles, shared listings, approvals and organisation reporting.", action: "Create an organisation" },
+];
 
-  return (
-    <button className={`${base} ${variants[variant]} ${sizes[size]} ${className}`} {...props}>
-      {children}
-    </button>
-  );
-};
+const capabilities = [
+  { icon: ShoppingBasket, title: "One agricultural marketplace", text: "Crops, eggs, milk, feed, manure, livestock and poultry with agricultural units and availability details." },
+  { icon: BarChart3, title: "Useful decision support", text: "Weather, historical market prices and responsible advisory show their source, coverage and freshness." },
+  { icon: PackageCheck, title: "Traceable fulfilment", text: "Order status, delivery evidence and integrity-checked batch events make important steps easier to follow." },
+  { icon: ShieldCheck, title: "Safer transactions", text: "Verified profiles, audited administration, disputes and payment reconciliation support accountable trade." },
+  { icon: Bird, title: "Crops, livestock & poultry", text: "Keep herd or flock records, health events, production records, reminders and welfare-aware transport details." },
+  { icon: Smartphone, title: "Built for Malawi", text: "Responsive screens, low-data options, installable web access, email, SMS and growing Chichewa support." },
+];
+
+const faqs = [
+  ["Is registration free?", "Yes. You can create an account without paying. Any transaction or subscription charge must be shown before you confirm it."],
+  ["Do I need a smartphone?", "The web platform works on phones and computers. Selected services are also being prepared for low-data and USSD access."],
+  ["Are payments and providers always available?", "Availability depends on the provider and current platform readiness. An incomplete payment is never presented as successful."],
+  ["Is agricultural advice a confirmed diagnosis?", "No. Automated guidance is decision support. Urgent crop or animal-health cases should be escalated to a qualified professional."],
+];
 
 export default function LandingPage() {
-  const [logoError, setLogoError] = useState(false);
-  const [dashboardError, setDashboardError] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const featuredProducts = [
-    { name: "Fresh Maize, Grade A", price: "28,500", unit: "50 kg bag", location: "Lilongwe", image: "https://images.unsplash.com/photo-1627920748119-7f6d4e73d961?w=700&h=500&fit=crop" },
-    { name: "Premium Groundnuts", price: "42,000", unit: "20 kg sack", location: "Kasungu", image: "https://images.unsplash.com/photo-1574323347407-8b21d98f4e84?w=700&h=500&fit=crop" },
-    { name: "Vine-ripened Tomatoes", price: "15,000", unit: "10 kg crate", location: "Zomba", image: "https://images.unsplash.com/photo-1561136594-7f684b9e67b0?w=700&h=500&fit=crop" },
-    { name: "Clean Soybeans", price: "58,000", unit: "50 kg sack", location: "Mzuzu", image: "https://images.unsplash.com/photo-1625246332058-6e9e9d307a1b?w=700&h=500&fit=crop" },
-  ];
+  return <div className="min-h-screen bg-white text-slate-950 dark:bg-slate-950 dark:text-white">
+    <Helmet>
+      <title>MlimiConnect | Malawi's connected agricultural marketplace</title>
+      <meta name="description" content="Buy, sell, transport and manage crops, livestock and poultry through one Malawi-focused agricultural platform. Create a free MlimiConnect account." />
+      <meta property="og:title" content="MlimiConnect | Agriculture, connected" />
+      <meta property="og:description" content="A practical platform for Malawi's farmers, buyers, transporters and agricultural organisations." />
+    </Helmet>
+    <a href="#main-content" className="sr-only z-[100] rounded bg-white p-3 text-emerald-800 focus:not-sr-only focus:fixed focus:left-3 focus:top-3">Skip to main content</a>
+    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95">
+      <nav aria-label="Main navigation" className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
+        <Link to="/" className="flex items-center gap-2" aria-label="MlimiConnect home"><img src="/logo-mark.png" alt="" className="h-10 w-10" /><span className="text-xl font-black">Mlimi<span className="text-emerald-700 dark:text-emerald-400">Connect</span></span></Link>
+        <div className="hidden items-center gap-6 text-sm font-semibold lg:flex"><a href="#who" className="hover:text-emerald-700">Who it is for</a><a href="#features" className="hover:text-emerald-700">What you can do</a><Link to="/app/marketplace" className="hover:text-emerald-700">Marketplace</Link><Link to="/about" className="hover:text-emerald-700">About</Link><Link to="/support" className="hover:text-emerald-700">Help</Link></div>
+        <div className="flex items-center gap-2"><InstallAppButton compact /><ThemeToggle /><Link to="/login" className="hidden rounded-lg px-3 py-2 font-semibold hover:bg-slate-100 sm:block dark:hover:bg-slate-800">Sign in</Link><Link to="/register" className={`${primary} hidden min-h-10 px-4 py-2 sm:inline-flex`}>Create free account</Link><button type="button" aria-expanded={menuOpen} aria-controls="mobile-menu" aria-label={menuOpen ? "Close menu" : "Open menu"} onClick={() => setMenuOpen(v => !v)} className="rounded-lg p-2 lg:hidden">{menuOpen ? <X /> : <Menu />}</button></div>
+      </nav>
+      {menuOpen && <div id="mobile-menu" className="border-t p-4 lg:hidden dark:border-slate-800"><div className="grid gap-1"><a href="#who" onClick={() => setMenuOpen(false)} className="rounded-lg p-3">Who it is for</a><a href="#features" onClick={() => setMenuOpen(false)} className="rounded-lg p-3">What you can do</a><Link to="/app/marketplace" className="rounded-lg p-3">Marketplace</Link><Link to="/about" className="rounded-lg p-3">About</Link><Link to="/support" className="rounded-lg p-3">Help</Link><Link to="/login" className="rounded-lg p-3">Sign in</Link><Link to="/register" className={`${primary} mt-2`}>Create free account</Link></div></div>}
+    </header>
 
-  return (
-    <>
-      <Helmet>
-        <title>MlimiConnect – Sell Your Harvest Smarter in Malawi</title>
-        <meta
-          name="description"
-          content="Get better prices, secure mobile money payments, and reliable transport. Join 1,000+ Malawian farmers, buyers & transporters today."
-        />
-        <meta
-          name="keywords"
-          content="agritech Malawi, sell crops online Malawi, farmer marketplace, mobile money farming, maize prices Malawi"
-        />
-      </Helmet>
+    <main id="main-content">
+      <section className="relative isolate overflow-hidden bg-emerald-950 text-white">
+        <img src="/hero.png" alt="A green farm field in Malawi" className="absolute inset-0 -z-20 h-full w-full object-cover" fetchPriority="high" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-emerald-950 via-emerald-950/95 to-emerald-950/35" />
+        <div className="mx-auto grid min-h-[660px] max-w-7xl items-center px-4 py-20 sm:px-6 lg:grid-cols-[1.1fr_.9fr]">
+          <div className="max-w-3xl"><p className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-900/70 px-4 py-2 text-sm font-bold text-emerald-100"><Leaf size={17} /> Crops, livestock and poultry—connected</p><h1 className="text-4xl font-black leading-[1.08] tracking-tight sm:text-6xl lg:text-7xl">Grow your market.<br/><span className="text-amber-300">Trade with confidence.</span></h1><p className="mt-6 max-w-2xl text-lg leading-8 text-emerald-50 sm:text-xl">MlimiConnect brings farmers, buyers, transporters and agricultural organisations together—from listing and discovery to delivery records, market information and farm management.</p><div className="mt-8 flex flex-col gap-3 sm:flex-row"><Link to="/register" className={`${primary} bg-amber-400 text-emerald-950 hover:bg-amber-300`}>Create your free account <ArrowRight size={19}/></Link><Link to="/app/marketplace" className={`${secondary} border-white/70 bg-white/10 text-white hover:bg-white/20`}>Explore the marketplace</Link></div><ul className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-sm text-emerald-50"><li className="flex gap-2"><Check size={18} className="text-amber-300"/>No card required to register</li><li className="flex gap-2"><Check size={18} className="text-amber-300"/>Malawi-focused</li><li className="flex gap-2"><Check size={18} className="text-amber-300"/>Built for low-data access</li></ul></div>
+          <div className="mt-12 hidden justify-end lg:flex"><div className="w-full max-w-lg rounded-3xl border border-white/20 bg-white/10 p-4 shadow-2xl backdrop-blur"><img src="/dashboard-screenshot.png" alt="Preview of the MlimiConnect dashboard" className="w-full rounded-2xl" /><div className="grid grid-cols-3 gap-2 pt-4 text-center text-xs font-bold"><span className="rounded-xl bg-white/10 p-3">Marketplace</span><span className="rounded-xl bg-white/10 p-3">Farm records</span><span className="rounded-xl bg-white/10 p-3">Deliveries</span></div></div></div>
+        </div>
+      </section>
 
-      <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-gray-950 dark:text-gray-100">
+      <section aria-label="Trust statement" className="border-b bg-amber-50 py-5 text-amber-950 dark:border-slate-800 dark:bg-amber-950/25 dark:text-amber-100"><div className="mx-auto flex max-w-7xl flex-col items-center justify-center gap-3 px-4 text-center sm:flex-row sm:gap-8"><span className="flex items-center gap-2 font-bold"><BadgeCheck className="text-emerald-700"/>Registered Malawi business</span><span className="hidden sm:block">•</span><span>Clear provider status and source attribution</span><span className="hidden sm:block">•</span><span>Privacy and consent controls</span></div></section>
 
-        {/* NAVBAR */}
-        <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur-md dark:border-gray-800 dark:bg-gray-950/90">
-          <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
-            <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-              {!logoError ? (
-                <img
-                  src="/logo.png"
-                  alt="MlimiConnect Logo"
-                  className="h-8 max-w-10 object-contain sm:h-10 sm:max-w-none"
-                  onError={() => setLogoError(true)}
-                  loading="lazy"
-                />
-              ) : (
-                <div className="h-10 w-10 rounded-lg bg-green-700 flex items-center justify-center text-white font-bold text-xl">
-                  MC
-                </div>
-              )}
-              <span className="truncate text-lg font-extrabold tracking-tight text-slate-900 sm:text-2xl dark:text-white">Mlimi<span className="text-green-700 dark:text-green-400">Connect</span></span>
-            </div>
+      <section id="who" className="py-20 sm:py-24"><div className="mx-auto max-w-7xl px-4 sm:px-6"><div className="max-w-3xl"><p className="font-bold uppercase tracking-widest text-emerald-700 dark:text-emerald-400">Made for the whole value chain</p><h2 className="mt-3 text-3xl font-black sm:text-5xl">One platform. A clear place for you.</h2><p className="mt-4 text-lg text-slate-600 dark:text-slate-300">Choose the account that matches the work you do. You can add organisation and team access as you grow.</p></div><div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">{audiences.map(({icon: Icon,title,text,action}) => <article key={title} className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-emerald-400 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900"><Icon className="text-emerald-700 dark:text-emerald-400" size={32}/><h3 className="mt-5 text-xl font-black">{title}</h3><p className="mt-3 min-h-24 leading-7 text-slate-600 dark:text-slate-300">{text}</p><Link to="/register" className="mt-5 inline-flex items-center gap-2 font-bold text-emerald-700 dark:text-emerald-400">{action}<ArrowRight size={17}/></Link></article>)}</div></div></section>
 
-            <div className="hidden md:flex items-center gap-7 text-gray-700 font-medium">
-              <Link to="/app/marketplace" className="hover:text-green-700 transition-colors dark:text-gray-300 dark:hover:text-green-400">Marketplace</Link>
-              <Link to="/app/advisory/market-feed" className="hover:text-green-700 transition-colors dark:text-gray-300 dark:hover:text-green-400">Prices</Link>
-              <a href="#features" className="hover:text-green-700 transition-colors dark:text-gray-300 dark:hover:text-green-400">Features</a>
-              <Link to="/pricing" className="hover:text-green-700 transition-colors">Pricing</Link>
-              <Link to="/blog" className="hover:text-green-700 transition-colors">Blog</Link>
-              <Link to="/about" className="hover:text-green-700 transition-colors">About</Link>
-            </div>
+      <section id="features" className="bg-slate-50 py-20 dark:bg-slate-900/60 sm:py-24"><div className="mx-auto max-w-7xl px-4 sm:px-6"><div className="text-center"><p className="font-bold uppercase tracking-widest text-emerald-700 dark:text-emerald-400">Practical tools, connected</p><h2 className="mt-3 text-3xl font-black sm:text-5xl">From the farm gate to the buyer</h2><p className="mx-auto mt-4 max-w-3xl text-lg text-slate-600 dark:text-slate-300">Start with one useful workflow today and add more as your farm, business or cooperative grows.</p></div><div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">{capabilities.map(({icon: Icon,title,text}) => <article key={title} className="rounded-2xl border border-slate-200 bg-white p-7 dark:border-slate-700 dark:bg-slate-900"><div className="grid h-12 w-12 place-items-center rounded-xl bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"><Icon/></div><h3 className="mt-5 text-xl font-black">{title}</h3><p className="mt-3 leading-7 text-slate-600 dark:text-slate-300">{text}</p></article>)}</div></div></section>
 
-            <div className="flex shrink-0 items-center gap-2 sm:gap-5">
-              <InstallAppButton compact />
-              <ThemeToggle />
-              <Link
-                to="/login"
-                className="hidden sm:block text-gray-700 hover:text-green-700 font-medium transition-colors"
-              >
-                Sign In
-              </Link>
-              <Link to="/register" className="hidden sm:block">
-                <Button variant="primary" className="px-3 text-sm sm:px-6 sm:text-base">Get Started</Button>
-              </Link>
-              <button type="button" onClick={() => setMenuOpen((open) => !open)} className="rounded-lg p-2 text-green-800 hover:bg-green-50 md:hidden" aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}>{menuOpen ? <X size={22} /> : <Menu size={22} />}</button>
-            </div>
-          </div>
-          {menuOpen && <div className="border-t border-green-100 bg-white px-4 py-3 shadow-lg dark:border-gray-800 dark:bg-gray-950 md:hidden"><div className="grid grid-cols-2 gap-1 text-sm font-medium"><Link onClick={() => setMenuOpen(false)} to="/app/marketplace" className="rounded-lg px-3 py-2 hover:bg-green-50 dark:hover:bg-gray-800">Marketplace</Link><Link onClick={() => setMenuOpen(false)} to="/app/advisory/market-feed" className="rounded-lg px-3 py-2 hover:bg-green-50 dark:hover:bg-gray-800">Prices</Link><a onClick={() => setMenuOpen(false)} href="#features" className="rounded-lg px-3 py-2 hover:bg-green-50 dark:hover:bg-gray-800">Features</a><Link onClick={() => setMenuOpen(false)} to="/pricing" className="rounded-lg px-3 py-2 hover:bg-green-50 dark:hover:bg-gray-800">Pricing</Link><Link onClick={() => setMenuOpen(false)} to="/about" className="rounded-lg px-3 py-2 hover:bg-green-50 dark:hover:bg-gray-800">About</Link><Link onClick={() => setMenuOpen(false)} to="/login" className="rounded-lg px-3 py-2 hover:bg-green-50 dark:hover:bg-gray-800">Sign in</Link></div><Link onClick={() => setMenuOpen(false)} to="/register" className="mt-2 block"><Button className="w-full">Get Started</Button></Link></div>}
-        </nav>
+      <section className="py-20 sm:py-24"><div className="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2"><div><p className="font-bold uppercase tracking-widest text-emerald-700 dark:text-emerald-400">Simple to begin</p><h2 className="mt-3 text-3xl font-black sm:text-5xl">Your first step takes only a few minutes</h2><div className="mt-8 space-y-6">{[["Create your account","Choose your role and verify your contact details."],["Complete your profile","Add your location, organisation or trading information."],["Start with what you need","Browse, list, request transport, check advisory or manage farm records."]].map(([title,text], index) => <div className="flex gap-4" key={title}><span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-emerald-700 font-black text-white">{index+1}</span><div><h3 className="text-lg font-black">{title}</h3><p className="mt-1 text-slate-600 dark:text-slate-300">{text}</p></div></div>)}</div><Link to="/register" className={`${primary} mt-9`}>Choose your account type <ArrowRight size={18}/></Link></div><div className="overflow-hidden rounded-3xl bg-emerald-950 p-3 shadow-2xl"><img src="/cta-farm.png" alt="A farmer working in a cultivated field" className="aspect-[4/3] w-full rounded-2xl object-cover" loading="lazy"/></div></div></section>
 
-        {/* HERO */}
-        <section className="relative flex items-center overflow-hidden py-10 sm:py-16 lg:min-h-[85vh] lg:py-20">
-          <div className="absolute inset-0 grid lg:grid-cols-2">
-            <div className="bg-gradient-to-br from-slate-50 via-white to-green-50/70" />
-            <div className="hidden lg:block relative">
-              <img
-                src="/hero.png"
-                alt="Malawian maize field"
-                className="absolute inset-0 w-full h-full object-cover brightness-[0.96]"
-                loading="lazy"
-              />
-            </div>
-          </div>
-
-          <div className="relative mx-auto grid max-w-7xl items-center gap-8 px-4 sm:gap-12 sm:px-6 lg:grid-cols-2 z-10">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7 }}
-            >
-              <h1 className="mb-4 text-3xl font-extrabold leading-tight sm:mb-6 sm:text-5xl lg:text-6xl">
-                Get <span className="text-green-600">Better Prices</span>, Faster Sales & Safer Payments
-              </h1>
-
-              <p className="mb-5 text-base leading-relaxed text-gray-800 sm:mb-8 sm:text-xl max-w-xl">
-                Thousands of Malawian farmers are already selling more, getting paid securely via mobile money, and arranging reliable transport — all in one place.
-              </p>
-
-              <div className="mb-5 flex flex-wrap gap-3 sm:mb-10 sm:gap-4">
-                <Link to="/register">
-                  <Button variant="primary" size="lg" className="shadow-lg">
-                    Start Selling Today – Free <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
-                <Link to="/app/marketplace">
-                  <Button variant="outline" size="lg">Browse Listings</Button>
-                </Link>
-              </div>
-
-              <div className="flex items-center gap-2 text-sm font-medium text-green-700 sm:gap-3 sm:text-base">
-                <CheckCircle className="h-5 w-5" />
-                <span>Trusted by 1,000+ farmers across Malawi</span>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, x: 30 }}
-              animate={{ opacity: 1, scale: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative mx-auto hidden max-w-md lg:mx-0 lg:block lg:max-w-xl"
-            >
-              <div className="rounded-3xl overflow-hidden shadow-2xl border-[14px] border-gray-900 ring-1 ring-gray-800/50 bg-gray-900">
-                {!dashboardError ? (
-                  <img
-                    src="/dashboard-screenshot.png"
-                    alt="MlimiConnect farmer dashboard"
-                    className="w-full h-auto object-cover"
-                    onError={() => setDashboardError(true)}
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="aspect-[4/3] bg-green-700 flex items-center justify-center text-white text-xl font-bold p-8 text-center">
-                    MlimiConnect Dashboard Preview
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* STATS – minimal */}
-        <section className="border-y border-green-100 bg-white py-8 dark:border-gray-800 dark:bg-gray-900 sm:py-16">
-          <div className="mx-auto grid max-w-7xl grid-cols-4 gap-2 px-4 text-center sm:gap-8 sm:px-6 lg:gap-12">
-            {[
-              { num: "1,000+", label: "Farmers" },
-              { num: "300+", label: "Buyers" },
-              { num: "50+", label: "Transporters" },
-              { num: "MWK 120M+", label: "Trade Volume" },
-            ].map((stat, i) => (
-              <div key={i}>
-                <p className="text-base font-extrabold text-green-700 sm:text-2xl lg:text-3xl">{stat.num}</p>
-                <p className="mt-1 text-xs font-medium text-gray-600 sm:text-base">{stat.label}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="bg-slate-50 py-14 dark:bg-gray-950 sm:py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-              <div><p className="text-sm font-bold uppercase tracking-[.15em] text-green-700 dark:text-green-400">Marketplace preview</p><h2 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-4xl">Fresh products, available now</h2><p className="mt-3 max-w-2xl text-slate-600 dark:text-gray-300">Explore current produce from verified local farms before creating an account.</p></div>
-              <Link to="/register" className="inline-flex items-center gap-2 font-semibold text-green-700 hover:text-green-800 dark:text-green-400">Create an account to shop <ArrowRight size={17} /></Link>
-            </div>
-            <div className="mt-9 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{featuredProducts.map((product) => <article key={product.name} className="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-lg dark:border-gray-800 dark:bg-gray-900"><div className="relative overflow-hidden"><img src={product.image} alt={product.name} className="h-44 w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" /><span className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold text-green-800 shadow-sm"><ShieldCheck size={13} /> Verified farm</span></div><div className="p-4"><h3 className="font-bold text-slate-900 dark:text-white">{product.name}</h3><p className="mt-1 text-sm text-slate-500">{product.unit}</p><p className="mt-4 text-xl font-extrabold text-slate-900 dark:text-white">MWK {product.price}</p><p className="mt-2 flex items-center gap-1 text-xs font-medium text-slate-500"><MapPin size={14} /> {product.location}</p><Link to="/register" className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-green-700 px-3 py-2 text-sm font-semibold text-green-700 transition hover:bg-green-700 hover:text-white dark:text-green-400"><ShoppingBag size={16} /> View availability</Link></div></article>)}</div>
-            <div className="mt-8 text-center"><Link to="/register"><Button size="lg">Browse the full marketplace <ArrowRight className="ml-2" size={18} /></Button></Link><p className="mt-3 text-sm text-slate-500 dark:text-gray-400">Sign up free to view full listings, contact sellers, and order securely.</p></div>
-          </div>
-        </section>
-
-        {/* HOW IT WORKS */}
-        <section className="bg-white py-12 dark:bg-gray-950 sm:py-20 lg:py-24">
-          <div className="max-w-7xl mx-auto px-4 text-center sm:px-6">
-            <h2 className="mb-7 text-2xl font-extrabold lg:mb-16 lg:text-3xl">How It Works</h2>
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 sm:gap-8 lg:gap-12">
-              {[
-                { title: "List Your Produce", desc: "Upload your crops, quantity and photos in minutes — free." },
-                { title: "Get Matched & Sell", desc: "Buyers see your listing and place secure orders." },
-                { title: "Deliver & Get Paid", desc: "Arrange transport and receive payment via mobile money after delivery." },
-              ].map((step, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                  className={`rounded-2xl border border-green-100 bg-green-50/60 p-4 shadow-sm dark:border-green-900/50 dark:bg-green-950/30 sm:p-8 ${i === 2 ? "col-span-2 md:col-span-1" : ""}`}
-                >
-                  <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-green-100 text-lg font-bold text-green-700 sm:mb-6 sm:h-14 sm:w-14 sm:text-2xl">
-                    {i + 1}
-                  </div>
-                  <h3 className="mb-2 text-base font-bold sm:mb-3 sm:text-xl">{step.title}</h3>
-                  <p className="text-sm text-gray-700 sm:text-base">{step.desc}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* FEATURES – with images */}
-        <section className="bg-gradient-to-b from-white to-green-50 py-12 dark:from-gray-950 dark:to-green-950/20 sm:py-20 lg:py-24" id="features">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <h2 className="mb-8 text-center text-2xl font-extrabold sm:mb-16 sm:text-4xl lg:text-5xl">Why Farmers Choose MlimiConnect</h2>
-
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-2 md:gap-8 lg:grid-cols-3 lg:gap-10">
-              {[
-                { title: "Get Paid Safely", desc: "Escrow holds payment until you confirm delivery — no more chasing buyers.", img: "/features/secure-payments.png" },
-                { title: "Find Reliable Transport", desc: "Compare transporter bids and book delivery in one tap.", img: "/features/logistics.png" },
-                { title: "Know the Real Market Price", desc: "Live price updates for maize, beans, soy & more — sell at the best time.", img: "/features/prices.png" },
-                { title: "Build Your Reputation", desc: "Verified profiles & ratings help serious buyers trust you faster.", img: "/features/network.png" },
-                { title: "Instant Mobile Money", desc: "Withdraw earnings directly to Airtel Money or TNM Mpamba.", img: "/features/mobile-money.png" },
-                { title: "Sell Beyond Your District", desc: "Reach buyers in Mzuzu, Blantyre, Zomba & beyond.", img: "/features/regional.png" },
-              ].map((f, i) => (
-                <motion.div
-                  key={i}
-                  whileHover={{ y: -6, scale: 1.02 }}
-                  className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md transition-all duration-300 hover:border-green-500 dark:border-gray-800 dark:bg-gray-900"
-                >
-                  <div className="relative h-24 sm:h-48 md:h-56">
-                    <img
-                      src={f.img}
-                      alt={f.title}
-                      className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="p-3 sm:p-6">
-                    <h3 className="mb-1 text-sm font-bold text-gray-900 dark:text-white sm:mb-3 sm:text-xl">{f.title}</h3>
-                    <p className="text-xs leading-relaxed text-gray-700 dark:text-gray-300 sm:text-base">{f.desc}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* PARTNERS / TRUST */}
-        <section className="bg-green-50/70 py-10 dark:bg-green-950/20 sm:py-16">
-          <div className="max-w-6xl mx-auto px-4 text-center sm:px-6">
-            <h3 className="mb-5 text-xl font-bold text-gray-800 sm:mb-8 sm:text-2xl">
-              Trusted by Leading Organizations & Networks
-            </h3>
-            <div className="grid grid-cols-3 items-center gap-4 opacity-90 sm:flex sm:flex-wrap sm:justify-center sm:gap-10 md:gap-16">
-              <img src="/partners/airtel.png" alt="Airtel Malawi" className="mx-auto h-8 object-contain sm:h-10 md:h-12" loading="lazy" />
-              <img src="/partners/tnm.png" alt="TNM" className="mx-auto h-8 object-contain sm:h-10 md:h-12" loading="lazy" />
-              <img src="/partners/agcom.png" alt="Farmers Union" className="mx-auto h-8 object-contain sm:h-10 md:h-12" loading="lazy" />
-              <img src="/partners/malawi.jpg" alt="Government of Malawi" className="mx-auto h-8 object-contain sm:h-10 md:h-12" loading="lazy" />
-              <img src="/partners/IFAD.png" alt="IFAD" className="mx-auto h-8 object-contain sm:h-10 md:h-12" loading="lazy" />
-              <img src="/partners/fao.webp" alt="FAO" className="mx-auto h-8 object-contain sm:h-10 md:h-12" loading="lazy" />
-            </div>
-          </div>
-        </section>
-
-        {/* CTA – with background image restored */}
-        <section
-          className="relative py-28 lg:py-36 text-center text-white bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: "url('/cta-farm.png')", // ← your original farm image – replace if needed
-          }}
-        >
-          <div className="absolute inset-0 bg-green-900/65" /> {/* Darker overlay for text readability */}
-          <div className="relative max-w-4xl mx-auto px-6 z-10">
-            <img src="/logo-mark.png" alt="" className="mx-auto mb-8 h-20 w-20 object-contain" />
-            <h2 className="text-4xl lg:text-5xl font-extrabold mb-6 leading-tight">
-              Join Malawi's Fastest Growing Farmer Network Today
-            </h2>
-            <p className="text-xl lg:text-2xl text-green-100 mb-10 max-w-3xl mx-auto">
-              Start listing, selling and getting paid — completely free to join.
-            </p>
-            <Link to="/register">
-              <Button
-                variant="primary"
-                size="lg"
-                className="bg-white-60 cursor-pointer text-green-800 hover:bg-gray-100 text-xl px-12 py-6 shadow-2xl"
-              >
-                Create Free Account – Start Selling Now
-              </Button>
-            </Link>
-          </div>
-        </section>
-
-        {/* FOOTER */}
-        <footer className="bg-white py-10 text-gray-600 [&_a]:text-gray-600 [&_h4]:text-gray-900 [&_p]:text-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:[&_a]:text-gray-300 dark:[&_h4]:text-white dark:[&_p]:text-gray-400 sm:py-16">
-          <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 sm:grid-cols-2 sm:gap-10 sm:px-6 md:grid-cols-4 lg:gap-12">
-            {/* Brand */}
-            <div>
-              <div className="mb-3 flex items-center gap-2 sm:mb-6 sm:gap-3">
-                <img src="/logo-mark.png" alt="" className="h-10 w-10 object-contain" />
-                <span className="text-base font-bold text-gray-900 dark:text-white sm:text-2xl">MlimiConnect</span>
-              </div>
-              <p className="mb-3 text-xs leading-relaxed text-gray-400 sm:mb-6 sm:text-sm">
-                Connecting Malawian farmers, buyers and transporters for better prices, secure payments and reliable logistics.
-              </p>
-              <Link to="/contact" className="text-sm font-semibold text-green-400 transition-colors hover:text-green-300">Contact our team</Link>
-            </div>
-
-            {/* Company */}
-            <div>
-              <h4 className="mb-3 text-base font-semibold text-white sm:mb-6 sm:text-lg">Company</h4>
-              <ul className="space-y-3 text-sm">
-                <li><Link to="/about" className="hover:text-green-400 transition-colors">About</Link></li>
-                <li><a href="#features" className="hover:text-green-400 transition-colors">Features</a></li>
-                <li><Link to="/pricing" className="hover:text-green-400 transition-colors">Pricing</Link></li>
-                <li><Link to="/blog" className="hover:text-green-400 transition-colors">Blog</Link></li>
-              </ul>
-            </div>
-
-            {/* Support & Legal */}
-            <div>
-              <h4 className="mb-3 text-base font-semibold text-white sm:mb-6 sm:text-lg">Support</h4>
-              <ul className="space-y-3 text-sm">
-                <li><Link to="/faq" className="hover:text-green-400 transition-colors">FAQs</Link></li>
-                <li><Link to="/contact" className="hover:text-green-400 transition-colors">Contact Us</Link></li>
-              </ul>
-
-              <h4 className="mb-3 mt-5 text-base font-semibold text-white sm:mb-6 sm:mt-8 sm:text-lg">Legal</h4>
-              <ul className="space-y-3 text-sm">
-                <li><Link to="/privacy" className="hover:text-green-400 transition-colors">Privacy Policy</Link></li>
-                <li><Link to="/disclaimer" className="hover:text-green-400 transition-colors">Disclaimer</Link></li>
-              </ul>
-            </div>
-
-            {/* Follow Us */}
-            <div>
-              <h4 className="mb-3 text-base font-semibold text-white sm:mb-6 sm:text-lg">Follow Us</h4>
-              <p className="text-gray-400 text-sm mb-4">
-                Get updates on market prices, farming tips & platform news.
-              </p>
-              <p className="text-sm text-gray-500 mt-10">
-                © {new Date().getFullYear()} MlimiConnect. All rights reserved.
-              </p>
-            </div>
-          </div>
-        </footer>
-
-        {/* WHATSAPP FLOATING BUTTON */}
-        <a
-          href="https://wa.me/265123456789" // ← Replace with real number
-          target="_blank"
-          rel="noopener noreferrer"
-          className="fixed bottom-6 right-6 bg-green-600 text-white p-4 rounded-full shadow-2xl hover:bg-green-700 hover:scale-110 transition-all z-50"
-        >
-          <MessageCircle size={28} />
-        </a>
-      </div>
-    </>
-  );
+      <section className="bg-emerald-950 py-20 text-white"><div className="mx-auto max-w-5xl px-4 sm:px-6"><div className="text-center"><MessageCircle className="mx-auto text-amber-300" size={38}/><h2 className="mt-4 text-3xl font-black sm:text-4xl">Know what to expect</h2><p className="mt-3 text-emerald-100">Clear answers before you create an account.</p></div><div className="mt-9 grid gap-3">{faqs.map(([question,answer]) => <details key={question} className="group rounded-xl border border-white/15 bg-white/5 p-5"><summary className="flex cursor-pointer list-none items-center justify-between font-bold">{question}<ChevronDown className="transition group-open:rotate-180"/></summary><p className="mt-4 max-w-3xl leading-7 text-emerald-100">{answer}</p></details>)}</div></div></section>
+      <section className="bg-amber-300 py-16 text-emerald-950"><div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-7 px-4 text-center sm:px-6 lg:flex-row lg:text-left"><div><h2 className="text-3xl font-black sm:text-4xl">Ready to connect your agricultural work?</h2><p className="mt-2 text-lg font-medium">Create your free account and start with the tools that matter to you.</p></div><div className="flex flex-col gap-3 sm:flex-row"><Link to="/register" className={`${primary} bg-emerald-950 hover:bg-emerald-900`}>Get started free <ArrowRight/></Link><Link to="/support" className="inline-flex min-h-12 items-center justify-center rounded-xl border-2 border-emerald-950 px-6 py-3 font-bold">Ask a question</Link></div></div></section>
+    </main>
+    <footer className="bg-slate-950 py-12 text-slate-300"><div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 md:grid-cols-[1.5fr_1fr_1fr]"><div><div className="flex items-center gap-2 text-white"><img src="/logo-mark.png" alt="" className="h-10 w-10"/><span className="text-xl font-black">MlimiConnect</span></div><p className="mt-4 max-w-md leading-7">A Malawi-focused agricultural marketplace and farm-management platform for crops, livestock and poultry.</p></div><div><h2 className="font-bold text-white">Platform</h2><div className="mt-4 grid gap-3"><Link to="/app/marketplace">Marketplace</Link><Link to="/pricing">Pricing</Link><Link to="/about">About</Link><Link to="/register">Register</Link></div></div><div><h2 className="font-bold text-white">Trust & support</h2><div className="mt-4 grid gap-3"><Link to="/support">Help centre</Link><Link to="/privacy">Privacy</Link><Link to="/terms">Terms</Link><Link to="/contact">Contact</Link></div></div></div><div className="mx-auto mt-10 max-w-7xl border-t border-slate-800 px-4 pt-6 text-sm sm:px-6">© {new Date().getFullYear()} MlimiConnect. Provider-dependent services are shown according to current availability.</div></footer>
+  </div>;
 }

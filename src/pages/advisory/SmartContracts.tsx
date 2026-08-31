@@ -1,106 +1,16 @@
-// src/pages/advisory/SmartContracts.tsx
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { FileText, Plus } from "lucide-react";
+import api, { getApiError } from "../../lib/api";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
-import { ShieldCheck, FileText, DollarSign, Clock, CheckCircle, AlertTriangle, Plus } from "lucide-react";
 
-const mockContracts = [
-  {
-    id: "SC-001",
-    type: "Yield Insurance",
-    product: "Maize",
-    amount: "MWK 500,000",
-    status: "Active",
-    expiry: "2025-12-31",
-    trigger: "Rainfall < 400mm during growing season",
-  },
-  {
-    id: "SC-002",
-    type: "Price Floor Agreement",
-    product: "Tomatoes",
-    amount: "MWK 120,000/10kg",
-    status: "Pending",
-    expiry: "2025-08-15",
-    trigger: "Market price falls below agreed floor",
-  },
-];
+interface Agreement { id: number; name: string; terms: Record<string, unknown>; status: string; created_at: string }
 
 export default function SmartContracts() {
-  const [contracts] = useState(mockContracts);
-
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto">
-        <div className="mb-8">
-          <Link to="/app/advisory" className="text-green-700 dark:text-green-400 hover:underline flex items-center gap-2 mb-4">
-            ← Back to Advisory
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <ShieldCheck className="text-green-600" size={32} /> Smart Contracts
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Blockchain-based agreements for yield protection, price guarantees, and automatic payments
-          </p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
-          <Button className="flex items-center gap-2 flex-1 justify-center" asChild>
-            <Link to="/app/advisory/smart-contracts/new"><Plus size={18} /> Create New Contract</Link>
-          </Button>
-          <Button variant="outline" className="flex items-center gap-2 flex-1 justify-center" asChild>
-            <a href="#contracts"><FileText size={18} /> View All Contracts</a>
-          </Button>
-        </div>
-
-        <div id="contracts" className="space-y-6">
-          {contracts.map((contract) => (
-            <motion.div
-              key={contract.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-            >
-              <Card className="p-6 hover:shadow-lg transition-all duration-300">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                  <div className="flex items-center gap-4">
-                    <div className="bg-purple-100 dark:bg-purple-900/30 p-4 rounded-full">
-                      <ShieldCheck className="text-purple-600" size={28} />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-semibold">{contract.type}</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {contract.product} • {contract.amount}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col items-end gap-2">
-                    <span className={`px-4 py-1 rounded-full text-sm font-medium ${
-                      contract.status === "Active" ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" :
-                      "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
-                    }`}>
-                      {contract.status}
-                    </span>
-                    <p className="text-sm text-gray-500">
-                      Expires: {contract.expiry}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-6 pt-6 border-t dark:border-gray-700">
-                  <h4 className="text-lg font-medium mb-3">Trigger Conditions</h4>
-                  <p className="text-gray-700 dark:text-gray-300">
-                    {contract.trigger}
-                  </p>
-                </div>
-
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+  const [contracts, setContracts] = useState<Agreement[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  useEffect(() => { api.get<Agreement[]>("/api/advisory/smart-contracts/").then(({ data }) => setContracts(data)).catch(requestError => setError(getApiError(requestError, "Agreements could not be loaded."))).finally(() => setLoading(false)); }, []);
+  return <div className="mx-auto max-w-5xl px-4 py-8"><Link to="/app/advisory" className="font-semibold text-green-700">← Back to advisory</Link><div className="mt-4 flex flex-wrap items-start justify-between gap-4"><div><h1 className="flex items-center gap-3 text-3xl font-black"><FileText className="text-green-700" />Agricultural agreements</h1><p className="mt-2 text-slate-600 dark:text-slate-300">Draft and track agreement terms. A saved record is not automatically a signed legal contract, insurance policy or payment instruction.</p></div><Button asChild><Link to="/app/advisory/smart-contracts/new"><Plus size={17} className="mr-2" />New draft</Link></Button></div>{error && <p role="alert" className="mt-5 rounded-lg bg-red-50 p-3 text-red-700">{error}</p>}<div className="mt-7 space-y-4">{contracts.map(contract => <Card key={contract.id} className="p-6"><div className="flex flex-wrap justify-between gap-3"><div><h2 className="text-xl font-bold">{contract.name}</h2><p className="mt-1 text-sm text-slate-500">Created {new Date(contract.created_at).toLocaleDateString()}</p></div><span className="h-fit rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold capitalize text-slate-700">{contract.status}</span></div><dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2">{Object.entries(contract.terms || {}).map(([key, value]) => <div key={key}><dt className="font-semibold capitalize text-slate-500">{key.replaceAll("_", " ")}</dt><dd>{String(value || "Not specified")}</dd></div>)}</dl></Card>)}{!loading && !contracts.length && !error && <Card className="p-10 text-center text-slate-500">No agreement drafts yet.</Card>}{loading && <p className="text-center text-slate-500">Loading agreements...</p>}</div></div>;
 }

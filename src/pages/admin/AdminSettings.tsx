@@ -1,39 +1,47 @@
 // src/pages/admin/AdminSettings.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import { Save, Globe, DollarSign, Bell, Shield, Settings, LogOut } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import api from "../../lib/api";
+import api, { getApiError } from "../../lib/api";
+
+const defaultSettings = {
+  platformName: "MlimiConnect", commissionRate: 3.5, currency: "MWK", supportEmail: "support@mlimiconnect.mw", supportPhone: "", smsAlertsEnabled: false, emailAlertsEnabled: true, twoFactorRequired: false, maintenanceMode: false, maxListingImages: 8, maxProductQuantity: 10000,
+};
 
 export default function AdminSettings() {
   const navigate = useNavigate();
   const { logout } = useAuth();
-  const [settings, setSettings] = useState({
-    platformName: "MlimiConnect",
-    commissionRate: 3.5,
-    currency: "MWK",
-    supportEmail: "support@mlimiconnect.mw",
-    supportPhone: "+265 999 123 456",
-    smsAlertsEnabled: true,
-    emailAlertsEnabled: true,
-    twoFactorRequired: false,
-    maintenanceMode: false,
-    maxListingImages: 8,
-    maxProductQuantity: 10000,
-  });
+  const [settings, setSettings] = useState(defaultSettings);
 
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [changeReason, setChangeReason] = useState("");
+  const [fees, setFees] = useState({ platform_percent: "3.5", withdrawal_percent: "0", minimum_fee: "0" });
+
+  useEffect(() => {
+    api.get<Partial<typeof defaultSettings>>("/api/admin/settings/")
+      .then(({ data }) => setSettings(current => ({ ...current, ...data })))
+      .catch(requestError => setError(getApiError(requestError, "Platform settings could not be loaded.")))
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => { api.get("/api/admin/fees/").then(({ data }) => setFees(data)).catch(() => undefined); }, []);
 
   const handleSave = async () => {
     setSaving(true);
-    try { await api.put("/api/admin/settings/", settings); setSuccess(true); setTimeout(() => setSuccess(false), 3000); }
+    setError("");
+    if (changeReason.trim().length < 5) { setError("Enter a change reason of at least five characters."); setSaving(false); return; }
+    try { await Promise.all([api.put("/api/admin/settings/", { ...settings, change_reason: changeReason }), api.put("/api/admin/fees/", { ...fees, reason: changeReason })]); setSuccess(true); setTimeout(() => setSuccess(false), 3000); }
+    catch (requestError) { setError(getApiError(requestError, "Platform settings could not be saved.")); }
     finally { setSaving(false); }
   };
 
-  const handleChange = (key: keyof typeof settings, value: any) => {
+  const handleChange = (key: keyof typeof settings, value: string | number | boolean) => {
     setSettings(prev => ({ ...prev, [key]: value }));
   };
 
@@ -55,6 +63,7 @@ export default function AdminSettings() {
             Settings saved successfully!
           </div>
         )}
+        {error && <div role="alert" className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">{error}</div>}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* General Settings */}
@@ -135,8 +144,8 @@ export default function AdminSettings() {
                 <div className="relative">
                   <input
                     type="number"
-                    value={settings.commissionRate}
-                    onChange={(e) => handleChange("commissionRate", parseFloat(e.target.value) || 0)}
+                    value={fees.platform_percent}
+                    onChange={(e) => setFees(current => ({ ...current, platform_percent: e.target.value }))}
                     min="0"
                     max="20"
                     step="0.1"
@@ -145,9 +154,12 @@ export default function AdminSettings() {
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">%</span>
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  {settings.commissionRate}% of each successful transaction goes to platform
+                  {fees.platform_percent}% of each successful transaction goes to platform
                 </p>
               </div>
+
+              <label className="block text-sm font-medium">Withdrawal fee (%)<input type="number" min="0" max="100" step="0.1" value={fees.withdrawal_percent} onChange={e => setFees(current => ({ ...current, withdrawal_percent: e.target.value }))} className="mt-2 w-full rounded-lg border px-4 py-3 dark:bg-gray-800" /></label>
+              <label className="block text-sm font-medium">Minimum fee (MWK)<input type="number" min="0" step="1" value={fees.minimum_fee} onChange={e => setFees(current => ({ ...current, minimum_fee: e.target.value }))} className="mt-2 w-full rounded-lg border px-4 py-3 dark:bg-gray-800" /></label>
 
               <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg">
                 <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300">
@@ -274,6 +286,8 @@ export default function AdminSettings() {
           </Card>
         </div>
 
+        <label className="mt-8 block text-sm font-medium">Required change reason<input value={changeReason} onChange={e => setChangeReason(e.target.value)} placeholder="Explain why these settings are changing" className="mt-2 w-full rounded-lg border px-4 py-3 dark:bg-gray-800" /></label>
+
         {/* Save Button */}
         <div className="mt-10 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
           <Button
@@ -289,11 +303,11 @@ export default function AdminSettings() {
           </Button>
           <Button
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || loading}
             className="min-h-11 justify-center px-8 py-3 text-base sm:text-lg flex items-center gap-3"
           >
             <Save size={20} />
-            {saving ? "Saving..." : "Save All Settings"}
+            {loading ? "Loading..." : saving ? "Saving..." : "Save All Settings"}
           </Button>
         </div>
       </div>

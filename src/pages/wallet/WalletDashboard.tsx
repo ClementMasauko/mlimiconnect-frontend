@@ -32,7 +32,7 @@ export default function WalletDashboard() {
   const [balance, setBalance] = useState(mockBalance);
   const [transactions, setTransactions] = useState(mockTransactions);
   const [error, setError] = useState("");
-  useEffect(() => { if (demoEnabled) return; api.get("/api/wallet/").then(({ data }) => { setBalance({ available: Number(data.available), pendingEscrow: Number(data.pending), totalEarned: Number(data.available) + Math.max(0, Number(data.pending)), currency: "MWK" }); setTransactions(data.transactions.map((item: any) => ({ id: item.id, date: new Date(item.created_at).toLocaleDateString(), type: item.type, amount: Number(item.amount), status: item.status, desc: `${item.type} · ${item.reference}` }))); }).catch(() => setError("Wallet data is temporarily unavailable.")); }, [demoEnabled]);
+  useEffect(() => { if (demoEnabled) return; type WalletRow={id:number;created_at:string;type:string;amount:string|number;status:string;reference:string}; api.get<{available:string|number;pending:string|number;transactions:WalletRow[]}>("/api/wallet/").then(({ data }) => { setBalance({ available: Number(data.available), pendingEscrow: Number(data.pending), totalEarned: Number(data.available) + Math.max(0, Number(data.pending)), currency: "MWK" }); setTransactions(data.transactions.map(item => ({ id: String(item.id), date: new Date(item.created_at).toLocaleDateString(), type: item.type, amount: Number(item.amount), status: item.status, desc: `${item.type} · ${item.reference}` }))); }).catch(() => setError("Wallet data is temporarily unavailable.")); }, [demoEnabled]);
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">

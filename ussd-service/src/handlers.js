@@ -14,13 +14,14 @@ const normalizePhone = (value) => {
 const message = (session, english, chichewa = english) => session.language === 'ny' ? chichewa : english;
 const cleanInput = (value) => String(value ?? '').replace(/[\r\n*]/g, ' ').trim().slice(0, 40);
 
-function createUSSDHandler({ store, authenticate = verifyPin, now = () => Date.now(), config = {} }) {
+function createUSSDHandler({ store, authenticate = verifyPin, services = {prices:async()=>({items:[]}),orders:async()=>({items:[]}),weather:async()=>{throw new Error()},pest:async()=>{throw new Error()},support:async()=>({phone:'support@mlimiconnect.mw',hours:''})}, now = () => Date.now(), config = {} }) {
   if (!store?.get || !store?.set) throw new Error('A compatible session store is required');
   const sessionTtl = positiveInteger(config.sessionTtl ?? process.env.SESSION_TTL, 300);
   const maxAttempts = positiveInteger(config.maxPinAttempts ?? process.env.MAX_PIN_ATTEMPTS, 3);
   const lockoutSeconds = positiveInteger(config.lockoutSeconds ?? process.env.PIN_LOCKOUT_SECONDS, 900);
 
   return async function handleUSSD(payload = {}) {
+    const correlationId = cleanInput(payload.correlationId);
     const sessionId = cleanInput(payload.sessionId);
     const phone = normalizePhone(payload.phoneNumber);
     const fullText = String(payload.text ?? '').trim().slice(0, 500);
@@ -53,7 +54,7 @@ function createUSSDHandler({ store, authenticate = verifyPin, now = () => Date.n
     if (session.step === 1) {
       if (!/^\d{4}$/.test(input)) return respond(`CON ${message(session, 'Invalid PIN format. Enter 4 digits:', 'PIN si yolondola. Lowetsani manambala 4:')}`);
       let authenticated = false;
-      try { authenticated = await authenticate({ phone, pin: input }); } catch { authenticated = false; }
+      try { authenticated = await authenticate({ phone, pin: input, correlationId }); } catch { authenticated = false; }
       if (!authenticated) {
         session.attempts += 1;
         if (session.attempts >= maxAttempts) {
@@ -71,17 +72,17 @@ function createUSSDHandler({ store, authenticate = verifyPin, now = () => Date.n
 
     if (!session.authenticated) return respond(`END ${message(session, 'Your session expired. Please dial again.', 'Nthawi yanu yatha. Imbaninso.')}`);
     if (session.step === 2) {
-      if (input === '1') return respond(`END ${message(session, 'Market prices are temporarily unavailable. Check the app for verified live prices.', 'Mitengo ya msika sikupezeka panopa. Onani pulogalamu pa mitengo yotsimikizika.')}`);
+      if(input==='1'){try{const data=await services.prices();const text=(data.items||[]).slice(0,3).map(row=>`${row.crop}: MWK ${row.price}/${row.unit}`).join('\n');return respond(`END ${text||message(session,'No prices available.','Palibe mitengo.')}`)}catch{return respond(`END ${message(session,'Price service is busy. Try again later.','Mitengo yatanganidwa. Yesaninso.')}`)}}
       if (input === '2') { session.step = 3; return respond(`CON ${message(session, 'Advisory Menu:\n1. Weather Forecast\n2. Pest & Disease Tips', 'Menu ya Upangiri:\n1. Nyengo\n2. Upangiri wa Tizirombo')}`); }
-      if (input === '3') return respond(`END ${message(session, 'Order lookup is temporarily unavailable. Check the MlimiConnect app.', 'Maoda sakupezeka panopa. Onani pulogalamu ya MlimiConnect.')}`);
-      if (input === '4') return respond(`END ${message(session, 'Help: contact MlimiConnect support.', 'Thandizo: funsani a MlimiConnect.')}`);
+      if(input==='3'){try{const data=await services.orders(phone);const text=(data.items||[]).map(row=>`#${row.id}: ${row.status}`).join('\n');return respond(`END ${text||message(session,'No recent orders.','Palibe maoda aposachedwa.')}`)}catch{return respond('END Order service is busy. / Maoda atanganidwa.')}}
+      if(input==='4'){try{const data=await services.support();return respond(`END Support: ${data.phone}\n${data.hours}`)}catch{return respond('END Support: support@mlimiconnect.mw')}}
       return respond(`CON ${message(session, 'Invalid choice. Choose:\n1. Market Prices\n2. Advisory\n3. My Orders\n4. Help', 'Sankho silolondola. Sankhani:\n1. Mitengo\n2. Upangiri\n3. Maoda\n4. Thandizo')}`);
     }
     if (session.step === 3 && input === '1') { session.step = 4; return respond(`CON ${message(session, 'Enter your district:', 'Lowetsani boma lanu:')}`); }
     if (session.step === 3 && input === '2') { session.step = 5; return respond(`CON ${message(session, 'Enter crop name:', 'Lowetsani dzina la mbewu:')}`); }
     if (session.step === 3) return respond(`CON ${message(session, 'Invalid choice. Choose 1 or 2:', 'Sankho silolondola. Sankhani 1 kapena 2:')}`);
-    if (session.step === 4) return respond(`END ${message(session, `Weather for ${input || 'your district'} is not available yet.`, `Nyengo ya ${input || 'boma lanu'} sikupezeka panopa.`)}`);
-    if (session.step === 5) return respond(`END ${message(session, `Pest advice for ${input || 'this crop'} is not available yet.`, `Upangiri wa tizirombo wa ${input || 'mbewu iyi'} sikupezeka panopa.`)}`);
+    if(session.step===4){try{const data=await services.weather(input);return respond(`END ${data.district}: ${data.summary}\nSource: ${data.source}`)}catch{return respond(`END ${message(session,'Weather service is busy.','Nyengo yatanganidwa.')}`)}}
+    if(session.step===5){try{const data=await services.pest(input);return respond(`END ${data.guidance}\n${message(session,'Not a diagnosis.','Si kupeza matenda kotsimikiza.')}`)}catch{return respond('END Advisory service is busy. / Upangiri watanganidwa.')}}
     return respond(`END ${message(session, 'Invalid session. Please dial again.', 'Nthawi si yolondola. Imbaninso.')}`);
   };
 }

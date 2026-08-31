@@ -45,7 +45,7 @@ export default function BecomeBuyer() {
 
   // Speech Recognition setup
   useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = SpeechRecognition ? new SpeechRecognition() : null;
 
     if (!recognition) {
@@ -103,7 +103,8 @@ export default function BecomeBuyer() {
     toast.loading("Listening (Chichewa/English)... Speaks now!", { id: "voice-toast" });
 
     try {
-      const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) throw new Error("Speech recognition is unavailable.");
       const rec = new SpeechRecognition();
       rec.lang = "ny-MW";
       rec.start();

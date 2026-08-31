@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
@@ -6,8 +6,10 @@ import { Upload, X, Gavel, ShoppingBag, Clock, HelpCircle } from "lucide-react";
 import { useMarketplace } from "../../context/MarketplaceContext";
 import { useAuth } from "../../context/AuthContext";
 import api, { getApiError } from "../../lib/api";
+import { compressImage, formatFileSize } from "../../lib/lowData";
 
 export default function CreateListing() {
+  const liveAnimalCategories = ["live-animals","cattle","goats","sheep","pigs","broiler-chickens","layer-chickens","indigenous-chickens","ducks-poultry","chicks-breeding-stock"];
   const navigate = useNavigate();
   const { addListing } = useMarketplace();
   const { user } = useAuth();
@@ -21,6 +23,8 @@ export default function CreateListing() {
     listingType: "fixed-price" as "fixed-price" | "auction",
     condition: "new" as "new" | "used-excellent" | "used-good" | "used-fair",
     durationDays: "5",
+    unit:"kg",pack_size:"1",minimum_order:"1",harvest_date:"",available_from:"",expiry_date:"",listing_expires_at:"",grade:"",variety:"",moisture_content:"",certification:"",is_organic:false,storage_conditions:"",delivery_radius_km:"",latitude:"",longitude:"",allow_partial_fulfilment:false,tier_minimum:"",tier_price:"",
+    livestock_herd_id:"",livestock_sex:"mixed",livestock_date_of_birth:"",livestock_age_months:"",livestock_sale_format:"group",livestock_purpose:"other",live_weight_kg:"",health_inspection_date:"",animal_identifier:"",breeding_status:"",production_summary:"",transport_available:false,handling_requirements:"",vaccination_summary:"",movement_permit_reference:"",welfare_declaration:false,
   });
 
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -28,12 +32,14 @@ export default function CreateListing() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [livestockHerds,setLivestockHerds]=useState<Array<{id:number;name:string;species:string}>>([]);
+  useEffect(()=>{api.get<Array<{id:number;name:string;species:string}>>("/api/livestock/herds/").then(response=>setLivestockHerds(response.data)).catch(()=>setLivestockHerds([]));},[]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImageFile(file);
-      setPreview(URL.createObjectURL(file));
+      const compressed=await compressImage(file);setImageFile(compressed);
+      setPreview(URL.createObjectURL(compressed));
     }
   };
 
@@ -88,10 +94,17 @@ export default function CreateListing() {
         payload.append("duration_days", form.durationDays);
       }
       if (imageFile) payload.append("image", imageFile);
+      for(const key of ["unit","pack_size","minimum_order","harvest_date","available_from","expiry_date","listing_expires_at","grade","variety","moisture_content","certification","storage_conditions","delivery_radius_km","latitude","longitude"] as const){if(form[key]!=="")payload.append(key,form[key]);}
+      payload.append("is_organic",String(form.is_organic));payload.append("allow_partial_fulfilment",String(form.allow_partial_fulfilment));
+      if(form.tier_minimum&&form.tier_price)payload.append("wholesale_tiers",JSON.stringify([{minimum_quantity:Number(form.tier_minimum),price_per_unit:form.tier_price}]));
 
-      await api.post("/api/marketplace/listings/", payload, {
+      const listingResponse = await api.post<{id:number}>("/api/marketplace/listings/", payload, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+      if(liveAnimalCategories.includes(form.category)){
+        if(!form.livestock_herd_id||!form.welfare_declaration)throw new Error("Choose the source herd and accept the animal-welfare declaration.");
+        await api.post(`/api/livestock/listings/${listingResponse.data.id}/details/`,{herd_id:Number(form.livestock_herd_id),sex:form.livestock_sex,date_of_birth:form.livestock_date_of_birth||null,age_months:form.livestock_age_months||null,sale_format:form.livestock_sale_format,sale_quantity:Number(form.quantity),purpose:form.livestock_purpose,live_weight_kg:form.live_weight_kg||null,health_inspection_date:form.health_inspection_date||null,animal_identifier:form.animal_identifier,breeding_status:form.breeding_status,production_summary:form.production_summary,transport_available:form.transport_available,handling_requirements:form.handling_requirements,vaccination_summary:form.vaccination_summary,movement_permit_reference:form.movement_permit_reference,welfare_declaration:true});
+      }
     } catch (requestError: unknown) {
       setError(getApiError(requestError, "The listing could not be published. Please try again."));
       setSubmitting(false);
@@ -215,6 +228,7 @@ export default function CreateListing() {
                       onChange={handleImageChange}
                       className="hidden"
                     />
+                    {imageFile&&<small className="mt-2 block text-slate-500">Upload: {formatFileSize(imageFile.size)}</small>}
                   </label>
                 )}
               </div>
@@ -256,7 +270,7 @@ export default function CreateListing() {
                   </label>
                   <select
                     value={form.condition}
-                    onChange={(e) => setForm({ ...form, condition: e.target.value as any })}
+                    onChange={(e) => setForm({ ...form, condition: e.target.value as typeof form.condition })}
                     className="w-full px-4 py-2.5 border border-slate-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-white text-xs font-bold outline-none focus:ring-2 focus:ring-green-500"
                   >
                     <option value="new">Brand New / Handpicked Fresh</option>
@@ -283,9 +297,21 @@ export default function CreateListing() {
                     <option value="tools">Hand Tools</option>
                     <option value="equipment">Farm Equipment</option>
                     <option value="machinery">Machinery & Vehicles</option>
+                    <option value="eggs">Eggs</option>
+                    <option value="milk">Milk & dairy</option>
+                    <option value="animal-feed">Animal feed</option>
+                    <option value="manure">Manure</option>
+                    <option value="live-animals">Live animals (verification required)</option>
+                    <option value="cattle">Cattle</option><option value="goats">Goats</option><option value="sheep">Sheep</option><option value="pigs">Pigs</option><option value="broiler-chickens">Broiler chickens</option><option value="layer-chickens">Layer chickens</option><option value="indigenous-chickens">Indigenous chickens</option><option value="ducks-poultry">Ducks & other poultry</option><option value="chicks-breeding-stock">Chicks & breeding stock</option><option value="veterinary-supplies">Veterinary supplies</option><option value="livestock-services">Livestock services</option>
                   </select>
                 </div>
               </div>
+
+              {liveAnimalCategories.includes(form.category) && <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 dark:bg-amber-950/20">
+                <h3 className="font-bold text-amber-950 dark:text-amber-100">Live-animal verification</h3><p className="mt-1 text-xs text-amber-900 dark:text-amber-200">This listing remains hidden until its welfare and supporting records are reviewed.</p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2"><select required className="rounded-lg border p-3 dark:bg-gray-900" value={form.livestock_herd_id} onChange={e=>setForm({...form,livestock_herd_id:e.target.value})}><option value="">Select source herd or flock</option>{livestockHerds.map(x=><option key={x.id} value={x.id}>{x.name} · {x.species.replaceAll("_"," ")}</option>)}</select><select className="rounded-lg border p-3 dark:bg-gray-900" value={form.livestock_sex} onChange={e=>setForm({...form,livestock_sex:e.target.value})}><option value="mixed">Mixed</option><option value="female">Female</option><option value="male">Male</option></select><input type="date" title="Date of birth" className="rounded-lg border p-3 dark:bg-gray-900" value={form.livestock_date_of_birth} onChange={e=>setForm({...form,livestock_date_of_birth:e.target.value})}/><input type="number" min="0" className="rounded-lg border p-3 dark:bg-gray-900" placeholder="Estimated age in months" value={form.livestock_age_months} onChange={e=>setForm({...form,livestock_age_months:e.target.value})}/><select className="rounded-lg border p-3 dark:bg-gray-900" value={form.livestock_sale_format} onChange={e=>setForm({...form,livestock_sale_format:e.target.value})}><option value="individual">Individual sale</option><option value="group">Group sale</option></select><select className="rounded-lg border p-3 dark:bg-gray-900" value={form.livestock_purpose} onChange={e=>setForm({...form,livestock_purpose:e.target.value})}>{["breeding","meat","milk","eggs","draught","other"].map(x=><option value={x} key={x}>{x}</option>)}</select><input type="number" min="0" step="0.01" className="rounded-lg border p-3 dark:bg-gray-900" placeholder="Average live weight kg" value={form.live_weight_kg} onChange={e=>setForm({...form,live_weight_kg:e.target.value})}/><input type="date" title="Health inspection date" className="rounded-lg border p-3 dark:bg-gray-900" value={form.health_inspection_date} onChange={e=>setForm({...form,health_inspection_date:e.target.value})}/><input className="rounded-lg border p-3 dark:bg-gray-900" placeholder="Ear tag, ring or batch number" value={form.animal_identifier} onChange={e=>setForm({...form,animal_identifier:e.target.value})}/><input className="rounded-lg border p-3 dark:bg-gray-900" placeholder="Pregnancy or breeding status" value={form.breeding_status} onChange={e=>setForm({...form,breeding_status:e.target.value})}/><textarea className="rounded-lg border p-3 dark:bg-gray-900" placeholder="Vaccination and health summary" value={form.vaccination_summary} onChange={e=>setForm({...form,vaccination_summary:e.target.value})}/><textarea className="rounded-lg border p-3 dark:bg-gray-900" placeholder="Milk, egg, weight or breeding production summary" value={form.production_summary} onChange={e=>setForm({...form,production_summary:e.target.value})}/><textarea className="rounded-lg border p-3 dark:bg-gray-900 sm:col-span-2" placeholder="Humane handling requirements" value={form.handling_requirements} onChange={e=>setForm({...form,handling_requirements:e.target.value})}/><input className="rounded-lg border p-3 dark:bg-gray-900 sm:col-span-2" placeholder="Movement permit reference, if issued" value={form.movement_permit_reference} onChange={e=>setForm({...form,movement_permit_reference:e.target.value})}/></div><label className="mt-3 flex gap-2 text-sm"><input type="checkbox" checked={form.transport_available} onChange={e=>setForm({...form,transport_available:e.target.checked})}/>Suitable animal transport is available</label>
+                {!livestockHerds.length&&<p className="mt-3 text-sm"><Link className="font-bold underline" to="/app/livestock">Create a herd or flock record first.</Link></p>}<label className="mt-4 flex items-start gap-2 text-sm"><input required type="checkbox" className="mt-1" checked={form.welfare_declaration} onChange={e=>setForm({...form,welfare_declaration:e.target.checked})}/><span>I confirm that the animals are described accurately and will be handled and transported using appropriate welfare safeguards.</span></label>
+              </div>}
 
               {/* Price & Quantity Blocks */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 border-t border-slate-100 dark:border-gray-850 pt-5">
@@ -337,6 +363,8 @@ export default function CreateListing() {
                   </div>
                 )}
               </div>
+
+              <Card className="grid gap-4 border p-5 sm:grid-cols-3"><h2 className="text-lg font-bold sm:col-span-3">Agricultural sale details</h2><label>Sale unit<select value={form.unit} onChange={e=>setForm({...form,unit:e.target.value})} className="mt-1 w-full rounded border p-2">{["kg","tonne","bag","crate","litre","item"].map(x=><option key={x}>{x}</option>)}</select></label><label>Pack size<input type="number" min="0.01" step="0.01" value={form.pack_size} onChange={e=>setForm({...form,pack_size:e.target.value})} className="mt-1 w-full rounded border p-2"/></label><label>Minimum order<input type="number" min="1" value={form.minimum_order} onChange={e=>setForm({...form,minimum_order:e.target.value})} className="mt-1 w-full rounded border p-2"/></label><label>Harvest date<input type="date" value={form.harvest_date} onChange={e=>setForm({...form,harvest_date:e.target.value})} className="mt-1 w-full rounded border p-2"/></label><label>Available from<input type="date" value={form.available_from} onChange={e=>setForm({...form,available_from:e.target.value})} className="mt-1 w-full rounded border p-2"/></label><label>Product expiry<input type="date" value={form.expiry_date} onChange={e=>setForm({...form,expiry_date:e.target.value})} className="mt-1 w-full rounded border p-2"/></label><label>Listing expires<input type="datetime-local" value={form.listing_expires_at} onChange={e=>setForm({...form,listing_expires_at:e.target.value})} className="mt-1 w-full rounded border p-2"/></label><label>Grade<input value={form.grade} onChange={e=>setForm({...form,grade:e.target.value})} className="mt-1 w-full rounded border p-2"/></label><label>Variety<input value={form.variety} onChange={e=>setForm({...form,variety:e.target.value})} className="mt-1 w-full rounded border p-2"/></label><label>Moisture (%)<input type="number" min="0" max="100" step="0.01" value={form.moisture_content} onChange={e=>setForm({...form,moisture_content:e.target.value})} className="mt-1 w-full rounded border p-2"/></label><label>Certification<input value={form.certification} onChange={e=>setForm({...form,certification:e.target.value})} className="mt-1 w-full rounded border p-2"/></label><label>Delivery radius (km)<input type="number" min="0" value={form.delivery_radius_km} onChange={e=>setForm({...form,delivery_radius_km:e.target.value})} className="mt-1 w-full rounded border p-2"/></label><label>Storage conditions<input value={form.storage_conditions} onChange={e=>setForm({...form,storage_conditions:e.target.value})} className="mt-1 w-full rounded border p-2"/></label><label>Latitude<input type="number" step="0.000001" value={form.latitude} onChange={e=>setForm({...form,latitude:e.target.value})} className="mt-1 w-full rounded border p-2"/></label><label>Longitude<input type="number" step="0.000001" value={form.longitude} onChange={e=>setForm({...form,longitude:e.target.value})} className="mt-1 w-full rounded border p-2"/></label><label>Wholesale minimum<input type="number" min="1" value={form.tier_minimum} onChange={e=>setForm({...form,tier_minimum:e.target.value})} className="mt-1 w-full rounded border p-2"/></label><label>Wholesale unit price<input type="number" min="0" value={form.tier_price} onChange={e=>setForm({...form,tier_price:e.target.value})} className="mt-1 w-full rounded border p-2"/></label><label className="flex items-center gap-2"><input type="checkbox" checked={form.is_organic} onChange={e=>setForm({...form,is_organic:e.target.checked})}/>Certified organic</label><label className="flex items-center gap-2"><input type="checkbox" checked={form.allow_partial_fulfilment} onChange={e=>setForm({...form,allow_partial_fulfilment:e.target.checked})}/>Allow partial fulfilment</label></Card>
 
               {/* Submit / Cancel Buttons */}
               <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 dark:border-gray-850">

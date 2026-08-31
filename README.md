@@ -98,7 +98,7 @@ The Django backend now provides this endpoint. Set the same long random `USSD_SE
 
 ## Security notes
 
-The frontend guards routes for user experience, but the API must independently enforce authentication and role permissions. Move browser tokens to secure `HttpOnly` cookies when the API supports cookie-based authentication.
+Authentication uses a server-owned `HttpOnly` session cookie with CSRF protection. The frontend guards routes for user experience, but the API must independently enforce authentication, object ownership, organisation membership, and role permissions on every request.
 
 ## Tests
 

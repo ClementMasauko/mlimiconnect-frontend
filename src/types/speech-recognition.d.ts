@@ -7,6 +7,9 @@ interface SpeechRecognitionErrorEvent extends Event {
 }
 
 interface SpeechRecognition {
+  maxAlternatives: number;
+  onend: (() => void) | null;
+  abort(): void;
   continuous: boolean;
   interimResults: boolean;
   lang: string;

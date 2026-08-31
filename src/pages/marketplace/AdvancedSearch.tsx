@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Search, SlidersHorizontal, MapPin, Star, Gavel, ShoppingBag, ArrowUpDown, ShieldCheck } from "lucide-react";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
-import { useMarketplace } from "../../context/MarketplaceContext";
+import { useMarketplace, type Product } from "../../context/MarketplaceContext";
+import api from "../../lib/api";
 
 export default function AdvancedSearch() {
   const { products, getSellerStats } = useMarketplace();
+  const [serverProducts, setServerProducts] = useState<Product[]>(products);
   
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({
@@ -32,37 +34,10 @@ export default function AdvancedSearch() {
     });
     setSearchQuery("");
   };
+  const saveSearch=async()=>{await api.post("/api/marketplace/searches/saved/",{name:searchQuery.trim()||`Marketplace search ${new Date().toLocaleDateString()}`,filters:{q:searchQuery,...filters}});};
 
-  // Perform filtering
-  const filteredProducts = products.filter((p) => {
-    const matchesQuery = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         p.description.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesCategory = !filters.category || p.category === filters.category;
-    
-    const matchesLocation = !filters.location || p.location.toLowerCase() === filters.location.toLowerCase();
-    
-    const currentPrice = p.listingType === "auction" ? (p.currentBid || p.price) : p.price;
-    const matchesPrice = 
-      (!filters.priceMin || currentPrice >= Number(filters.priceMin)) &&
-      (!filters.priceMax || currentPrice <= Number(filters.priceMax));
-
-    const matchesType = 
-      filters.purchaseType === "all" || 
-      (filters.purchaseType === "auction" && p.listingType === "auction") ||
-      (filters.purchaseType === "fixed-price" && p.listingType === "fixed-price");
-
-    const matchesCondition = 
-      !filters.condition || 
-      (filters.condition === "new" && p.condition === "new") ||
-      (filters.condition === "used" && p.condition?.startsWith("used"));
-
-    const sellerStats = getSellerStats(p.farmer);
-    const matchesRating = Number(filters.minRating) === 0 || 
-                          (Number(filters.minRating) === 5 ? sellerStats.positivePercentage >= 95 : sellerStats.averageRating >= Number(filters.minRating));
-
-    return matchesQuery && matchesCategory && matchesLocation && matchesPrice && matchesType && matchesCondition && matchesRating;
-  });
+  useEffect(()=>{const timer=window.setTimeout(()=>{api.get("/api/marketplace/public-listings/",{params:{q:searchQuery,category:filters.category||undefined,location:filters.location||undefined,normalized_price_min:filters.priceMin||undefined,normalized_price_max:filters.priceMax||undefined,listing_type:filters.purchaseType==="all"?undefined:filters.purchaseType,condition:filters.condition||undefined,page_size:100}}).then(({data})=>{const rows=Array.isArray(data)?data:data.results;setServerProducts(rows.map((p:Product&{price:string|number})=>({...p,price:Number(p.price),image:p.image||"/logo.png"})));});},300);return()=>window.clearTimeout(timer);},[searchQuery,filters]);
+  const filteredProducts = serverProducts;
 
   const uniqueLocations = Array.from(new Set(products.map((p) => p.location)));
 
@@ -97,6 +72,7 @@ export default function AdvancedSearch() {
               <Button variant="ghost" size="sm" onClick={resetFilters} className="text-slate-400 hover:text-green-600 hover:bg-transparent font-bold">
                 Reset All
               </Button>
+              <Button variant="outline" size="sm" onClick={()=>void saveSearch()}>Save</Button>
             </div>
 
             <div className="space-y-6 text-sm">

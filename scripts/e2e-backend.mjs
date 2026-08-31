@@ -1,0 +1,13 @@
+import { mkdirSync, rmSync } from "node:fs";
+import { spawn } from "node:child_process";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+const root=resolve(dirname(fileURLToPath(import.meta.url)),".."),backend=resolve(root,"..","backend"),runtime=resolve(root,".e2e");
+rmSync(runtime,{recursive:true,force:true});mkdirSync(resolve(runtime,"emails"),{recursive:true});
+const python=process.platform==="win32"?resolve(backend,".venv","Scripts","python.exe"):process.env.PYTHON||"python3";
+const env={...process.env,E2E_DATABASE_PATH:resolve(runtime,"db.sqlite3"),E2E_MODE:"true",MEDIA_STORAGE_PROVIDER:"filesystem",EMAIL_BACKEND:"django.core.mail.backends.filebased.EmailBackend",EMAIL_FILE_PATH:resolve(runtime,"emails"),DJANGO_DEBUG:"true",DJANGO_ALLOWED_HOSTS:"127.0.0.1,localhost",DJANGO_SECURE_SSL_REDIRECT:"false",PAYMENTS_ENABLED:"true",PAYMENT_PROVIDER:"e2e",PAYMENT_MODE:"test",PAYMENT_WEBHOOK_SECRET:"e2e-webhook-secret",CORS_ALLOWED_ORIGINS:"http://127.0.0.1:4173",CSRF_TRUSTED_ORIGINS:"http://127.0.0.1:4173",FRONTEND_URL:"http://127.0.0.1:4173"};
+const pythonProcess=(args,options={})=>process.platform==="win32"?spawn("C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",["-NoProfile","-ExecutionPolicy","Bypass","-File",resolve(root,"scripts","run-python.ps1"),python,...args],{cwd:backend,env,stdio:"inherit",...options}):spawn(python,args,{cwd:backend,env,stdio:"inherit",...options});
+const run=async args=>{const child=pythonProcess(args);const result=await awaitExit(child);if(result)process.exit(result);};
+function awaitExit(child){return new Promise(resolve=>child.on("exit",code=>resolve(code??0)));}
+await run(["manage.py","migrate","--noinput"]);await run(["manage.py","shell","-c","from core.models import User,TransporterProfile; a=User.objects.create_superuser('e2e_admin','admin@e2e.test','AdminPass!234',user_type='admin',email_verified=True) if not User.objects.filter(username='e2e_admin').exists() else User.objects.get(username='e2e_admin'); t=User.objects.create_user('e2e_transporter','transport@e2e.test','TransportPass!234',user_type='farmer',email_verified=True) if not User.objects.filter(username='e2e_transporter').exists() else User.objects.get(username='e2e_transporter'); TransporterProfile.objects.get_or_create(user=t,defaults={'vehicle_type':'truck','capacity_kg':5000,'license_reference':'E2E-TRUCK','verification_status':'verified'})"]);
+const server=pythonProcess(["manage.py","runserver","127.0.0.1:8000","--noreload"]);for(const signal of ["SIGINT","SIGTERM"])process.on(signal,()=>server.kill(signal));server.on("exit",code=>process.exit(code??0));

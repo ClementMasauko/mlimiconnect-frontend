@@ -5,22 +5,23 @@ import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import { Upload, X, Save, ArrowLeft, Trash2, Package, AlertCircle } from "lucide-react";
 import ReactQuill from "react-quill";
+import { compressImage, formatFileSize, useDataPreferences } from "../../lib/lowData";
 import "react-quill/dist/quill.snow.css";
+import api, { getApiError } from "../../lib/api";
 
 // ────────────────────────────────────────────────────────────────
 // Mock data (replace with real fetch later)
 // ────────────────────────────────────────────────────────────────
-const mockListing = {
-  id: 101,
-  name: "Fresh Maize (50kg bag)",
-  description: "<p>High-quality yellow maize harvested this week.</p><ul><li>Organically grown</li><li>No chemicals</li><li>Perfect for nsima</li></ul>",
-  price: 28500,
-  quantity: 48,
-  category: "crops",
-  subcategory: "maize",
-  image: "https://images.unsplash.com/photo-1627920748119-7f6d4e73d961?w=800&h=600&fit=crop",
-  status: "active",
-};
+interface ListingResponse {
+  id: number;
+  name: string;
+  description: string;
+  price: string | number;
+  quantity: string | number;
+  category: string;
+  subcategory?: string;
+  image?: string | null;
+}
 
 const categories = [
   { value: "crops", label: "Crops" },
@@ -74,41 +75,27 @@ export default function EditListing() {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [error, setError] = useState("");
 
-  // Fetch listing (mock delay)
   useEffect(() => {
-    setTimeout(() => {
-      setForm({
-        name: mockListing.name,
-        description: mockListing.description,
-        price: mockListing.price.toString(),
-        quantity: mockListing.quantity.toString(),
-        category: mockListing.category,
-        subcategory: mockListing.subcategory,
-        image: null,
-        currentImage: mockListing.image,
-      });
-      setPreview(mockListing.image);
-      setLoading(false);
-    }, 800);
+    if (!id) { setError("The listing ID is missing."); setLoading(false); return; }
+    api.get<ListingResponse>(`/api/marketplace/listings/${encodeURIComponent(id)}/`)
+      .then(({ data }) => {
+        setForm({ name: data.name, description: data.description, price: String(data.price), quantity: String(data.quantity), category: data.category, subcategory: data.subcategory || "", image: null, currentImage: data.image || null });
+        setPreview(data.image || null);
+      })
+      .catch(requestError => setError(getApiError(requestError, "The listing could not be loaded.")))
+      .finally(() => setLoading(false));
   }, [id]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const {lowData}=useDataPreferences();
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setForm({ ...form, image: file });
+      setForm({ ...form, image: await compressImage(file) });
       setPreview(URL.createObjectURL(file));
 
-      // Simulate upload progress
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 10;
-        setUploadProgress(progress);
-        if (progress >= 100) {
-          clearInterval(interval);
-          setUploadProgress(0);
-        }
-      }, 300);
+      setUploadProgress(0);
     }
   };
 
@@ -118,23 +105,42 @@ export default function EditListing() {
     setUploadProgress(0);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!id) return;
     setSubmitting(true);
-
-    // Simulate API update
-    setTimeout(() => {
+    setError("");
+    const payload = new FormData();
+    payload.set("name", form.name.trim());
+    payload.set("description", form.description);
+    payload.set("price", form.price);
+    payload.set("quantity", form.quantity);
+    payload.set("category", form.category);
+    if (form.subcategory) payload.set("subcategory", form.subcategory);
+    if (form.image) payload.set("image", form.image);
+    try {
+      await api.patch(`/api/marketplace/listings/${encodeURIComponent(id)}/`, payload, { headers: { "Content-Type": "multipart/form-data" } });
       setSubmitting(false);
       setSuccess(true);
       setTimeout(() => navigate("/app/listings"), 2000);
-    }, 1500);
+    } catch (requestError) {
+      setError(getApiError(requestError, "The listing could not be updated."));
+      setSubmitting(false);
+    }
   };
 
-  const handleDelete = () => {
-    setShowDeleteModal(false);
-    // Simulate delete
-    alert("Listing deleted successfully!");
-    navigate("/app/listings");
+  const handleDelete = async () => {
+    if (!id) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      await api.delete(`/api/marketplace/listings/${encodeURIComponent(id)}/`);
+      navigate("/app/listings", { replace: true });
+    } catch (requestError) {
+      setError(getApiError(requestError, "The listing could not be deleted."));
+      setSubmitting(false);
+      setShowDeleteModal(false);
+    }
   };
 
   if (loading) {
@@ -151,6 +157,7 @@ export default function EditListing() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {error && <div role="alert" className="mb-5 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">{error}</div>}
         <div className="mb-8">
           <button
             onClick={() => navigate("/app/listings")}
@@ -243,6 +250,7 @@ export default function EditListing() {
                       onChange={handleImageChange}
                       className="hidden"
                     />
+                    {form.image&&<small className="mt-2 text-slate-500">Upload: {formatFileSize(form.image.size)}</small>}
                   </label>
                 </div>
               </div>
@@ -266,7 +274,7 @@ export default function EditListing() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Description *
                 </label>
-                <ReactQuill
+                {lowData?<textarea value={form.description} onChange={event=>setForm({...form,description:event.target.value})} className="min-h-40 w-full rounded border p-3" aria-label="Description"/>:<ReactQuill
                   theme="snow"
                   value={form.description}
                   onChange={(value) => setForm({ ...form, description: value })}
@@ -280,7 +288,7 @@ export default function EditListing() {
                       ["clean"],
                     ],
                   }}
-                />
+                />}
               </div>
 
               {/* Price, Quantity, Category, Subcategory */}

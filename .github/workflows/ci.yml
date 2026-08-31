@@ -20,8 +20,47 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run i18n:check
+      - run: npm run check:safety
+      - run: npm run test:contracts
       - run: npm test
       - run: npm run build
+      - run: npm run check:page-weight
+
+  browser:
+    if: ${{ vars.BACKEND_REPOSITORY != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: frontend
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.BACKEND_REPOSITORY }}
+          path: backend
+          token: ${{ secrets.BACKEND_REPOSITORY_TOKEN || github.token }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - run: python -m pip install -r ../backend/requirements.txt
+        working-directory: frontend
+      - run: npm ci
+        working-directory: frontend
+      - run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - run: npm run test:e2e -- --project=chromium
+        working-directory: frontend
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: frontend/playwright-report
 
   ussd:
     runs-on: ubuntu-latest

@@ -7,6 +7,10 @@ export interface User {
   email: string;
   phone?: string;
   location?: string;
+  bio?: string;
+  farm_size?: string | number;
+  farmSize?: string | number;
+  avatar_url?: string;
   isBuyerVerified?: boolean;
   twoFactorEnabled?: boolean;
   user_type: "farmer" | "buyer" | "admin" | string;
