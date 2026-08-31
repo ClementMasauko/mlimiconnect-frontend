@@ -10,6 +10,7 @@ import { demoLoginEnabled, useAuth } from "../../context/AuthContext";   // ← 
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import AuthShell from "../../components/AuthShell";
+import LogoLoader from "../../components/LogoLoader";
 import { useTranslation } from "react-i18next";
 import { getApiError } from "../../lib/api";
 
@@ -79,14 +80,7 @@ export default function Login() {
 
   // Show loading state while auth context is initializing
   if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-green-50 to-white dark:from-gray-950 dark:to-gray-900">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">{t("checkingAuth")}</p>
-        </div>
-      </div>
-    );
+    return <LogoLoader fullScreen label={t("checkingAuth")} />;
   }
 
   return (

@@ -194,10 +194,9 @@ img { max-width: 100%; }
   .admin-app main .grid { row-gap: 1rem; }
 }
 
-.logo-loader-mark { position: relative; display: grid; height: 6rem; width: 6rem; place-items: center; animation: logo-breathe 1.6s ease-in-out infinite; }
+.logo-loader-mark { position: relative; display: grid; height: 6rem; width: 6rem; place-items: center; }
 .logo-loader-ring { position: absolute; inset: 0; border: 2px solid rgb(21 128 61 / .18); border-top-color: #15803d; border-right-color: #f59e0b; border-radius: 9999px; animation: logo-orbit 1.4s linear infinite; }
 @keyframes logo-orbit { to { transform: rotate(360deg); } }
-@keyframes logo-breathe { 0%, 100% { transform: translateY(2px) scale(.94); opacity: .82; } 50% { transform: translateY(-2px) scale(1); opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after {
