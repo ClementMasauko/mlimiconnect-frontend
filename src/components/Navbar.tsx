@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Bell, ChevronDown, Menu, Search, ShoppingCart, UserRound } from "lucide-react";
+import { Bell, Search, ShoppingCart, UserRound } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import ThemeToggle from "./ThemeToggle";
@@ -28,7 +28,6 @@ export default function Navbar() {
     </div>
     <div className="mx-auto flex max-w-screen-2xl flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2.5 sm:min-h-[72px] sm:flex-nowrap sm:px-6 sm:py-3 lg:px-8">
       <BrandLogo to="/app/dashboard" compact />
-      <button type="button" onClick={() => navigate("/app/marketplace")} className="hidden items-center gap-1 text-sm font-medium text-slate-700 lg:flex dark:text-slate-200"><Menu size={18} /> {t("shop")} <ChevronDown size={14} /></button>
       <form onSubmit={goToSearch} className="order-last flex min-w-0 basis-full rounded-lg border-2 border-green-700 bg-white focus-within:ring-2 focus-within:ring-green-200 sm:order-none sm:flex-1 sm:basis-auto dark:bg-gray-900">
         <button type="button" onClick={() => navigate("/app/marketplace")} className="hidden border-r border-slate-200 px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-50 md:block dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">{t("allCategories")}</button>
         <input name="q" type="search" aria-label={t("searchMarketplace")} placeholder={t("searchMarketplace")} className="min-h-11 min-w-0 flex-1 bg-transparent px-3 text-base outline-none sm:text-sm" />
