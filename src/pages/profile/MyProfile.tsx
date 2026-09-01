@@ -33,6 +33,8 @@ export default function MyProfile() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [organization, setOrganization] = useState<{ legal_name: string; registration_number: string; representative_name: string; representative_role: string; business_size: string; member_count?: number; address: string; verification_status: string } | null>(null);
@@ -65,11 +67,15 @@ export default function MyProfile() {
         ],
   };
 
-  const handleLogout = () => {
-    if (window.confirm("Are you sure you want to log out?")) {
-      logout();
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await logout();
       toast.success("Logged out successfully");
       navigate("/login");
+    } finally {
+      setLoggingOut(false);
+      setShowLogoutModal(false);
     }
   };
 
@@ -115,7 +121,7 @@ export default function MyProfile() {
             <Button
               variant="outline"
               className="flex items-center gap-2 border-red-200 text-red-600 hover:bg-red-50 dark:border-red-950/50 dark:text-red-400 dark:hover:bg-red-950/20"
-              onClick={handleLogout}
+              onClick={() => setShowLogoutModal(true)}
             >
               <LogOut size={16} /> Logout
             </Button>
@@ -352,6 +358,24 @@ export default function MyProfile() {
 
           </div>
         </Card>
+
+        {showLogoutModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !loggingOut) setShowLogoutModal(false); }}>
+            <Card role="dialog" aria-modal="true" aria-labelledby="logout-dialog-title" aria-describedby="logout-dialog-description" className="w-full max-w-sm border border-gray-100 p-6 text-center shadow-2xl dark:border-gray-800">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
+                <LogOut size={28} aria-hidden="true" />
+              </div>
+              <h2 id="logout-dialog-title" className="text-xl font-black text-gray-900 dark:text-white">Log out of MlimiConnect?</h2>
+              <p id="logout-dialog-description" className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-gray-400">You will need to sign in again to access your account, orders and saved information.</p>
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                <Button variant="outline" onClick={() => setShowLogoutModal(false)} disabled={loggingOut}>Stay signed in</Button>
+                <Button variant="destructive" onClick={() => void handleLogout()} disabled={loggingOut} className="bg-red-600 text-white hover:bg-red-700">
+                  {loggingOut ? "Logging out..." : "Log out"}
+                </Button>
+              </div>
+            </Card>
+          </div>
+        )}
 
         {/* Delete Confirmation Modal */}
         {showDeleteModal && (
