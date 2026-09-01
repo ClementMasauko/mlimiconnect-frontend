@@ -33,7 +33,7 @@ export interface Product {
   tag: string;
   category: string;
   
-  // eBay-Style Bidding / Auction Fields
+  // Marketplace bidding and auction fields
   listingType: "fixed-price" | "auction" | "both";
   currentBid?: number;
   bidsCount?: number;

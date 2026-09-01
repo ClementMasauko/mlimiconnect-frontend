@@ -44,7 +44,7 @@ export default function SellerStorefront() {
           ← Back to Marketplace
         </Link>
 
-        {/* Farmer Header Hero Profile (eBay Seller Hub style) */}
+        {/* Farmer storefront profile */}
         <Card className="p-6 md:p-8 bg-white dark:bg-gray-900 border border-slate-100 dark:border-gray-800 shadow-md mb-8">
           <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
             <div className="flex flex-col sm:flex-row gap-5 items-start sm:items-center">
@@ -159,7 +159,7 @@ export default function SellerStorefront() {
                         <div className="absolute left-3 top-3">
                           {isAuction ? (
                             <span className="rounded-full bg-blue-600 px-3 py-1 text-[11px] font-bold shadow-md text-white flex items-center gap-1">
-                              <Gavel size={11} /> eBay Auction
+                              <Gavel size={11} /> Timed auction
                             </span>
                           ) : (
                             <span className="rounded-full bg-green-600 px-3 py-1 text-[11px] font-bold shadow-md text-white flex items-center gap-1">
@@ -211,7 +211,7 @@ export default function SellerStorefront() {
           {/* Feedback Profile Tab */}
           {activeTab === "feedback" && (
             <div className="grid gap-8 lg:grid-cols-3">
-              {/* Seller Ratings Breakdown (eBay style!) */}
+              {/* Seller ratings breakdown */}
               <div className="lg:col-span-1 space-y-6">
                 <Card className="p-5 bg-white dark:bg-gray-900 border border-slate-100 dark:border-gray-800 shadow-sm h-fit">
                   <h3 className="font-extrabold text-slate-800 dark:text-white text-base border-b border-slate-100 dark:border-gray-800 pb-3">

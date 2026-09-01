@@ -100,7 +100,7 @@ export default function MyListings() {
           </Card>
         </div>
 
-        {/* eBay Hub Style Sub Tabs */}
+        {/* Listing management tabs */}
         <div className="flex gap-4 border-b border-slate-200 dark:border-gray-800 mb-6 font-semibold text-sm">
           <button
             onClick={() => setActiveTab("fixed-price")}

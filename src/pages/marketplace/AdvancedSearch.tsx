@@ -57,7 +57,7 @@ export default function AdvancedSearch() {
             <Search className="text-green-600" size={32} /> Advanced Search Engine
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm font-medium">
-            Find exactly what you need with robust, eBay-inspired search filters for Malawi's agriculture.
+            Find exactly what you need with practical search filters designed for Malawi's agricultural marketplace.
           </p>
         </div>
 

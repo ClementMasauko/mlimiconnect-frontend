@@ -197,7 +197,7 @@ export default function Products() {
                   />
                 </Link>
                 
-                {/* eBay Style Formats Badges */}
+                {/* Listing-format badges */}
                 <div className="absolute left-3 top-3 flex flex-col gap-1.5">
                   {isAuction ? (
                     <span className={`flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold text-white shadow-sm sm:px-3 sm:text-[11px] ${isClosed ? "bg-red-600" : "bg-amber-600"}`}>

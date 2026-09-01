@@ -156,7 +156,7 @@ export default function CreateListing() {
                 </p>
               )}
 
-              {/* Format selection tabs (eBay style!) */}
+              {/* Listing-format selection tabs */}
               <div>
                 <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">
                   Selling Format
@@ -189,7 +189,7 @@ export default function CreateListing() {
                   >
                     <Gavel className={form.listingType === "auction" ? "text-blue-600" : ""} size={20} />
                     <div>
-                      <p className="text-sm font-extrabold text-slate-900 dark:text-white">eBay-Style Auction</p>
+                      <p className="text-sm font-extrabold text-slate-900 dark:text-white">Timed auction</p>
                       <p className="text-xs text-slate-400 mt-1 font-medium">Set a starting price. Highest bidder wins after countdown.</p>
                     </div>
                   </button>

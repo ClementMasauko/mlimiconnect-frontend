@@ -194,7 +194,7 @@ export default function ProductDetails() {
             <div className="flex items-center gap-2">
               {isAuction ? (
                 <span className="bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300 text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full flex items-center gap-1 tracking-wider border border-blue-200/10">
-                  <Gavel size={11} /> eBay Auction
+                  <Gavel size={11} /> Timed auction
                 </span>
               ) : (
                 <span className="bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300 text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full flex items-center gap-1 tracking-wider border border-green-200/10">
@@ -305,7 +305,7 @@ export default function ProductDetails() {
                     </div>
                   )}
 
-                  {/* Bid Logs History (eBay Style) */}
+                  {/* Bid history */}
                   <div className="pt-4">
                     <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
                       <Gavel size={13} /> Bid History Logs
