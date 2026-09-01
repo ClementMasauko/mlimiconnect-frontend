@@ -20,6 +20,7 @@ interface CartContextValue {
   addItem: (product: CartProduct, quantity?: number) => void;
   updateQuantity: (productId: CartProduct["id"], quantity: number) => void;
   removeItem: (productId: CartProduct["id"]) => void;
+  removeItems: (productIds: CartProduct["id"][]) => void;
   clearCart: () => void;
 }
 
@@ -53,6 +54,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       ? current.filter((item) => item.product.id !== productId)
       : current.map((item) => item.product.id === productId ? { ...item, quantity } : item)),
     removeItem: (productId) => setItems((current) => current.filter((item) => item.product.id !== productId)),
+    removeItems: (productIds) => {
+      const ids = new Set(productIds.map(String));
+      setItems((current) => current.filter((item) => !ids.has(String(item.product.id))));
+    },
     clearCart: () => setItems([]),
   }), [items]);
 
