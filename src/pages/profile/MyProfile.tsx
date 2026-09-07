@@ -4,7 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
-import api, { getApiError } from "../../lib/api";
+import DeleteAccountDialog from "../../components/DeleteAccountDialog";
+import api from "../../lib/api";
 import { toast } from "react-hot-toast";
 import {
   User,
@@ -15,10 +16,8 @@ import {
   Edit,
   LogOut,
   ShieldCheck,
-  Trash2,
   Bell,
   ShoppingCart,
-  AlertTriangle,
   ShoppingBag,
   Award,
   ChevronRight,
@@ -29,11 +28,8 @@ import {
 export default function MyProfile() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [organization, setOrganization] = useState<{ legal_name: string; registration_number: string; representative_name: string; representative_role: string; business_size: string; member_count?: number; address: string; verification_status: string } | null>(null);
 
   useEffect(() => {
@@ -63,23 +59,6 @@ export default function MyProfile() {
     } finally {
       setLoggingOut(false);
       setShowLogoutModal(false);
-    }
-  };
-
-  const handleDeleteAccount = async () => {
-    setDeleting(true);
-    setDeleteError(null);
-    try {
-      await api.delete("/api/users/account");
-      logout();
-      toast.success("Your account has been deleted permanently.");
-      navigate("/");
-    } catch (error: unknown) {
-      const errMsg = getApiError(error, "We could not delete your account. Please contact support.");
-      setDeleteError(errMsg);
-      toast.error(errMsg);
-    } finally {
-      setDeleting(false);
     }
   };
 
@@ -271,13 +250,7 @@ export default function MyProfile() {
                 >
                   <Bell size={16} /> Notifications Inbox
                 </Button>
-                <Button
-                  variant="destructive"
-                  className="flex items-center justify-center gap-2 py-4 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 hover:border-red-300 dark:bg-red-950/20 dark:hover:bg-red-950/30 dark:text-red-400 dark:border-red-950/40"
-                  onClick={() => setShowDeleteModal(true)}
-                >
-                  <Trash2 size={16} /> Delete Account
-                </Button>
+                <DeleteAccountDialog className="flex items-center justify-center gap-2 py-4 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 hover:border-red-300 dark:bg-red-950/20 dark:hover:bg-red-950/30 dark:text-red-400 dark:border-red-950/40" />
               </div>
             </div>
 
@@ -302,44 +275,6 @@ export default function MyProfile() {
           </div>
         )}
 
-        {/* Delete Confirmation Modal */}
-        {showDeleteModal && (
-          <div className="fixed inset-0 bg-black/70 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity duration-300">
-            <Card className="max-w-md w-full p-8 text-center shadow-2xl border border-gray-100 dark:border-gray-800 animate-in fade-in zoom-in-95 duration-200">
-              <div className="w-16 h-16 bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-6">
-                <AlertTriangle size={36} />
-              </div>
-              <h2 className="text-2xl font-black mb-2 text-gray-900 dark:text-white">
-                Delete Your Account?
-              </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
-                This is a permanent action that cannot be undone. You will lose access to all agricultural listings, chats, transaction logs, and wallet access immediately.
-              </p>
-              {deleteError && (
-                <div role="alert" className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-950/30 text-xs text-red-600 dark:text-red-400 font-medium">
-                  {deleteError}
-                </div>
-              )}
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button
-                  variant="outline"
-                  onClick={() => { setShowDeleteModal(false); setDeleteError(null); }}
-                  className="flex-1 py-3"
-                >
-                  No, Keep Account
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={handleDeleteAccount}
-                  disabled={deleting}
-                  className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold"
-                >
-                  {deleting ? "Deleting..." : "Permanently Delete"}
-                </Button>
-              </div>
-            </Card>
-          </div>
-        )}
       </div>
     </div>
   );
