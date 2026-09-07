@@ -2,6 +2,8 @@
 
 MlimiConnect is a React/Vite marketplace for Malawi's agricultural ecosystem, with a companion Express USSD service.
 
+Google sign-in production configuration is documented in [GOOGLE_SIGN_IN_SETUP.md](GOOGLE_SIGN_IN_SETUP.md).
+
 ## Marketplace experience updates
 
 The interface has been upgraded to a unified, professional marketplace experience inspired by established online-marketplace patterns while retaining MlimiConnect branding and agricultural focus.

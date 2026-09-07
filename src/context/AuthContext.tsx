@@ -33,6 +33,7 @@ interface AuthContextType {
   isLoading: boolean;
   error: string | null;
   login: (identifier: string, password: string) => Promise<User>;
+  googleLogin: (credential: string) => Promise<User>;
   logout: () => Promise<void>;
   refreshUserProfile: () => Promise<void>;
 }
@@ -89,8 +90,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {
       // Clear the local session even when the server session has already expired.
     } finally {
+      window.google?.accounts.id.disableAutoSelect();
       setUser(null);
       setError(null);
+    }
+  }, []);
+
+  const googleLogin = useCallback(async (credential: string) => {
+    setError(null);
+    setIsLoading(true);
+    try {
+      const { data } = await api.post<{ user: User }>("/api/auth/google/", { credential });
+      setUser(data.user);
+      return data.user;
+    } catch (requestError: unknown) {
+      const message = getApiError(requestError, "Google sign-in failed. Please try again.");
+      setError(message);
+      throw requestError;
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -100,7 +118,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(data);
   }, [user]);
 
-  const value = useMemo<AuthContextType>(() => ({ user, isAuthenticated: !!user, isLoading, error, login, logout, refreshUserProfile }), [user, isLoading, error, login, logout, refreshUserProfile]);
+  const value = useMemo<AuthContextType>(() => ({ user, isAuthenticated: !!user, isLoading, error, login, googleLogin, logout, refreshUserProfile }), [user, isLoading, error, login, googleLogin, logout, refreshUserProfile]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 

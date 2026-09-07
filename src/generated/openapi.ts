@@ -661,6 +661,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/google/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["api_v1_auth_google_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/login/": {
         parameters: {
             query?: never;
@@ -2116,6 +2132,12 @@ export interface components {
             readonly unread_count: number;
             /** Format: date-time */
             readonly updated_at: string;
+        };
+        GoogleCredential: {
+            credential: string;
+        };
+        GoogleLoginResponse: {
+            user: components["schemas"]["User"];
         };
         Listing: {
             readonly id: number;
@@ -3579,6 +3601,31 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    api_v1_auth_google_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GoogleCredential"];
+                "application/x-www-form-urlencoded": components["schemas"]["GoogleCredential"];
+                "multipart/form-data": components["schemas"]["GoogleCredential"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoogleLoginResponse"];
+                };
             };
         };
     };

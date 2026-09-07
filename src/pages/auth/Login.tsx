@@ -13,6 +13,7 @@ import AuthShell from "../../components/AuthShell";
 import LogoLoader from "../../components/LogoLoader";
 import { useTranslation } from "react-i18next";
 import { getApiError } from "../../lib/api";
+import GoogleSignInButton from "../../components/GoogleSignInButton";
 
 const loginSchema = z.object({
   identifier: z.string().min(1, "Email or username is required"),
@@ -24,7 +25,7 @@ type LoginForm = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const { t } = useTranslation();
-  const { login: authLogin, isLoading: authLoading } = useAuth();   // ← from hook
+  const { login: authLogin, googleLogin, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -44,6 +45,15 @@ export default function Login() {
   });
 
   const from = location.state?.from?.pathname || "/app/dashboard";
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+
+  const finishLogin = (userRole: string) => {
+    let redirectTo = from;
+    if (!from || from === "/" || from === "/dashboard" || from === "/app/dashboard") {
+      redirectTo = userRole === "buyer" ? "/app/marketplace" : userRole === "admin" ? "/admin" : "/app/dashboard";
+    }
+    navigate(redirectTo, { replace: true });
+  };
 
   const onSubmit = async (data: LoginForm) => {
     setServerError(null);
@@ -52,25 +62,7 @@ export default function Login() {
     try {
       // Call the login function from context
       const user = await authLogin(data.identifier.trim(), data.password);
-      const userRole = user.user_type;
-
-      let redirectTo = from;
-
-      if (!from || from === "/" || from === "/dashboard" || from === "/app/dashboard") {
-        if (userRole === "farmer") {
-          redirectTo = "/app/dashboard";
-        } else if (userRole === "buyer") {
-          redirectTo = "/app/marketplace";
-        } else if (userRole === "transporter") {
-          redirectTo = "/app/dashboard";
-        } else if (userRole === "admin") {
-          redirectTo = "/admin";
-        } else {
-          redirectTo = "/app/dashboard";
-        }
-      }
-
-      navigate(redirectTo, { replace: true });
+      finishLogin(user.user_type);
     } catch (err: unknown) {
       console.error("Login error:", err);
       setServerError(getApiError(err, "Invalid username/email or password. Please try again."));
@@ -97,6 +89,26 @@ export default function Login() {
             {serverError}
           </div>
         )}
+
+        {googleClientId && <>
+          <GoogleSignInButton
+            clientId={googleClientId}
+            onCredential={credential => {
+              setServerError(null);
+              setLoading(true);
+              void googleLogin(credential)
+                .then(user => finishLogin(user.user_type))
+                .catch(error => setServerError(getApiError(error, "Google sign-in failed. Please try again.")))
+                .finally(() => setLoading(false));
+            }}
+            onError={setServerError}
+          />
+          <div className="my-6 flex items-center gap-3" aria-hidden="true">
+            <span className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">or continue with email</span>
+            <span className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
+          </div>
+        </>}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
