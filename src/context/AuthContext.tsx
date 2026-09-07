@@ -18,6 +18,9 @@ export interface User {
   can_buy?: boolean;
   can_sell?: boolean;
   organization_status?: "pending" | "verified" | "rejected" | null;
+  google_connected?: boolean;
+  has_usable_password?: boolean;
+  requires_onboarding?: boolean;
   subscription?: {
     plan_id: "free" | "farmer-plus" | "buyer-pro" | "cooperative" | "organization" | "enterprise";
     status: "pending_payment" | "active" | "cancelled" | "past_due";

@@ -677,6 +677,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/google/link/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["api_v1_auth_google_link_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/google/onboarding/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["api_v1_auth_google_onboarding_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/google/unlink/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["api_v1_auth_google_unlink_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/login/": {
         parameters: {
             query?: never;
@@ -751,6 +799,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["api_v1_auth_reset_password_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/security/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["api_v1_auth_security_retrieve"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2139,6 +2203,16 @@ export interface components {
         GoogleLoginResponse: {
             user: components["schemas"]["User"];
         };
+        GoogleOnboarding: {
+            account_type: string;
+            trading_mode: components["schemas"]["TradingModeEnum"];
+            phone?: string;
+            location?: string;
+            organization?: components["schemas"]["Organization"];
+        };
+        GoogleUnlink: {
+            password: string;
+        };
         Listing: {
             readonly id: number;
             name: string;
@@ -2385,6 +2459,10 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["User"][];
         };
+        PasswordCredential: {
+            password?: string;
+            google_credential?: string;
+        };
         PatchedListing: {
             readonly id?: number;
             name?: string;
@@ -2474,6 +2552,9 @@ export interface components {
             readonly subscription?: {
                 [key: string]: unknown;
             };
+            readonly google_connected?: boolean;
+            readonly has_usable_password?: boolean;
+            readonly requires_onboarding?: boolean;
         };
         Register: {
             /** @description Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only. */
@@ -2580,6 +2661,9 @@ export interface components {
             readonly subscription: {
                 [key: string]: unknown;
             };
+            readonly google_connected: boolean;
+            readonly has_usable_password: boolean;
+            readonly requires_onboarding: boolean;
         };
         /**
          * @description * `farmer` - Farmer
@@ -3629,6 +3713,81 @@ export interface operations {
             };
         };
     };
+    api_v1_auth_google_link_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GoogleCredential"];
+                "application/x-www-form-urlencoded": components["schemas"]["GoogleCredential"];
+                "multipart/form-data": components["schemas"]["GoogleCredential"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoogleCredential"];
+                };
+            };
+        };
+    };
+    api_v1_auth_google_onboarding_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GoogleOnboarding"];
+                "application/x-www-form-urlencoded": components["schemas"]["GoogleOnboarding"];
+                "multipart/form-data": components["schemas"]["GoogleOnboarding"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoogleOnboarding"];
+                };
+            };
+        };
+    };
+    api_v1_auth_google_unlink_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GoogleUnlink"];
+                "application/x-www-form-urlencoded": components["schemas"]["GoogleUnlink"];
+                "multipart/form-data": components["schemas"]["GoogleUnlink"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoogleUnlink"];
+                };
+            };
+        };
+    };
     api_v1_auth_login_create: {
         parameters: {
             query?: never;
@@ -3760,6 +3919,24 @@ export interface operations {
         };
     };
     api_v1_auth_reset_password_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    api_v1_auth_security_retrieve: {
         parameters: {
             query?: never;
             header?: never;
@@ -5981,14 +6158,21 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PasswordCredential"];
+                "application/x-www-form-urlencoded": components["schemas"]["PasswordCredential"];
+                "multipart/form-data": components["schemas"]["PasswordCredential"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PasswordCredential"];
+                };
             };
         };
     };

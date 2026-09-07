@@ -32,6 +32,7 @@ const Login = React.lazy(() => import("./pages/auth/Login"));
 const Register = React.lazy(() => import("./pages/auth/Register"));
 const ForgotPassword = React.lazy(() => import("./pages/auth/ForgotPassword"));
 const ResetPassword = React.lazy(() => import("./pages/auth/ResetPassword"));
+const GoogleOnboarding = React.lazy(() => import("./pages/auth/GoogleOnboarding"));
 
 // Main App
 const Dashboard = React.lazy(() => import("./pages/Dashboard"));
@@ -69,6 +70,7 @@ const EditProfile = React.lazy(() => import("./pages/profile/EditProfile"));
 const Settings = React.lazy(() => import("./pages/profile/Settings"));
 const NotificationSettings = React.lazy(() => import("./pages/profile/NotificationSettings"));
 const AddressBook = React.lazy(() => import("./pages/profile/AddressBook"));
+const AccountSecurity = React.lazy(() => import("./pages/profile/AccountSecurity"));
 const BecomeBuyer = React.lazy(() => import("./pages/profile/BecomeBuyer"));
 const BecomeFarmer = React.lazy(() => import("./pages/profile/BecomeFarmer"));
 const BecomeTransporter = React.lazy(() => import("./pages/profile/BecomeTransporter"));
@@ -156,6 +158,7 @@ export default function AppRoutes() {
         <Route path="/weather" element={<WeatherAdvisory />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/google-onboarding" element={<ProtectedRoute allowIncompleteOnboarding><GoogleOnboarding /></ProtectedRoute>} />
         <Route element={<PublicLayout />}>
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
@@ -201,6 +204,7 @@ export default function AppRoutes() {
             <Route path="notifications-management" element={<NotificationSettings />} />
             <Route path="notifications" element={<NotificationsCenter />} />
             <Route path="address-book" element={<AddressBook />} />
+            <Route path="security" element={<AccountSecurity />} />
             <Route path="become-buyer" element={<BecomeBuyer />} />
             <Route path="become-farmer" element={<BecomeFarmer />} />
             <Route path="become-transporter" element={<BecomeTransporter />} />

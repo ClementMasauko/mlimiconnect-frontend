@@ -47,7 +47,11 @@ export default function Login() {
   const from = location.state?.from?.pathname || "/app/dashboard";
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
-  const finishLogin = (userRole: string) => {
+  const finishLogin = (userRole: string, requiresOnboarding = false) => {
+    if (requiresOnboarding) {
+      navigate("/google-onboarding", { replace: true });
+      return;
+    }
     let redirectTo = from;
     if (!from || from === "/" || from === "/dashboard" || from === "/app/dashboard") {
       redirectTo = userRole === "buyer" ? "/app/marketplace" : userRole === "admin" ? "/admin" : "/app/dashboard";
@@ -62,7 +66,7 @@ export default function Login() {
     try {
       // Call the login function from context
       const user = await authLogin(data.identifier.trim(), data.password);
-      finishLogin(user.user_type);
+      finishLogin(user.user_type, user.requires_onboarding);
     } catch (err: unknown) {
       console.error("Login error:", err);
       setServerError(getApiError(err, "Invalid username/email or password. Please try again."));
@@ -97,7 +101,7 @@ export default function Login() {
               setServerError(null);
               setLoading(true);
               void googleLogin(credential)
-                .then(user => finishLogin(user.user_type))
+                .then(user => finishLogin(user.user_type, user.requires_onboarding))
                 .catch(error => setServerError(getApiError(error, "Google sign-in failed. Please try again.")))
                 .finally(() => setLoading(false));
             }}

@@ -11,7 +11,12 @@ export default defineConfig({
   use: { baseURL: "http://127.0.0.1:4173", trace: "on-first-retry" },
   webServer: [
     { command: "node scripts/e2e-backend.mjs", url: "http://127.0.0.1:8000/health/", reuseExistingServer: false, timeout: 120_000 },
-    { command: "npm run dev -- --host 127.0.0.1 --port 4173", url: "http://127.0.0.1:4173", reuseExistingServer: false },
+    {
+      command: "npm run dev -- --host 127.0.0.1 --port 4173",
+      url: "http://127.0.0.1:4173",
+      reuseExistingServer: false,
+      env: { ...process.env, VITE_GOOGLE_CLIENT_ID: "e2e-client.apps.googleusercontent.com" },
+    },
   ],
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"], channel: process.env.CI ? undefined : "chrome" } },

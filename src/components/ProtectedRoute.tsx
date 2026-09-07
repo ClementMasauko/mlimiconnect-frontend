@@ -7,9 +7,10 @@ import { useAuth } from "../context/AuthContext";   // ← use the hook
 interface ProtectedRouteProps {
   children: React.ReactNode;
   role?: string;           // optional role requirement
+  allowIncompleteOnboarding?: boolean;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, role }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, role, allowIncompleteOnboarding = false }) => {
   const { user, isLoading } = useAuth();
   const location = useLocation();
 
@@ -21,6 +22,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, role }) => {
   // Not logged in → redirect to login with "from" state
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (user.requires_onboarding && !allowIncompleteOnboarding) {
+    return <Navigate to="/google-onboarding" replace />;
   }
 
   // Role check (if role prop is passed)
