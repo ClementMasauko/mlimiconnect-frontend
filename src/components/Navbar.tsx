@@ -34,7 +34,7 @@ export default function Navbar() {
         <button type="submit" className="grid min-h-11 w-12 place-items-center bg-green-700 text-white transition hover:bg-green-800" aria-label="Search"><Search size={20} /></button>
       </form>
       <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-        <span className="hidden sm:block"><ThemeToggle /></span>
+        <ThemeToggle />
         <span className="hidden sm:block"><LanguageSwitcher compact /></span>
         <Link to="/app/profile/notifications" className="hidden rounded-full p-2 text-slate-600 hover:bg-slate-100 sm:block dark:text-gray-300 dark:hover:bg-gray-800" aria-label="Notifications"><Bell size={20} /></Link>
         <Link to="/app/marketplace/cart" className="relative rounded-full p-2 text-slate-700 hover:bg-slate-100 dark:text-gray-200 dark:hover:bg-gray-800" aria-label="Shopping cart"><ShoppingCart size={22} />{cartCount > 0 && <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-amber-400 px-1 text-[10px] font-bold text-slate-900">{cartCount}</span>}</Link>

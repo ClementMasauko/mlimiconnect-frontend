@@ -161,17 +161,9 @@ export default function AdminSettings() {
               <label className="block text-sm font-medium">Withdrawal fee (%)<input type="number" min="0" max="100" step="0.1" value={fees.withdrawal_percent} onChange={e => setFees(current => ({ ...current, withdrawal_percent: e.target.value }))} className="mt-2 w-full rounded-lg border px-4 py-3 dark:bg-gray-800" /></label>
               <label className="block text-sm font-medium">Minimum fee (MWK)<input type="number" min="0" step="1" value={fees.minimum_fee} onChange={e => setFees(current => ({ ...current, minimum_fee: e.target.value }))} className="mt-2 w-full rounded-lg border px-4 py-3 dark:bg-gray-800" /></label>
 
-              <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg">
-                <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300">
-                  Current Monthly Revenue (estimated)
-                </p>
-                <p className="text-3xl font-bold text-emerald-700 dark:text-emerald-400 mt-2">
-                  MWK 8,420,000
-                </p>
-                <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">
-                  +18% from last month
-                </p>
-              </div>
+              <p className="rounded-lg bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+                Financial totals are hidden until the ledger and reconciliation service is enabled.
+              </p>
             </div>
           </Card>
 

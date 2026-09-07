@@ -4,9 +4,7 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import { Upload, X, Save, ArrowLeft, Trash2, Package, AlertCircle } from "lucide-react";
-import ReactQuill from "react-quill";
-import { compressImage, formatFileSize, useDataPreferences } from "../../lib/lowData";
-import "react-quill/dist/quill.snow.css";
+import { compressImage, formatFileSize } from "../../lib/lowData";
 import api, { getApiError } from "../../lib/api";
 
 // ────────────────────────────────────────────────────────────────
@@ -88,7 +86,6 @@ export default function EditListing() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  const {lowData}=useDataPreferences();
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -274,21 +271,12 @@ export default function EditListing() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Description *
                 </label>
-                {lowData?<textarea value={form.description} onChange={event=>setForm({...form,description:event.target.value})} className="min-h-40 w-full rounded border p-3" aria-label="Description"/>:<ReactQuill
-                  theme="snow"
+                <textarea
                   value={form.description}
-                  onChange={(value) => setForm({ ...form, description: value })}
-                  className="bg-white dark:bg-gray-800 rounded-lg"
-                  modules={{
-                    toolbar: [
-                      [{ header: [1, 2, false] }],
-                      ["bold", "italic", "underline", "strike"],
-                      [{ list: "ordered" }, { list: "bullet" }],
-                      ["link"],
-                      ["clean"],
-                    ],
-                  }}
-                />}
+                  onChange={event => setForm({ ...form, description: event.target.value })}
+                  className="min-h-40 w-full rounded-lg border border-gray-300 bg-white p-3 dark:border-gray-700 dark:bg-gray-800"
+                  aria-label="Description"
+                />
               </div>
 
               {/* Price, Quantity, Category, Subcategory */}

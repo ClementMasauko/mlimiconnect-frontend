@@ -1,5 +1,5 @@
 // src/pages/orders/RateOrder.tsx
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
@@ -12,14 +12,47 @@ export default function RateOrder() {
 
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
+  const [items, setItems] = useState<Array<{ listing_id: number; name: string; seller: string }>>([]);
+  const [selectedListing, setSelectedListing] = useState<number | null>(null);
+  const [loadingOrder, setLoadingOrder] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  const listings = useMemo(
+    () => Array.from(new Map(items.map(item => [item.listing_id, item])).values()),
+    [items],
+  );
+
+  useEffect(() => {
+    if (!id) return;
+    let active = true;
+    api.get(`/api/marketplace/orders/${id}/`)
+      .then(({ data }) => {
+        if (!active) return;
+        const orderItems = Array.isArray(data?.items) ? data.items : [];
+        setItems(orderItems);
+        const firstListing = orderItems[0]?.listing_id;
+        if (typeof firstListing === "number") setSelectedListing(firstListing);
+      })
+      .catch(requestError => {
+        if (active) setError(getApiError(requestError, "The order could not be loaded."));
+      })
+      .finally(() => {
+        if (active) setLoadingOrder(false);
+      });
+    return () => { active = false; };
+  }, [id]);
+
   const submitReview = async () => {
-    if (!id || !rating) return;
+    if (!id || !rating || !selectedListing) return;
     setSubmitting(true); setError("");
     try {
-      await api.post("/api/marketplace/order-reviews/", { order: Number(id), rating, comment: comment.trim() });
+      await api.post("/api/marketplace/order-reviews/", {
+        order: Number(id),
+        listing: selectedListing,
+        rating,
+        comment: comment.trim(),
+      });
       navigate(`/app/orders/${id}`, { replace: true });
     } catch (requestError) {
       setError(getApiError(requestError, "The review could not be submitted."));
@@ -34,6 +67,21 @@ export default function RateOrder() {
         <Card className="p-6">
           {error && <p role="alert" className="mb-5 rounded-lg bg-red-50 p-3 text-sm font-medium text-red-700">{error}</p>}
           <div className="space-y-6">
+            {listings.length > 1 && (
+              <div>
+                <label htmlFor="review-listing" className="block text-sm font-medium mb-2">Product to review</label>
+                <select
+                  id="review-listing"
+                  value={selectedListing ?? ""}
+                  onChange={event => setSelectedListing(Number(event.target.value))}
+                  className="w-full px-4 py-3 border rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                >
+                  {listings.map(item => (
+                    <option key={item.listing_id} value={item.listing_id}>{item.name} — {item.seller}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div className="text-center">
               <h2 className="text-xl font-semibold mb-4">How was your experience?</h2>
               <div className="flex justify-center gap-2">
@@ -67,7 +115,7 @@ export default function RateOrder() {
               variant="primary"
               className="w-full py-6 text-lg flex items-center justify-center gap-2"
               onClick={submitReview}
-              disabled={!rating || submitting}
+              disabled={!rating || !selectedListing || submitting || loadingOrder}
             >
               <Send size={18} /> {submitting ? "Submitting..." : "Submit Review"}
             </Button>

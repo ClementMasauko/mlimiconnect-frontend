@@ -22,6 +22,7 @@ jobs:
       - run: npm run i18n:check
       - run: npm run check:safety
       - run: npm run test:contracts
+      - run: git diff --exit-code -- openapi.yaml src/generated/openapi.ts
       - run: npm test
       - run: npm run build
       - run: npm run check:page-weight
@@ -62,6 +63,38 @@ jobs:
           name: playwright-report
           path: frontend/playwright-report
 
+  full-stack-contract:
+    if: ${{ vars.BACKEND_REPOSITORY != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {path: frontend}
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.BACKEND_REPOSITORY }}
+          path: backend
+          token: ${{ secrets.BACKEND_REPOSITORY_TOKEN || github.token }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: python -m pip install -r requirements.txt
+        working-directory: backend
+      - run: python manage.py spectacular --urlconf config.schema_urls --validate --fail-on-warn --file ../frontend/openapi.yaml
+        working-directory: backend
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run generate:api
+        working-directory: frontend
+      - run: git diff --exit-code -- openapi.yaml src/generated/openapi.ts
+        working-directory: frontend
+
   ussd:
     runs-on: ubuntu-latest
     defaults:
@@ -76,3 +109,16 @@ jobs:
           cache-dependency-path: ussd-service/package-lock.json
       - run: npm ci
       - run: npm test
+
+  android-static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 22, cache: npm}
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: 21, cache: gradle}
+      - run: npm ci
+      - run: npm run android:sync
+      - run: ./gradlew test lint
+        working-directory: android

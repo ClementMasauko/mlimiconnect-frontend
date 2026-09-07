@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
@@ -11,6 +11,13 @@ export default function WithdrawPage() {
   const [phone, setPhone] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [available, setAvailable] = useState<number | null>(null);
+
+  useEffect(() => {
+    api.get<{ available: string | number }>("/api/wallet/")
+      .then(({ data }) => setAvailable(Number(data.available)))
+      .catch(() => setAvailable(null));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,7 +57,7 @@ export default function WithdrawPage() {
           <div className="flex items-start gap-3 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 p-4 rounded-lg">
             <AlertTriangle size={20} className="mt-0.5 flex-shrink-0" />
             <p className="text-sm">
-              Withdrawals processed within 24-48 hours. Min: MWK 1,000. Fee: ~1.5%.
+              Withdrawal timing, minimums, and fees must be confirmed by the payout provider before submission.
             </p>
           </div>
         </Card>
@@ -72,7 +79,7 @@ export default function WithdrawPage() {
                 required
               />
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Available: MWK 1,250,000
+                Available: {available === null ? "Not confirmed" : `MWK ${available.toLocaleString()}`}
               </p>
             </div>
 

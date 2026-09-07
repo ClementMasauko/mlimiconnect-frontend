@@ -15,17 +15,14 @@ import {
   Edit,
   LogOut,
   ShieldCheck,
-  Heart,
   Trash2,
   Bell,
   ShoppingCart,
   AlertTriangle,
   ShoppingBag,
   Award,
-  Calendar,
   ChevronRight,
   FileCheck,
-  Star,
   Layers,
 } from "lucide-react";
 
@@ -53,18 +50,8 @@ export default function MyProfile() {
     location: user?.location || "No location set",
     bio: user?.bio || "",
     farmSize: user?.farm_size || user?.farmSize || null,
-    verified: user?.isBuyerVerified === true || isFarmer, // Assume verified/approved status placeholder
-    joinedDate: "August 2025", // Mock Joined date for high-fidelity representation
+    verified: user?.isBuyerVerified === true,
     avatar: user?.avatar_url || null,
-    savedContacts: isFarmer
-      ? [
-          { id: 1, name: "Chikondi Wholesale Foods", location: "Lilongwe Area 4", type: "Wholesaler" },
-          { id: 2, name: "Malawi National NGO Lunch Program", location: "Zomba", type: "Institution" },
-        ]
-      : [
-          { id: 1, name: "Alick Mwale Farm", location: "Lilongwe, Central Region", type: "Maize & Legumes" },
-          { id: 2, name: "Nkhotakota Organic Produce", location: "Nkhotakota", type: "Rice & Cassava" },
-        ],
   };
 
   const handleLogout = async () => {
@@ -165,35 +152,8 @@ export default function MyProfile() {
                 <p className="text-green-50 mt-1 flex items-center justify-center sm:justify-start gap-2 text-md opacity-90">
                   {isFarmer ? <Leaf className="text-green-300" size={20} /> : <ShoppingCart className="text-green-300" size={20} />}
                   <span className="font-semibold capitalize">{user?.user_type || "buyer"} Account</span>
-                  <span>•</span>
-                  <span className="flex items-center gap-1 text-sm"><Calendar size={14} /> Joined {profile.joinedDate}</span>
                 </p>
               </div>
-            </div>
-          </div>
-
-          {/* Quick Metrics / Stats bar */}
-          <div className="bg-gray-50 dark:bg-gray-900/60 border-y border-gray-100 dark:border-gray-800 grid grid-cols-3 divide-x divide-gray-100 dark:divide-gray-800 py-4 text-center">
-            <div>
-              <p className="text-2xl font-black text-gray-900 dark:text-white">{isFarmer ? "8" : "14"}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider mt-1">
-                {isFarmer ? "Active Listings" : "Orders Placed"}
-              </p>
-            </div>
-            <div>
-              <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1">
-                {isFarmer ? "4.9" : "98%"}
-                <Star size={16} className="fill-emerald-500 text-emerald-500" />
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider mt-1">
-                {isFarmer ? "Seller Rating" : "Fulfilment Rate"}
-              </p>
-            </div>
-            <div>
-              <p className="text-2xl font-black text-gray-900 dark:text-white">{isFarmer ? "156" : "2"}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider mt-1">
-                {isFarmer ? "Tons Sold" : "Active Bids"}
-              </p>
             </div>
           </div>
 
@@ -291,41 +251,6 @@ export default function MyProfile() {
                   </div>
                 )}
               </div>
-            </div>
-
-            {/* Saved Sellers/Buyers */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <Heart className="text-rose-500 fill-rose-500" size={18} /> 
-                Saved {isFarmer ? "Buyers & Off-takers" : "Farmers & Storefronts"}
-              </h3>
-              {profile.savedContacts.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {profile.savedContacts.map((contact) => (
-                    <div 
-                      key={contact.id} 
-                      className="p-4 rounded-xl border border-gray-100 dark:border-gray-800/80 bg-white dark:bg-gray-900 hover:shadow-md transition-all duration-200 group flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center">
-                          <User size={20} />
-                        </div>
-                        <div>
-                          <p className="font-bold text-sm text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{contact.name}</p>
-                          <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1 mt-0.5"><MapPin size={12} /> {contact.location}</p>
-                        </div>
-                      </div>
-                      <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-gray-500 dark:text-gray-400 tracking-wider">
-                        {contact.type}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-                  No saved contacts yet. You can bookmark sellers from the marketplace.
-                </p>
-              )}
             </div>
 
             {/* Account Settings / Deep Actions Grid */}

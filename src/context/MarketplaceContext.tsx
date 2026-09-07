@@ -1,6 +1,7 @@
 // src/context/MarketplaceContext.tsx
 import React, { createContext, useContext, useState, useEffect } from "react";
 import api from "../lib/api";
+import { features } from "../config/features";
 
 export interface Bid {
   id: string;
@@ -85,7 +86,8 @@ const MarketplaceContext = createContext<MarketplaceContextValue | undefined>(un
 const MARKETPLACE_STORAGE_KEY = "mc_marketplace_products";
 const REVIEWS_STORAGE_KEY = "mc_marketplace_reviews";
 const demoDataEnabled = import.meta.env.VITE_DEMO_DATA_ENABLED === "true";
-const normalizeProducts = (items: Array<Product & { price: string | number }>) => items.map(product => ({ ...product, price: Number(product.price), pack_size:Number(product.pack_size||1), minimum_order:Number(product.minimum_order||1), moisture_content:product.moisture_content==null?null:Number(product.moisture_content), image: product.image || "/logo.png" }));
+const featureAvailableProducts = (items: Product[]) => features.auctions ? items : items.filter(product => product.listingType === "fixed-price");
+const normalizeProducts = (items: Array<Product & { price: string | number }>) => featureAvailableProducts(items.map(product => ({ ...product, price: Number(product.price), pack_size:Number(product.pack_size||1), minimum_order:Number(product.minimum_order||1), moisture_content:product.moisture_content==null?null:Number(product.moisture_content), image: product.image || "/logo.png" })));
 
 // Default Initial Farmers
 const DEFAULT_FARMERS: Record<string, FarmerProfile> = {
@@ -352,9 +354,9 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [products, setProducts] = useState<Product[]>(() => {
     try {
       const saved = localStorage.getItem(MARKETPLACE_STORAGE_KEY);
-      return demoDataEnabled ? (saved ? JSON.parse(saved) : DEFAULT_PRODUCTS) : [];
+      return demoDataEnabled ? featureAvailableProducts(saved ? JSON.parse(saved) : DEFAULT_PRODUCTS) : [];
     } catch {
-      return demoDataEnabled ? DEFAULT_PRODUCTS : [];
+      return demoDataEnabled ? featureAvailableProducts(DEFAULT_PRODUCTS) : [];
     }
   });
 
@@ -401,6 +403,7 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   // Place a Bid on an Auction Item
   const addBid = (productId: number, bidderName: string, amount: number) => {
+    if (!features.auctions) return { success: false, error: "Auctions are not currently available." };
     let success = false;
     let errorMsg = "";
 

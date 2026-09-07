@@ -4,6 +4,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { ScrollToTop } from "./components/RouteExperience";
 import LogoLoader from "./components/LogoLoader";
+import FeatureGate from "./components/FeatureGate";
 
 import NotFound from "./pages/NotFound";
 
@@ -40,6 +41,7 @@ const FAQ = React.lazy(() => import("./pages/FAQ"));
 const Support = React.lazy(() => import("./pages/Support"));
 const HelpCenter = React.lazy(() => import("./pages/help/HelpCenter"));
 const TermsAndConditions = React.lazy(() => import("./pages/TermsAndConditions"));
+const AccountDeletion = React.lazy(() => import("./pages/AccountDeletion"));
 const Disclaimer = React.lazy(() => import("./pages/Disclaimer"));
 const Pricing = React.lazy(() => import("./pages/Pricing"));
 const Subscription = React.lazy(() => import("./pages/Subscription"));
@@ -160,6 +162,7 @@ export default function AppRoutes() {
           <Route path="/faq" element={<FAQ />} />
           <Route path="support"><Route index element={<Support />} /><Route path="ussd" element={<USSDGuide />} /></Route>
           <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/account-deletion" element={<AccountDeletion />} />
         <Route path="/cookie-policy" element={<CookiePolicy />} />
         <Route path="/status" element={<StatusPage />} />
           <Route path="/terms" element={<TermsAndConditions />} />
@@ -184,7 +187,7 @@ export default function AppRoutes() {
         >
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="subscription" element={<Subscription />} />
+          <Route path="subscription" element={<FeatureGate feature="subscriptions" title="Seller subscriptions"><Subscription /></FeatureGate>} />
           <Route path="buyer-dashboard" element={<BuyerDashboard />} />
           <Route path="livestock" element={<LivestockDashboard />} />
           <Route path="livestock/herds/:id" element={<HerdRecord />} />
@@ -262,14 +265,14 @@ export default function AppRoutes() {
               <Route index element={<SmartContracts />} />
               <Route path="new" element={<SmartContractCreation />} />
             </Route>
-            <Route path="expert-connect" element={<ExpertConnect />} />
+            <Route path="expert-connect" element={<FeatureGate feature="expertRequests" title="Expert requests"><ExpertConnect /></FeatureGate>} />
             <Route path=":type/:id" element={<AdvisoryDetail />} />
           </Route>
 
           {/* Analytics (shared) */}
-          <Route path="analytics" element={<AnalyticsDashboard />} />
-          <Route path="wallet" element={<WalletDashboard />} />
-          <Route path="wallet/withdraw" element={<WithdrawPage />} />
+          <Route path="analytics" element={<FeatureGate feature="analytics" title="Account analytics"><AnalyticsDashboard /></FeatureGate>} />
+          <Route path="wallet" element={<FeatureGate feature="wallet" title="Wallet"><WalletDashboard /></FeatureGate>} />
+          <Route path="wallet/withdraw" element={<FeatureGate feature="wallet" title="Withdrawals"><WithdrawPage /></FeatureGate>} />
 
           {/* Support */}
           <Route path="support/ussd" element={<USSDGuide />} />
@@ -293,7 +296,7 @@ export default function AppRoutes() {
           <Route path="users/pending" element={<UserManagement />} />
           <Route path="users/banned" element={<UserManagement />} />
           <Route path="approvals" element={<Approvals />} />
-          <Route path="buyers/verify" element={<VerifyBuyers />} />
+          <Route path="buyers/verify" element={<FeatureGate feature="buyerVerificationReview" title="Buyer verification review"><VerifyBuyers /></FeatureGate>} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="disputes" element={<Disputes />} />
           <Route path="listing-approvals" element={<ListingApprovals />} />
@@ -305,7 +308,7 @@ export default function AppRoutes() {
           <Route path="livestock" element={<LivestockOperations />} />
           <Route path="transporters" element={<TransporterAdmin />} />
           <Route path="settings" element={<AdminSettings />} />
-          <Route path="analytics/revenue" element={<Revenue />} />
+          <Route path="analytics/revenue" element={<FeatureGate feature="adminRevenue" title="Revenue reporting"><Revenue /></FeatureGate>} />
         </Route>
 
         <Route path="/marketplace" element={<Navigate to="/app/marketplace" replace />} />

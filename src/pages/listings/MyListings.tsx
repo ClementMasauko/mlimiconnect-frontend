@@ -5,6 +5,7 @@ import Button from "../../components/ui/Button";
 import { Edit, Trash2, Eye, Package, PlusCircle, Gavel, ShoppingBag, Clock, Sparkles } from "lucide-react";
 import { useMarketplace } from "../../context/MarketplaceContext";
 import { useAuth } from "../../context/AuthContext";
+import { features } from "../../config/features";
 
 export default function MyListings() {
   const { products, getSellerStats } = useMarketplace();
@@ -13,7 +14,7 @@ export default function MyListings() {
   const [activeTab, setActiveTab] = useState<"fixed-price" | "auction" | "ended">("fixed-price");
 
   // Determine current active farmer to show listings for
-  const currentFarmerName = user?.username || "John Phiri";
+  const currentFarmerName = user?.username || "";
 
   // Filter listings for this farmer
   const myAllProducts = products.filter((p) => p.farmer === currentFarmerName);
@@ -64,7 +65,7 @@ export default function MyListings() {
               Seller Hub Dashboard
             </h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1.5 text-sm font-medium">
-              Manage your agricultural inventory, active auctions, and review your bidding success.
+              Manage your agricultural inventory and fixed-price listings.
             </p>
           </div>
           
@@ -78,7 +79,7 @@ export default function MyListings() {
         </div>
 
         {/* Farmer Performance / Seller Rating Stats Bar */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className={`grid grid-cols-2 gap-4 mb-8 ${features.auctions ? "md:grid-cols-4" : "md:grid-cols-3"}`}>
           <Card className="p-4 bg-white dark:bg-gray-900 border border-slate-100 dark:border-gray-800 text-center flex flex-col justify-center">
             <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Positive Feedback</span>
             <span className="text-2xl font-black text-green-600 dark:text-green-400 mt-1">{stats.positivePercentage}%</span>
@@ -89,10 +90,10 @@ export default function MyListings() {
             <span className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-1">{stats.totalReviews} total</span>
           </Card>
 
-          <Card className="p-4 bg-white dark:bg-gray-900 border border-slate-100 dark:border-gray-800 text-center flex flex-col justify-center">
+          {features.auctions && <Card className="p-4 bg-white dark:bg-gray-900 border border-slate-100 dark:border-gray-800 text-center flex flex-col justify-center">
             <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Active Auctions</span>
             <span className="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1">{activeAuctions.length} item(s)</span>
-          </Card>
+          </Card>}
 
           <Card className="p-4 bg-white dark:bg-gray-900 border border-slate-100 dark:border-gray-800 text-center flex flex-col justify-center">
             <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Buy It Now Items</span>
@@ -112,8 +113,8 @@ export default function MyListings() {
           >
             <ShoppingBag size={15} /> Fixed Price ({fixedPriceListings.length})
           </button>
-          
-          <button
+
+          {features.auctions && <button
             onClick={() => setActiveTab("auction")}
             className={`pb-3 border-b-2 px-2 transition-all flex items-center gap-1.5 ${
               activeTab === "auction"
@@ -122,9 +123,9 @@ export default function MyListings() {
             }`}
           >
             <Gavel size={15} /> Active Auctions ({activeAuctions.length})
-          </button>
+          </button>}
 
-          <button
+          {features.auctions && <button
             onClick={() => setActiveTab("ended")}
             className={`pb-3 border-b-2 px-2 transition-all flex items-center gap-1.5 ${
               activeTab === "ended"
@@ -133,7 +134,7 @@ export default function MyListings() {
             }`}
           >
             <Clock size={15} /> Completed Auctions ({endedAuctions.length})
-          </button>
+          </button>}
         </div>
 
         {/* Listings rendering logic */}
@@ -191,7 +192,7 @@ export default function MyListings() {
           </div>
         )}
 
-        {activeTab === "auction" && (
+        {features.auctions && activeTab === "auction" && (
           <div className="space-y-4 animate-fade-in">
             {activeAuctions.length === 0 ? (
               <div className="text-center py-16 border-2 border-dashed border-slate-200/50 dark:border-gray-800 rounded-2xl bg-white dark:bg-gray-900">
@@ -248,7 +249,7 @@ export default function MyListings() {
           </div>
         )}
 
-        {activeTab === "ended" && (
+        {features.auctions && activeTab === "ended" && (
           <div className="space-y-4 animate-fade-in">
             {endedAuctions.length === 0 ? (
               <div className="text-center py-16 border-2 border-dashed border-slate-200/50 dark:border-gray-800 rounded-2xl bg-white dark:bg-gray-900 text-slate-400 font-medium">

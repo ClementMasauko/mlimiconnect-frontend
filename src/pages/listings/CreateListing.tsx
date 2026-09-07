@@ -7,6 +7,7 @@ import { useMarketplace } from "../../context/MarketplaceContext";
 import { useAuth } from "../../context/AuthContext";
 import api, { getApiError } from "../../lib/api";
 import { compressImage, formatFileSize } from "../../lib/lowData";
+import { features } from "../../config/features";
 
 export default function CreateListing() {
   const liveAnimalCategories = ["live-animals","cattle","goats","sheep","pigs","broiler-chickens","layer-chickens","indigenous-chickens","ducks-poultry","chicks-breeding-stock"];
@@ -129,7 +130,7 @@ export default function CreateListing() {
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-2 tracking-tight">Create Listing</h1>
         <p className="text-gray-500 dark:text-gray-400 mb-8 text-sm font-medium">
-          List your products in Malawi's prime agricultural marketplace. Support both Buy It Now or Auction formats.
+          List products at a clear fixed price for marketplace review.
         </p>
 
         {success ? (
@@ -137,7 +138,7 @@ export default function CreateListing() {
             <div className="text-green-600 text-6xl mb-6">✓</div>
             <h2 className="text-2xl font-black mb-3">Listing Created Successfully!</h2>
             <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto text-sm font-medium">
-              Your item is now live in the marketplace for buyers to bid on or buy instantly.
+              Your item was submitted to the marketplace.
             </p>
             <div className="flex justify-center gap-4">
               <Link to="/app/marketplace">
@@ -161,8 +162,8 @@ export default function CreateListing() {
                 <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">
                   Selling Format
                 </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
+                <div className={`grid gap-3 ${features.auctions ? "grid-cols-2" : "grid-cols-1"}`}>
+                  {features.auctions && <button
                     type="button"
                     onClick={() => setForm({ ...form, listingType: "fixed-price" })}
                     className={`p-4 rounded-xl border-2 text-left flex items-start gap-3 transition-all ${
@@ -176,7 +177,7 @@ export default function CreateListing() {
                       <p className="text-sm font-extrabold text-slate-900 dark:text-white">Buy It Now (Fixed Price)</p>
                       <p className="text-xs text-slate-400 mt-1 font-medium">Set a static price. Buyers purchase instantly.</p>
                     </div>
-                  </button>
+                  </button>}
 
                   <button
                     type="button"

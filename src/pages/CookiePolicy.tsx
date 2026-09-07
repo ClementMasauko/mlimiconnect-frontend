@@ -109,7 +109,7 @@ export default function CookiePolicy() {
               Need more information about privacy or cookies?
             </p>
             <Button variant="primary" size="lg" asChild>
-              <a href="mailto:privacy@mlimiconnect.mw">Contact Privacy Team</a>
+              <a href="mailto:support@mlimiconnect.mw">Contact support</a>
             </Button>
           </div>
         </Card>

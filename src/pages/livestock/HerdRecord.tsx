@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Activity, ArrowLeft, BadgeDollarSign, GitBranch, Scale, Stethoscope } from "lucide-react";
@@ -14,7 +14,7 @@ export default function HerdRecord(){
  const [health,setHealth]=useState({event_type:"inspection",occurred_on:today,description:"",animal_id:"",product_or_vaccine:"",administered_by:"",withdrawal_end_date:""});
  const [production,setProduction]=useState({record_type:"eggs",recorded_on:today,quantity:"",unit:"item",notes:""}); const [weight,setWeight]=useState({animal_id:"",recorded_on:today,weight_kg:""});
  const [breeding,setBreeding]=useState({event_type:"mating",occurred_on:today,animal_id:"",expected_due_date:"",outcome:"",notes:""}); const [finance,setFinance]=useState({record_type:"expense",category:"feed",amount:"",occurred_on:today,description:""}); const [movement,setMovement]=useState({event_type:"movement",location:"",quantity:"",description:""});
- const load=async()=>{try{setHerd((await api.get<Herd>(`/api/livestock/herds/${id}/`)).data);}catch(reason){setError(getApiError(reason,"Herd or flock record could not be loaded."));}}; useEffect(()=>{void load();},[id]);
+ const load=useCallback(async()=>{try{setHerd((await api.get<Herd>(`/api/livestock/herds/${id}/`)).data);}catch(reason){setError(getApiError(reason,"Herd or flock record could not be loaded."));}},[id]); useEffect(()=>{void load();},[load]);
  const submit=async(event:FormEvent,path:string,data:Record<string,unknown>,message:string,reset:()=>void)=>{event.preventDefault();setBusy(true);setError("");try{await api.post(path,data);reset();setNotice(message);await load();}catch(reason){setError(getApiError(reason,"The record could not be saved."));}finally{setBusy(false);}};
  if(!herd)return <main className="p-6">{error||"Loading livestock record…"}</main>;
  return <main className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6"><Link to="/app/livestock" className="inline-flex items-center gap-2 font-semibold text-green-700"><ArrowLeft size={18}/>Livestock dashboard</Link><header className="rounded-2xl bg-emerald-900 p-6 text-white"><h1 className="text-2xl font-bold">{herd.name}</h1><p className="mt-1">{herd.species.replaceAll("_"," ")} · {herd.head_count} head · Traceability {herd.traceability_code||"not initialized"}</p></header>{error&&<div role="alert" className="rounded-xl bg-red-50 p-4 text-red-800">{error}</div>}{notice&&<div role="status" className="rounded-xl bg-green-50 p-4 text-green-800">{notice}</div>}

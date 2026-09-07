@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { useTranslation } from "react-i18next";
+import { features } from "../../config/features";
 
 export default function Sidebar() {
   const { t } = useTranslation();
@@ -57,13 +58,6 @@ export default function Sidebar() {
   const canSell = safeUser.can_sell === true || safeUser.user_type === "farmer" || safeUser.user_type === "admin";
   const canBuy = safeUser.can_buy !== false || safeUser.user_type === "admin";
   const isAdmin = safeUser.user_type === "admin";
-
-  const notificationCounts = {
-    unreadMessages: 3,
-    pendingOrdersBuyer: 2,
-    pendingOrdersFarmer: 4,
-    pendingDisputes: 1,
-  };
 
   const sidebarContent = (
     <div className="h-full overflow-y-auto border-r border-slate-200 bg-white shadow-[2px_0_12px_rgba(15,23,42,.03)] dark:border-gray-800 dark:bg-gray-950">
@@ -101,7 +95,6 @@ export default function Sidebar() {
                 to="/app/orders"
                 icon={<ListOrdered className="w-5 h-5" />}
                 label={t("myOrders")}
-                badge={notificationCounts.pendingOrdersBuyer}
               />
             )}
 
@@ -110,15 +103,12 @@ export default function Sidebar() {
                 to="/app/listings/orders"
                 icon={<Package className="w-5 h-5" />}
                 label={t("sellerOrders")}
-                badge={notificationCounts.pendingOrdersFarmer}
               />
             )}
             <SidebarLink
               to="/app/messages"
               icon={<MessageSquare className="w-5 h-5" />}
               label={t("messages")}
-              badge={notificationCounts.unreadMessages}
-              badgeColor="bg-blue-500"
             />
           </nav>
         </div>
@@ -144,8 +134,6 @@ export default function Sidebar() {
                   to="/app/traceability"
                   icon={<Leaf className="w-5 h-5" />}
                   label={t("traceability")}
-                  badge={notificationCounts.pendingDisputes}
-                  badgeColor="bg-amber-500"
                 />
                 <SidebarLink
                   to="/app/livestock"
@@ -173,11 +161,11 @@ export default function Sidebar() {
                 icon={<Lightbulb className="w-5 h-5" />}
                 label={t("advisory")}
               />
-              <SidebarLink
+              {features.analytics && <SidebarLink
                 to="/app/analytics"
                 icon={<BarChart3 className="w-5 h-5" />}
                 label={t("analytics")}
-              />
+              />}
             </AccordionContent>
           </Accordion.Item>
         </Accordion.Root>
@@ -193,11 +181,11 @@ export default function Sidebar() {
               icon={<User className="w-5 h-5" />}
               label={t("profile")}
             />
-            <SidebarLink
+            {features.subscriptions && <SidebarLink
               to="/app/subscription"
               icon={<Crown className="w-5 h-5" />}
               label={t("plans")}
-            />
+            />}
             <SidebarLink
               to="/app/profile/settings"
               icon={<Settings className="w-5 h-5" />}

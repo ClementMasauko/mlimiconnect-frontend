@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import Card from "../../components/ui/Card";
+import { features } from "../../config/features";
 import Button from "../../components/ui/Button";
 import { Leaf, CloudRain, TrendingUp, Bug, Globe, Search, Plus, ShieldCheck, BookOpenCheck, UserRound } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
@@ -81,7 +82,7 @@ export default function AdvisoryDashboard() {
 
         <div className="mb-6 grid gap-3 sm:grid-cols-2">
           <Card className="flex items-start gap-3 border-green-200 p-4"><BookOpenCheck className="shrink-0 text-green-700" /><div><h2 className="font-bold">Crop planning assistant</h2><p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Combines attributed weather, historical market estimates and reviewed planning rules. It does not invent suitability, yield or profit scores.</p><Link to="/app/advisory/crop-recommendation" className="mt-2 inline-block text-sm font-bold text-green-700">Open planning assistant</Link></div></Card>
-          <Card className="flex items-start gap-3 p-4"><UserRound className="shrink-0 text-green-700" /><div><h2 className="font-bold">Human expert escalation</h2><p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Verified expert onboarding is in progress. You can record a request, but no professional or appointment is presented as confirmed until reviewed.</p><Link to="/app/advisory/expert-connect" className="mt-2 inline-block text-sm font-bold text-green-700">View expert-service status</Link></div></Card>
+          {features.expertRequests && <Card className="flex items-start gap-3 p-4"><UserRound className="shrink-0 text-green-700" /><div><h2 className="font-bold">Human expert escalation</h2><p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Verified expert onboarding is in progress. No professional or appointment is presented as confirmed until reviewed.</p><Link to="/app/advisory/expert-connect" className="mt-2 inline-block text-sm font-bold text-green-700">View expert-service status</Link></div></Card>}
         </div>
 
         {/* Search */}

@@ -6,6 +6,7 @@ import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import { useMarketplace, type Product } from "../../context/MarketplaceContext";
 import api from "../../lib/api";
+import { features } from "../../config/features";
 
 export default function AdvancedSearch() {
   const { products, getSellerStats } = useMarketplace();
@@ -98,7 +99,7 @@ export default function AdvancedSearch() {
               <div>
                 <label className="block text-xs font-bold uppercase text-slate-400 mb-2">Buying Format</label>
                 <div className="space-y-2 font-semibold">
-                  <label className="flex items-center gap-2 cursor-pointer text-xs">
+                  {features.auctions && <label className="flex items-center gap-2 cursor-pointer text-xs">
                     <input
                       type="radio"
                       name="purchaseType"
@@ -108,7 +109,7 @@ export default function AdvancedSearch() {
                       className="h-4 w-4 text-green-600 rounded focus:ring-green-500"
                     />
                     <span>All Formats</span>
-                  </label>
+                  </label>}
                   <label className="flex items-center gap-2 cursor-pointer text-xs">
                     <input
                       type="radio"

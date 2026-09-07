@@ -14,7 +14,7 @@ export default function TermsAndConditions() {
             Terms & Conditions
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-400">
-            Last updated: February 14, 2026
+            Last updated: September 7, 2026
           </p>
         </div>
 
@@ -24,7 +24,7 @@ export default function TermsAndConditions() {
               <Shield className="text-green-600" size={28} /> 1. Acceptance of Terms
             </h2>
             <p>
-              By accessing or using MlimiConnect (the "Platform"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree with any part of these terms, you may not use our service.
+              These are pilot terms and must be approved by qualified Malawi counsel, with the operating entity, governing law, contact details, fees, refund rules, and dispute process completed before public launch. By using an authorised pilot, you agree to follow the rules shown in the service and to provide accurate information.
             </p>
 
             <h2 className="text-3xl font-bold mt-12 mb-6 flex items-center gap-3">
@@ -53,7 +53,7 @@ export default function TermsAndConditions() {
 
             <div className="mt-16 p-6 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700">
               <p className="text-center text-lg font-medium text-gray-700 dark:text-gray-300">
-                By using MlimiConnect, you confirm that you are at least 18 years old and have the legal capacity to enter into these terms.
+                Do not use live payment or settlement features until the final commercial terms, provider disclosures, fees, refund rules, and complaint process are published and accepted.
               </p>
             </div>
 

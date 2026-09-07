@@ -27,14 +27,9 @@ The interface has been upgraded to a unified, professional marketplace experienc
 - Notification preferences are grouped by Email, SMS, and Push channels with a save action.
 - The notifications centre presents a readable inbox-style list with unread states, categories, mark-all-read, and a shortcut to notification preferences.
 
-### Revenue model
+### Commercial features
 
-The platform uses transparent, opt-in revenue mechanisms:
-
-- **Settled-order commission:** 3.5% platform commission, recognized only after a successful settled order. Mobile-money/processing costs are tracked separately in the admin revenue view.
-- **Optional subscriptions:** Farmer Plus and Buyer Pro plans provide advanced visibility, analytics, sourcing, and support tools.
-- **Promoted listings:** Farmers can request an optional promoted-listing campaign, starting from MWK 1,500. Full price and duration must be confirmed before payment when campaign billing is connected.
-- Buyer access is not charged by these seller tools. Subscription and promotion requests currently remain pending requests until server-side payment and entitlement APIs are connected.
+Commission is configured on the backend and snapshotted into the ledger when a payment settles. Auctions, paid subscriptions, promotions, and wallet screens remain disabled by default until their commercial terms, billing, entitlements, support process, and legal review are complete. No public page should advertise an invented fee, balance, price, or performance metric.
 
 ### Key implementation files
 

@@ -6,6 +6,7 @@ import { Clock, CheckCircle, Truck, AlertCircle, Package, Gavel, ShoppingBag, Ey
 import { useMarketplace } from "../../context/MarketplaceContext";
 import { useAuth } from "../../context/AuthContext";
 import api, { getApiError } from "../../lib/api";
+import { features } from "../../config/features";
 
 // Mock orders data
 const mockOrders = [
@@ -35,13 +36,14 @@ const mockOrders = [
 export default function MyOrders() {
   const { products } = useMarketplace();
   const { user } = useAuth();
+  const demoEnabled = import.meta.env.VITE_DEMO_DATA_ENABLED === "true";
   
   const [activeTab, setActiveTab] = useState<"purchases" | "bids">("purchases");
-  const [orders, setOrders] = useState(mockOrders);
+  const [orders, setOrders] = useState(demoEnabled ? mockOrders : []);
   const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
-    if (import.meta.env.VITE_DEMO_DATA_ENABLED === "true") return;
+    if (demoEnabled) return;
     api.get("/api/marketplace/orders/")
       .then(({ data }) => {
         const rows = Array.isArray(data) ? data : data.results ?? [];
@@ -57,7 +59,7 @@ export default function MyOrders() {
         setOrders([]);
         setLoadError(getApiError(error, "Orders could not be loaded."));
       });
-  }, []);
+  }, [demoEnabled]);
 
   // Time Tick for countdowns
   const [, setTimeTick] = useState(0);
@@ -66,7 +68,7 @@ export default function MyOrders() {
     return () => clearInterval(timer);
   }, []);
 
-  const currentUsername = user?.username || "demo_buyer";
+  const currentUsername = user?.username || "";
 
   // Filter auctions where this user has placed a bid
   const myBiddedAuctions = products.filter((p) => {
@@ -146,13 +148,13 @@ export default function MyOrders() {
             Buyer Dashboard
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1.5 text-sm font-medium">
-            Monitor your purchase status, check active bids, and manage won agricultural lots.
+            Monitor purchases, payment status, and delivery progress.
           </p>
         </div>
 
         {/* Dashboard Tabs */}
         <div className="flex gap-4 border-b border-slate-200 dark:border-gray-800 mb-6 font-semibold text-sm">
-          <button
+          {features.auctions && <button
             onClick={() => setActiveTab("purchases")}
             className={`pb-3 border-b-2 px-2 transition-all flex items-center gap-1.5 ${
               activeTab === "purchases"
@@ -161,7 +163,7 @@ export default function MyOrders() {
             }`}
           >
             <ShoppingBag size={15} /> Purchases ({orders.length})
-          </button>
+          </button>}
           
           <button
             onClick={() => setActiveTab("bids")}
@@ -237,7 +239,7 @@ export default function MyOrders() {
         )}
 
         {/* Bidding Hub Tab Content */}
-        {activeTab === "bids" && (
+        {features.auctions && activeTab === "bids" && (
           <div className="space-y-4 animate-fade-in">
             {myBiddedAuctions.length === 0 ? (
               <div className="text-center py-16 border-2 border-dashed border-slate-200/50 dark:border-gray-800 rounded-2xl bg-white dark:bg-gray-900">

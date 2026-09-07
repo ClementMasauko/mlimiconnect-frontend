@@ -2,6 +2,16 @@
 import type { AxiosRequestConfig } from "axios";
 import type { z } from "zod";
 import api from "../lib/api";
+import type { paths } from "./openapi";
+
+type ApiPath = keyof paths & string;
+type RelativePath<T extends ApiPath = ApiPath> = T extends `/api/v1${infer Rest}` ? Rest : never;
+type PathsWithMethod<TMethod extends string> = {
+  [TPath in ApiPath]: TMethod extends keyof paths[TPath] ? RelativePath<TPath> : never;
+}[ApiPath];
+
+export type ApiGetPath = PathsWithMethod<"get">;
+export type ApiPostPath = PathsWithMethod<"post">;
 
 export async function requestValidated<TSchema extends z.ZodType>(config: AxiosRequestConfig, schema: TSchema): Promise<z.infer<TSchema>> {
   const response = await api.request<unknown>(config);
@@ -9,6 +19,6 @@ export async function requestValidated<TSchema extends z.ZodType>(config: AxiosR
 }
 
 export const apiV1 = {
-  get: <TSchema extends z.ZodType>(path: string, schema: TSchema, config?: AxiosRequestConfig) => requestValidated({ ...config, method: "GET", url: `/api/v1${path}` }, schema),
-  post: <TSchema extends z.ZodType>(path: string, body: unknown, schema: TSchema, config?: AxiosRequestConfig) => requestValidated({ ...config, method: "POST", url: `/api/v1${path}`, data: body }, schema),
+  get: <TSchema extends z.ZodType>(path: ApiGetPath, schema: TSchema, config?: AxiosRequestConfig) => requestValidated({ ...config, method: "GET", url: `/api/v1${path}` }, schema),
+  post: <TSchema extends z.ZodType>(path: ApiPostPath, body: unknown, schema: TSchema, config?: AxiosRequestConfig) => requestValidated({ ...config, method: "POST", url: `/api/v1${path}`, data: body }, schema),
 };

@@ -17,7 +17,6 @@ export default defineConfig({
         manualChunks: {
           react: ['react', 'react-dom', 'react-router-dom'],
           charts: ['recharts'],
-          editor: ['react-quill'],
           i18n: ['i18next', 'react-i18next'],
         },
       },

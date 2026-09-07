@@ -4,1823 +4,6 @@ info:
   version: 1.0.0
   description: Versioned marketplace, advisory, logistics and administration API.
 paths:
-  /api/admin/approvals/:
-    get:
-      operationId: api_admin_approvals_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/admin/approvals/{organization_id}/decision/:
-    post:
-      operationId: api_admin_approvals_decision_create
-      parameters:
-      - in: path
-        name: organization_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/admin/audit-logs/:
-    get:
-      operationId: api_admin_audit_logs_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/admin/deliveries/:
-    get:
-      operationId: api_admin_deliveries_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    post:
-      operationId: api_admin_deliveries_create
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/admin/deliveries/{delivery_id}/external-dispatch/:
-    post:
-      operationId: api_admin_deliveries_external_dispatch_create
-      parameters:
-      - in: path
-        name: delivery_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/admin/disputes/:
-    get:
-      operationId: api_admin_disputes_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/admin/disputes/{dispute_id}/decision/:
-    post:
-      operationId: api_admin_disputes_decision_create
-      parameters:
-      - in: path
-        name: dispute_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/admin/exports/{dataset}/:
-    get:
-      operationId: api_admin_exports_retrieve
-      parameters:
-      - in: path
-        name: dataset
-        schema:
-          type: string
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/admin/fees/:
-    get:
-      operationId: api_admin_fees_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    put:
-      operationId: api_admin_fees_update
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/admin/listings/approvals/:
-    get:
-      operationId: api_admin_listings_approvals_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    post:
-      operationId: api_admin_listings_approvals_create
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/admin/operations/incidents/:
-    get:
-      operationId: api_admin_operations_incidents_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    post:
-      operationId: api_admin_operations_incidents_create
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    patch:
-      operationId: api_admin_operations_incidents_partial_update
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/admin/operations/metrics/:
-    get:
-      operationId: api_admin_operations_metrics_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/admin/orders/{order_id}/refunds/:
-    post:
-      operationId: api_admin_orders_refunds_create
-      parameters:
-      - in: path
-        name: order_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/admin/overview/:
-    get:
-      operationId: api_admin_overview_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/admin/providers/:
-    get:
-      operationId: api_admin_providers_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/admin/reconciliations/:
-    get:
-      operationId: api_admin_reconciliations_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/admin/refunds/{refund_id}/status/:
-    patch:
-      operationId: api_admin_refunds_status_partial_update
-      parameters:
-      - in: path
-        name: refund_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/admin/settings/:
-    get:
-      operationId: api_admin_settings_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    put:
-      operationId: api_admin_settings_update
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/admin/transporters/:
-    get:
-      operationId: api_admin_transporters_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    post:
-      operationId: api_admin_transporters_create
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/admin/users/:
-    get:
-      operationId: api_admin_users_list
-      parameters:
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: page_size
-        required: false
-        in: query
-        description: Number of results to return per page.
-        schema:
-          type: integer
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedUserList'
-          description: ''
-  /api/admin/users/{user_id}/action/:
-    post:
-      operationId: api_admin_users_action_create
-      parameters:
-      - in: path
-        name: user_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/admin/users/{user_id}/role/:
-    post:
-      operationId: api_admin_users_role_create
-      parameters:
-      - in: path
-        name: user_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/advisory/ai/:
-    post:
-      operationId: api_advisory_ai_create
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/advisory/market-data/:
-    get:
-      operationId: api_advisory_market_data_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/advisory/smart-contracts/:
-    get:
-      operationId: api_advisory_smart_contracts_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    post:
-      operationId: api_advisory_smart_contracts_create
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '201':
-          description: No response body
-  /api/analytics/overview/:
-    get:
-      operationId: api_analytics_overview_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/auth/forgot-password/:
-    post:
-      operationId: api_auth_forgot_password_create
-      tags:
-      - api
-      security:
-      - {}
-      responses:
-        '200':
-          description: No response body
-  /api/auth/login/:
-    post:
-      operationId: api_auth_login_create
-      tags:
-      - api
-      security:
-      - {}
-      responses:
-        '200':
-          description: No response body
-  /api/auth/logout/:
-    post:
-      operationId: api_auth_logout_create
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/auth/profile/:
-    get:
-      operationId: api_auth_profile_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-          description: ''
-    put:
-      operationId: api_auth_profile_update
-      tags:
-      - api
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/User'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/User'
-        required: true
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-          description: ''
-    patch:
-      operationId: api_auth_profile_partial_update
-      tags:
-      - api
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedUser'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedUser'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PatchedUser'
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-          description: ''
-  /api/auth/register/:
-    post:
-      operationId: api_auth_register_create
-      tags:
-      - api
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Register'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Register'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Register'
-        required: true
-      security:
-      - {}
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Register'
-          description: ''
-  /api/auth/reset-password/:
-    post:
-      operationId: api_auth_reset_password_create
-      tags:
-      - api
-      security:
-      - {}
-      responses:
-        '200':
-          description: No response body
-  /api/auth/verify-otp/:
-    post:
-      operationId: api_auth_verify_otp_create
-      tags:
-      - api
-      security:
-      - {}
-      responses:
-        '200':
-          description: No response body
-  /api/auth/verify-reset-otp/:
-    post:
-      operationId: api_auth_verify_reset_otp_create
-      tags:
-      - api
-      security:
-      - {}
-      responses:
-        '200':
-          description: No response body
-  /api/contact/:
-    post:
-      operationId: api_contact_create
-      tags:
-      - api
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Contact'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Contact'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Contact'
-        required: true
-      security:
-      - {}
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Contact'
-          description: ''
-  /api/csrf/:
-    get:
-      operationId: api_csrf_retrieve
-      tags:
-      - api
-      security:
-      - {}
-      responses:
-        '200':
-          description: No response body
-  /api/dashboard/overview/:
-    get:
-      operationId: api_dashboard_overview_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/deliveries/:
-    get:
-      operationId: api_deliveries_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/deliveries/{delivery_id}/locations/:
-    get:
-      operationId: api_deliveries_locations_retrieve
-      parameters:
-      - in: path
-        name: delivery_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    post:
-      operationId: api_deliveries_locations_create
-      parameters:
-      - in: path
-        name: delivery_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/deliveries/{delivery_id}/quotes/:
-    get:
-      operationId: api_deliveries_quotes_retrieve
-      parameters:
-      - in: path
-        name: delivery_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    post:
-      operationId: api_deliveries_quotes_create
-      parameters:
-      - in: path
-        name: delivery_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    patch:
-      operationId: api_deliveries_quotes_partial_update
-      parameters:
-      - in: path
-        name: delivery_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/deliveries/{delivery_id}/rating/:
-    post:
-      operationId: api_deliveries_rating_create
-      parameters:
-      - in: path
-        name: delivery_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/deliveries/{delivery_id}/status/:
-    patch:
-      operationId: api_deliveries_status_partial_update
-      parameters:
-      - in: path
-        name: delivery_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/deliveries/requests/:
-    get:
-      operationId: api_deliveries_requests_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    post:
-      operationId: api_deliveries_requests_create
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/marketplace/compare/:
-    get:
-      operationId: api_marketplace_compare_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/marketplace/favourites/:
-    get:
-      operationId: api_marketplace_favourites_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    post:
-      operationId: api_marketplace_favourites_create
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    delete:
-      operationId: api_marketplace_favourites_destroy
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '204':
-          description: No response body
-  /api/marketplace/listings/:
-    get:
-      operationId: api_marketplace_listings_list
-      parameters:
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedListingList'
-          description: ''
-    post:
-      operationId: api_marketplace_listings_create
-      tags:
-      - api
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Listing'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Listing'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Listing'
-        required: true
-      security:
-      - cookieAuth: []
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Listing'
-          description: ''
-  /api/marketplace/listings/{id}/:
-    get:
-      operationId: api_marketplace_listings_retrieve
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Listing'
-          description: ''
-    put:
-      operationId: api_marketplace_listings_update
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Listing'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Listing'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Listing'
-        required: true
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Listing'
-          description: ''
-    patch:
-      operationId: api_marketplace_listings_partial_update
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedListing'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedListing'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PatchedListing'
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Listing'
-          description: ''
-    delete:
-      operationId: api_marketplace_listings_destroy
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '204':
-          description: No response body
-  /api/marketplace/order-reviews/:
-    post:
-      operationId: api_marketplace_order_reviews_create
-      tags:
-      - api
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OrderReview'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/OrderReview'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/OrderReview'
-        required: true
-      security:
-      - cookieAuth: []
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrderReview'
-          description: ''
-  /api/marketplace/orders/:
-    get:
-      operationId: api_marketplace_orders_list
-      parameters:
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedOrderList'
-          description: ''
-  /api/marketplace/orders/{order_id}/delivery-evidence/:
-    post:
-      operationId: api_marketplace_orders_delivery_evidence_create
-      parameters:
-      - in: path
-        name: order_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/marketplace/orders/{order_id}/dispute/:
-    post:
-      operationId: api_marketplace_orders_dispute_create
-      parameters:
-      - in: path
-        name: order_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/marketplace/orders/{order_id}/partial-fulfilment/:
-    post:
-      operationId: api_marketplace_orders_partial_fulfilment_create
-      parameters:
-      - in: path
-        name: order_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/marketplace/orders/{order_id}/status/:
-    patch:
-      operationId: api_marketplace_orders_status_partial_update
-      parameters:
-      - in: path
-        name: order_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/marketplace/orders/{id}/:
-    get:
-      operationId: api_marketplace_orders_retrieve
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Order'
-          description: ''
-  /api/marketplace/public-listings/:
-    get:
-      operationId: api_marketplace_public_listings_list
-      parameters:
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: page_size
-        required: false
-        in: query
-        description: Number of results to return per page.
-        schema:
-          type: integer
-      tags:
-      - api
-      security:
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedListingList'
-          description: ''
-  /api/marketplace/recently-viewed/:
-    get:
-      operationId: api_marketplace_recently_viewed_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    post:
-      operationId: api_marketplace_recently_viewed_create
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/marketplace/searches/saved/:
-    get:
-      operationId: api_marketplace_searches_saved_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    post:
-      operationId: api_marketplace_searches_saved_create
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    delete:
-      operationId: api_marketplace_searches_saved_destroy
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '204':
-          description: No response body
-  /api/marketplace/seller-orders/:
-    get:
-      operationId: api_marketplace_seller_orders_list
-      parameters:
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedOrderList'
-          description: ''
-  /api/marketplace/wanted/:
-    get:
-      operationId: api_marketplace_wanted_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    post:
-      operationId: api_marketplace_wanted_create
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    patch:
-      operationId: api_marketplace_wanted_partial_update
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/messages/conversations/:
-    get:
-      operationId: api_messages_conversations_list
-      parameters:
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: page_size
-        required: false
-        in: query
-        description: Number of results to return per page.
-        schema:
-          type: integer
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedConversationList'
-          description: ''
-    post:
-      operationId: api_messages_conversations_create
-      tags:
-      - api
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Conversation'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Conversation'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Conversation'
-      security:
-      - cookieAuth: []
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Conversation'
-          description: ''
-  /api/messages/conversations/{conversation_id}/messages/:
-    get:
-      operationId: api_messages_conversations_messages_list
-      parameters:
-      - in: path
-        name: conversation_id
-        schema:
-          type: integer
-        required: true
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: page_size
-        required: false
-        in: query
-        description: Number of results to return per page.
-        schema:
-          type: integer
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedMessageList'
-          description: ''
-    post:
-      operationId: api_messages_conversations_messages_create
-      parameters:
-      - in: path
-        name: conversation_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Message'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Message'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Message'
-        required: true
-      security:
-      - cookieAuth: []
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Message'
-          description: ''
-  /api/messages/conversations/{conversation_id}/read/:
-    post:
-      operationId: api_messages_conversations_read_create
-      parameters:
-      - in: path
-        name: conversation_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/newsletter/:
-    post:
-      operationId: api_newsletter_create
-      tags:
-      - api
-      security:
-      - {}
-      responses:
-        '200':
-          description: No response body
-  /api/notifications/:
-    get:
-      operationId: api_notifications_list
-      parameters:
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: page_size
-        required: false
-        in: query
-        description: Number of results to return per page.
-        schema:
-          type: integer
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedNotificationList'
-          description: ''
-  /api/notifications/{notification_id}/read/:
-    post:
-      operationId: api_notifications_read_create
-      parameters:
-      - in: path
-        name: notification_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/notifications/read-all/:
-    post:
-      operationId: api_notifications_read_all_create
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/organizations/me/:
-    get:
-      operationId: api_organizations_me_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Organization'
-          description: ''
-    put:
-      operationId: api_organizations_me_update
-      tags:
-      - api
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Organization'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Organization'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Organization'
-        required: true
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Organization'
-          description: ''
-    patch:
-      operationId: api_organizations_me_partial_update
-      tags:
-      - api
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedOrganization'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedOrganization'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PatchedOrganization'
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Organization'
-          description: ''
-  /api/organizations/me/approvals/:
-    get:
-      operationId: api_organizations_me_approvals_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    post:
-      operationId: api_organizations_me_approvals_create
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    patch:
-      operationId: api_organizations_me_approvals_partial_update
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/organizations/me/audit/:
-    get:
-      operationId: api_organizations_me_audit_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/organizations/me/documents/:
-    get:
-      operationId: api_organizations_me_documents_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    post:
-      operationId: api_organizations_me_documents_create
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/organizations/me/report/:
-    get:
-      operationId: api_organizations_me_report_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/organizations/me/team/:
-    get:
-      operationId: api_organizations_me_team_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    post:
-      operationId: api_organizations_me_team_create
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    patch:
-      operationId: api_organizations_me_team_partial_update
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/payments/checkout-sessions/:
-    post:
-      operationId: api_payments_checkout_sessions_create
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/payments/webhooks/{provider}/:
-    post:
-      operationId: api_payments_webhooks_create
-      parameters:
-      - in: path
-        name: provider
-        schema:
-          type: string
-        required: true
-      tags:
-      - api
-      security:
-      - {}
-      responses:
-        '200':
-          description: No response body
-  /api/referrals/validate/:
-    post:
-      operationId: api_referrals_validate_create
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/status/:
-    get:
-      operationId: api_status_retrieve
-      tags:
-      - api
-      security:
-      - {}
-      responses:
-        '200':
-          description: No response body
-  /api/subscriptions/cancel/:
-    post:
-      operationId: api_subscriptions_cancel_create
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/subscriptions/checkout-sessions/:
-    post:
-      operationId: api_subscriptions_checkout_sessions_create
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/subscriptions/me/:
-    get:
-      operationId: api_subscriptions_me_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/traceability/batches/:
-    get:
-      operationId: api_traceability_batches_list
-      parameters:
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedTraceabilityBatchList'
-          description: ''
-    post:
-      operationId: api_traceability_batches_create
-      tags:
-      - api
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TraceabilityBatch'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/TraceabilityBatch'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/TraceabilityBatch'
-        required: true
-      security:
-      - cookieAuth: []
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TraceabilityBatch'
-          description: ''
-  /api/traceability/batches/{batch_id}/audit/:
-    get:
-      operationId: api_traceability_batches_audit_retrieve
-      parameters:
-      - in: path
-        name: batch_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/traceability/batches/{batch_id}/events/:
-    post:
-      operationId: api_traceability_batches_events_create
-      parameters:
-      - in: path
-        name: batch_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/traceability/batches/{id}/:
-    get:
-      operationId: api_traceability_batches_retrieve
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TraceabilityBatch'
-          description: ''
-  /api/traceability/events/{event_id}/verification/:
-    post:
-      operationId: api_traceability_events_verification_create
-      parameters:
-      - in: path
-        name: event_id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/traceability/verify/{batch_code}/:
-    get:
-      operationId: api_traceability_verify_retrieve
-      parameters:
-      - in: path
-        name: batch_code
-        schema:
-          type: string
-        required: true
-      tags:
-      - api
-      security:
-      - {}
-      responses:
-        '200':
-          description: No response body
-  /api/transporters/dashboard/:
-    get:
-      operationId: api_transporters_dashboard_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/transporters/me/:
-    get:
-      operationId: api_transporters_me_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    put:
-      operationId: api_transporters_me_update
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/transporters/me/documents/:
-    get:
-      operationId: api_transporters_me_documents_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    post:
-      operationId: api_transporters_me_documents_create
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/users/account:
-    post:
-      operationId: api_users_account_create
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    delete:
-      operationId: api_users_account_destroy
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '204':
-          description: No response body
-  /api/users/notifications:
-    get:
-      operationId: api_users_notifications_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-    put:
-      operationId: api_users_notifications_update
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/ussd/authenticate:
-    post:
-      operationId: api_ussd_authenticate_create
-      tags:
-      - api
-      security:
-      - {}
-      responses:
-        '200':
-          description: No response body
   /api/v1/admin/approvals/:
     get:
       operationId: api_v1_admin_approvals_retrieve
@@ -1953,6 +136,16 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/v1/admin/finance/:
+    get:
+      operationId: api_v1_admin_finance_retrieve
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/v1/admin/listings/approvals/:
     get:
       operationId: api_v1_admin_listings_approvals_retrieve
@@ -1965,6 +158,50 @@ paths:
           description: No response body
     post:
       operationId: api_v1_admin_listings_approvals_create
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/admin/livestock/listings/{listing_id}/verification/:
+    post:
+      operationId: api_v1_admin_livestock_listings_verification_create
+      parameters:
+      - in: path
+        name: listing_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/admin/livestock/operations/:
+    get:
+      operationId: api_v1_admin_livestock_operations_retrieve
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: api_v1_admin_livestock_operations_create
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    patch:
+      operationId: api_v1_admin_livestock_operations_partial_update
       tags:
       - api
       security:
@@ -2036,6 +273,16 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/v1/admin/payouts/:
+    post:
+      operationId: api_v1_admin_payouts_create
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/v1/admin/providers/:
     get:
       operationId: api_v1_admin_providers_retrieve
@@ -2062,6 +309,22 @@ paths:
       parameters:
       - in: path
         name: refund_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/admin/sellers/{user_id}/verification/:
+    post:
+      operationId: api_v1_admin_sellers_verification_create
+      parameters:
+      - in: path
+        name: user_id
         schema:
           type: integer
         required: true
@@ -2169,9 +432,127 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/v1/admin/users/{user_id}/ussd-recovery/:
+    post:
+      operationId: api_v1_admin_users_ussd_recovery_create
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/v1/advisory/ai/:
     post:
       operationId: api_v1_advisory_ai_create
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/advisory/crop-planning/:
+    post:
+      operationId: api_v1_advisory_crop_planning_create
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/advisory/diagnoses/:
+    get:
+      operationId: diagnosis_list
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: diagnosis_create
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/advisory/diagnoses/{diagnosis_id}/:
+    get:
+      operationId: diagnosis_retrieve
+      parameters:
+      - in: path
+        name: diagnosis_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: diagnosis_delete
+      parameters:
+      - in: path
+        name: diagnosis_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/advisory/diagnoses/{diagnosis_id}/escalations/:
+    post:
+      operationId: api_v1_advisory_diagnoses_escalations_create
+      parameters:
+      - in: path
+        name: diagnosis_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/advisory/diagnoses/{diagnosis_id}/reports/:
+    post:
+      operationId: api_v1_advisory_diagnoses_reports_create
+      parameters:
+      - in: path
+        name: diagnosis_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/advisory/expert-consultations/:
+    post:
+      operationId: api_v1_advisory_expert_consultations_create
       tags:
       - api
       security:
@@ -2189,9 +570,28 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/v1/advisory/market-data/history/:
+    get:
+      operationId: api_v1_advisory_market_data_history_retrieve
+      description: Query World Bank monthly estimates without presenting them as live
+        quotes.
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/v1/advisory/smart-contracts/:
     get:
-      operationId: api_v1_advisory_smart_contracts_retrieve
+      operationId: api_v1_advisory_smart_contracts_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
       tags:
       - api
       security:
@@ -2207,6 +607,16 @@ paths:
       - cookieAuth: []
       responses:
         '201':
+          description: No response body
+  /api/v1/advisory/weather/:
+    get:
+      operationId: api_v1_advisory_weather_retrieve
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
           description: No response body
   /api/v1/analytics/overview/:
     get:
@@ -2544,6 +954,356 @@ paths:
           description: No response body
     post:
       operationId: api_v1_deliveries_requests_create
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/livestock/advisory/:
+    get:
+      operationId: api_v1_livestock_advisory_retrieve
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/livestock/animals/{animal_id}/weights/:
+    get:
+      operationId: api_v1_livestock_animals_weights_retrieve
+      parameters:
+      - in: path
+        name: animal_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: api_v1_livestock_animals_weights_create
+      parameters:
+      - in: path
+        name: animal_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/livestock/deliveries/{delivery_id}/requirements/:
+    get:
+      operationId: api_v1_livestock_deliveries_requirements_retrieve
+      parameters:
+      - in: path
+        name: delivery_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: api_v1_livestock_deliveries_requirements_update
+      parameters:
+      - in: path
+        name: delivery_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/livestock/herds/:
+    get:
+      operationId: herd_list
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: herd_create
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/livestock/herds/{herd_id}/:
+    get:
+      operationId: herd_retrieve
+      parameters:
+      - in: path
+        name: herd_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    patch:
+      operationId: herd_update
+      parameters:
+      - in: path
+        name: herd_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/livestock/herds/{herd_id}/animals/:
+    post:
+      operationId: api_v1_livestock_herds_animals_create
+      parameters:
+      - in: path
+        name: herd_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/livestock/herds/{herd_id}/breeding/:
+    post:
+      operationId: api_v1_livestock_herds_breeding_create
+      parameters:
+      - in: path
+        name: herd_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/livestock/herds/{herd_id}/financial-records/:
+    get:
+      operationId: api_v1_livestock_herds_financial_records_retrieve
+      parameters:
+      - in: path
+        name: herd_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: api_v1_livestock_herds_financial_records_create
+      parameters:
+      - in: path
+        name: herd_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/livestock/herds/{herd_id}/health-events/:
+    post:
+      operationId: api_v1_livestock_herds_health_events_create
+      parameters:
+      - in: path
+        name: herd_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/livestock/herds/{herd_id}/movements/:
+    post:
+      operationId: api_v1_livestock_herds_movements_create
+      parameters:
+      - in: path
+        name: herd_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/livestock/herds/{herd_id}/production/:
+    post:
+      operationId: api_v1_livestock_herds_production_create
+      parameters:
+      - in: path
+        name: herd_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/livestock/listings/{listing_id}/details/:
+    get:
+      operationId: api_v1_livestock_listings_details_retrieve
+      parameters:
+      - in: path
+        name: listing_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: api_v1_livestock_listings_details_create
+      parameters:
+      - in: path
+        name: listing_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/livestock/profile/:
+    get:
+      operationId: api_v1_livestock_profile_retrieve
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: api_v1_livestock_profile_update
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/livestock/reminders/:
+    get:
+      operationId: api_v1_livestock_reminders_retrieve
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: api_v1_livestock_reminders_create
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    patch:
+      operationId: api_v1_livestock_reminders_partial_update
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/livestock/restrictions/:
+    get:
+      operationId: api_v1_livestock_restrictions_retrieve
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/livestock/welfare-reports/:
+    get:
+      operationId: api_v1_livestock_welfare_reports_retrieve
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: api_v1_livestock_welfare_reports_create
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/locations/search/:
+    get:
+      operationId: api_v1_locations_search_retrieve
       tags:
       - api
       security:
@@ -3362,6 +2122,27 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/v1/protected-files/{kind}/{object_id}/:
+    get:
+      operationId: api_v1_protected_files_retrieve
+      parameters:
+      - in: path
+        name: kind
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: object_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/v1/referrals/validate/:
     post:
       operationId: api_v1_referrals_validate_create
@@ -3638,6 +2419,51 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/v1/ussd/credentials/:
+    post:
+      operationId: api_v1_ussd_credentials_create
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: api_v1_ussd_credentials_destroy
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/ussd/recovery/:
+    post:
+      operationId: api_v1_ussd_recovery_create
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/ussd/services/{service}/:
+    get:
+      operationId: api_v1_ussd_services_retrieve
+      parameters:
+      - in: path
+        name: service
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
   /api/v1/wallet/:
     get:
       operationId: api_v1_wallet_retrieve
@@ -3648,29 +2474,19 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/v1/wallet/settlements/:
+    get:
+      operationId: api_v1_wallet_settlements_retrieve
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/v1/wallet/withdrawals/:
     post:
       operationId: api_v1_wallet_withdrawals_create
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/wallet/:
-    get:
-      operationId: api_wallet_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/wallet/withdrawals/:
-    post:
-      operationId: api_wallet_withdrawals_create
       tags:
       - api
       security:
@@ -3745,13 +2561,17 @@ components:
           type: integer
           readOnly: true
         participant:
-          type: string
+          type: object
+          additionalProperties: {}
+          nullable: true
           readOnly: true
         last_message:
-          type: string
+          type: object
+          additionalProperties: {}
+          nullable: true
           readOnly: true
         unread_count:
-          type: string
+          type: integer
           readOnly: true
         updated_at:
           type: string
@@ -3855,9 +2675,10 @@ components:
             $ref: '#/components/schemas/WholesalePriceTier'
         normalized_price:
           type: string
+          nullable: true
           readOnly: true
         seller_verified:
-          type: string
+          type: boolean
           readOnly: true
         category:
           type: string
@@ -3880,10 +2701,11 @@ components:
           type: string
           readOnly: true
         rating:
-          type: string
+          type: number
+          format: double
           readOnly: true
         reviewsCount:
-          type: string
+          type: integer
           readOnly: true
         tag:
           type: string
@@ -3955,6 +2777,8 @@ components:
           readOnly: true
         read_at:
           type: string
+          format: date-time
+          nullable: true
           readOnly: true
       required:
       - created_at
@@ -4012,6 +2836,15 @@ components:
         payment_method:
           type: string
           maxLength: 30
+        payment_transaction:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          readOnly: true
+        payment_expires_at:
+          type: string
+          format: date-time
+          nullable: true
         acceptance_deadline:
           type: string
           format: date-time
@@ -4023,23 +2856,43 @@ components:
           format: date-time
           readOnly: true
         items:
-          type: string
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+          readOnly: true
+        fulfilments:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
           readOnly: true
         status_history:
-          type: string
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
           readOnly: true
         delivery_evidence:
-          type: string
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
           readOnly: true
         refunds:
-          type: string
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
           readOnly: true
       required:
       - created_at
       - delivery_evidence
+      - fulfilments
       - id
       - items
       - payment_method
+      - payment_transaction
       - refunds
       - status_history
     OrderReview:
@@ -4049,6 +2902,8 @@ components:
           type: integer
           readOnly: true
         order:
+          type: integer
+        listing:
           type: integer
         rating:
           type: integer
@@ -4358,9 +3213,10 @@ components:
             $ref: '#/components/schemas/WholesalePriceTier'
         normalized_price:
           type: string
+          nullable: true
           readOnly: true
         seller_verified:
-          type: string
+          type: boolean
           readOnly: true
         category:
           type: string
@@ -4383,10 +3239,11 @@ components:
           type: string
           readOnly: true
         rating:
-          type: string
+          type: number
+          format: double
           readOnly: true
         reviewsCount:
-          type: string
+          type: integer
           readOnly: true
         tag:
           type: string
@@ -4481,12 +3338,17 @@ components:
           readOnly: true
         organization_status:
           type: string
+          nullable: true
           readOnly: true
         isBuyerVerified:
           type: boolean
           readOnly: true
+        is_seller_verified:
+          type: boolean
+          readOnly: true
         subscription:
-          type: string
+          type: object
+          additionalProperties: {}
           readOnly: true
     Register:
       type: object
@@ -4587,7 +3449,8 @@ components:
             $ref: '#/components/schemas/TraceabilityEvent'
           readOnly: true
         integrity:
-          type: string
+          type: object
+          additionalProperties: {}
           readOnly: true
       required:
       - batch_code
@@ -4644,7 +3507,10 @@ components:
           type: string
           readOnly: true
         evidence:
-          type: string
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
           readOnly: true
       required:
       - actor
@@ -4722,12 +3588,17 @@ components:
           readOnly: true
         organization_status:
           type: string
+          nullable: true
           readOnly: true
         isBuyerVerified:
           type: boolean
           readOnly: true
+        is_seller_verified:
+          type: boolean
+          readOnly: true
         subscription:
-          type: string
+          type: object
+          additionalProperties: {}
           readOnly: true
       required:
       - account_type
@@ -4736,6 +3607,7 @@ components:
       - email
       - id
       - isBuyerVerified
+      - is_seller_verified
       - organization_status
       - subscription
       - user_type

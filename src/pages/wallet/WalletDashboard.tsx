@@ -13,26 +13,19 @@ import {
 } from "lucide-react";
 import api from "../../lib/api";
 
-const mockBalance = {
-  available: 1250000,
-  pendingEscrow: 340000,
-  totalEarned: 2895000,
+const emptyBalance = {
+  available: 0,
+  pendingEscrow: 0,
+  totalEarned: 0,
   currency: "MWK",
 };
 
-const mockTransactions = [
-  { id: "tx1", date: "2026-02-10", type: "sale", amount: 450000, status: "completed", desc: "Maize - 50kg to Shoprite Lilongwe" },
-  { id: "tx2", date: "2026-02-08", type: "withdrawal", amount: -800000, status: "completed", desc: "To Airtel Money ****1234" },
-  { id: "tx3", date: "2026-02-05", type: "sale", amount: 620000, status: "pending", desc: "Tomatoes - 120kg (escrow)" },
-  { id: "tx4", date: "2026-02-01", type: "fee", amount: -18000, status: "completed", desc: "Platform fee (3%)" },
-];
-
 export default function WalletDashboard() {
-  const demoEnabled = import.meta.env.VITE_DEMO_DATA_ENABLED === "true";
-  const [balance, setBalance] = useState(mockBalance);
-  const [transactions, setTransactions] = useState(mockTransactions);
+  const [balance, setBalance] = useState(emptyBalance);
+  const [transactions, setTransactions] = useState<Array<{ id: string; date: string; type: string; amount: number; status: string; desc: string }>>([]);
   const [error, setError] = useState("");
-  useEffect(() => { if (demoEnabled) return; type WalletRow={id:number;created_at:string;type:string;amount:string|number;status:string;reference:string}; api.get<{available:string|number;pending:string|number;transactions:WalletRow[]}>("/api/wallet/").then(({ data }) => { setBalance({ available: Number(data.available), pendingEscrow: Number(data.pending), totalEarned: Number(data.available) + Math.max(0, Number(data.pending)), currency: "MWK" }); setTransactions(data.transactions.map(item => ({ id: String(item.id), date: new Date(item.created_at).toLocaleDateString(), type: item.type, amount: Number(item.amount), status: item.status, desc: `${item.type} · ${item.reference}` }))); }).catch(() => setError("Wallet data is temporarily unavailable.")); }, [demoEnabled]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => { type WalletRow={id:number;created_at:string;type:string;amount:string|number;status:string;reference:string}; api.get<{available:string|number;pending:string|number;transactions:WalletRow[]}>("/api/wallet/").then(({ data }) => { setBalance({ available: Number(data.available), pendingEscrow: Number(data.pending), totalEarned: Number(data.available) + Math.max(0, Number(data.pending)), currency: "MWK" }); setTransactions(data.transactions.map(item => ({ id: String(item.id), date: new Date(item.created_at).toLocaleDateString(), type: item.type, amount: Number(item.amount), status: item.status, desc: `${item.type} · ${item.reference}` }))); }).catch(() => setError("Wallet data is temporarily unavailable.")).finally(() => setLoading(false)); }, []);
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
@@ -101,6 +94,8 @@ export default function WalletDashboard() {
           <h2 className="text-2xl font-semibold mb-6">Recent Transactions</h2>
           <div className="space-y-4">
             {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+            {loading && <p className="text-sm text-gray-500">Loading wallet transactions…</p>}
+            {!loading && !error && transactions.length === 0 && <p className="text-sm text-gray-500">No wallet transactions are available.</p>}
             {transactions.map((tx) => (
               <div
                 key={tx.id}

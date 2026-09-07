@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { Bird, CalendarClock, HeartPulse, Plus, ShieldCheck } from "lucide-react";
@@ -15,8 +15,8 @@ export default function LivestockDashboard(){
   const [notice,setNotice]=useState(""); const [error,setError]=useState(""); const [busy,setBusy]=useState(false);
   const [profile,setProfile]=useState({farm_name:"",production_system:"mixed",district:"",species_kept:[] as string[]});
   const [herd,setHerd]=useState({name:"",species:"chickens_indigenous",breed:"",purpose:"",head_count:"1",housing:""});
-  const load=async()=>{try{const [p,h,r,a]=await Promise.all([api.get("/api/livestock/profile/"),api.get<Herd[]>("/api/livestock/herds/"),api.get<Reminder[]>("/api/livestock/reminders/"),api.get<Advice>("/api/livestock/advisory/")]);if(p.data)setProfile({...profile,...p.data});setHerds(h.data);setReminders(r.data);setAdvice(a.data);}catch(reason){setError(getApiError(reason,"Livestock records could not be loaded."));}};
-  useEffect(()=>{void load();},[]);
+  const load=useCallback(async()=>{try{const [p,h,r,a]=await Promise.all([api.get("/api/livestock/profile/"),api.get<Herd[]>("/api/livestock/herds/"),api.get<Reminder[]>("/api/livestock/reminders/"),api.get<Advice>("/api/livestock/advisory/")]);if(p.data)setProfile(current=>({...current,...p.data}));setHerds(h.data);setReminders(r.data);setAdvice(a.data);}catch(reason){setError(getApiError(reason,"Livestock records could not be loaded."));}},[]);
+  useEffect(()=>{void load();},[load]);
   const saveProfile=async(event:FormEvent)=>{event.preventDefault();setBusy(true);setError("");try{await api.put("/api/livestock/profile/",profile);setNotice("Livestock farmer profile saved.");}catch(reason){setError(getApiError(reason,"Profile could not be saved."));}finally{setBusy(false);}};
   const addHerd=async(event:FormEvent)=>{event.preventDefault();setBusy(true);setError("");try{await api.post("/api/livestock/herds/",{...herd,head_count:Number(herd.head_count)});setHerd({...herd,name:"",breed:"",purpose:"",head_count:"1",housing:""});setNotice("Herd or flock added.");await load();}catch(reason){setError(getApiError(reason,"Herd or flock could not be added."));}finally{setBusy(false);}};
   return <main className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6">

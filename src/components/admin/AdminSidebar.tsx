@@ -26,6 +26,7 @@ import {
   Bird,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { features } from '../../config/features';
 
 interface AdminSidebarProps {
   collapsed?: boolean;
@@ -133,12 +134,12 @@ export default function AdminSidebar({
                 label="Reports"
                 isCollapsed={isCollapsed}
               />
-              <SidebarLink
+              {features.adminRevenue && <SidebarLink
                 to="/admin/analytics/revenue"
                 icon={<TrendingUp className="h-4.5 w-4.5" />}
                 label="Revenue Breakdown"
                 isCollapsed={isCollapsed}
-              />
+              />}
             </Accordion.Content>
           </Accordion.Item>
         </Accordion.Root>
