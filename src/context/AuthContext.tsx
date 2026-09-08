@@ -13,6 +13,7 @@ export interface User {
   avatar_url?: string;
   isBuyerVerified?: boolean;
   twoFactorEnabled?: boolean;
+  twoFactorRequired?: boolean;
   user_type: "farmer" | "buyer" | "admin" | string;
   account_type?: "individual" | "cooperative" | "company" | "ngo" | "government" | "institution";
   can_buy?: boolean;

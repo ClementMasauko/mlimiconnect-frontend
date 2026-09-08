@@ -693,6 +693,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/2fa/recovery-codes/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["api_v1_auth_2fa_recovery_codes_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/2fa/setup/": {
         parameters: {
             query?: never;
@@ -2636,6 +2652,7 @@ export interface components {
             readonly has_usable_password?: boolean;
             readonly requires_onboarding?: boolean;
             readonly twoFactorEnabled?: boolean;
+            readonly twoFactorRequired?: boolean;
         };
         Register: {
             /** @description Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only. */
@@ -2758,6 +2775,7 @@ export interface components {
             readonly has_usable_password: boolean;
             readonly requires_onboarding: boolean;
             readonly twoFactorEnabled: boolean;
+            readonly twoFactorRequired: boolean;
         };
         /**
          * @description * `farmer` - Farmer
@@ -3815,6 +3833,31 @@ export interface operations {
         };
     };
     api_v1_auth_2fa_disable_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TwoFactorDisable"];
+                "application/x-www-form-urlencoded": components["schemas"]["TwoFactorDisable"];
+                "multipart/form-data": components["schemas"]["TwoFactorDisable"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TwoFactorDisable"];
+                };
+            };
+        };
+    };
+    api_v1_auth_2fa_recovery_codes_create: {
         parameters: {
             query?: never;
             header?: never;
