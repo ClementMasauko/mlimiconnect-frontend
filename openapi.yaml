@@ -892,6 +892,62 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/v1/auth/passkeys/{passkey_id}/:
+    delete:
+      operationId: api_v1_auth_passkeys_destroy
+      parameters:
+      - in: path
+        name: passkey_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/auth/passkeys/authenticate/options/:
+    post:
+      operationId: api_v1_auth_passkeys_authenticate_options_create
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/passkeys/authenticate/verify/:
+    post:
+      operationId: api_v1_auth_passkeys_authenticate_verify_create
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/passkeys/register/options/:
+    post:
+      operationId: api_v1_auth_passkeys_register_options_create
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/passkeys/register/verify/:
+    post:
+      operationId: api_v1_auth_passkeys_register_verify_create
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/v1/auth/profile/:
     get:
       operationId: api_v1_auth_profile_retrieve

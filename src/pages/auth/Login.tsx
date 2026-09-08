@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { Eye, EyeOff, Fingerprint, Mail, Lock } from "lucide-react";
 import { demoLoginEnabled, TwoFactorRequiredError, useAuth } from "../../context/AuthContext";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
@@ -25,7 +25,7 @@ type LoginForm = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const { t } = useTranslation();
-  const { login: authLogin, googleLogin, verifyTwoFactor, isLoading: authLoading } = useAuth();
+  const { login: authLogin, googleLogin, passkeyLogin, verifyTwoFactor, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -38,6 +38,7 @@ export default function Login() {
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors },
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -84,6 +85,14 @@ export default function Login() {
     catch (error) { setServerError(getApiError(error, "The authenticator or recovery code is incorrect.")); }
     finally { setLoading(false); }
   };
+  const signInWithPasskey = async () => {
+    const email = getValues("identifier")?.trim();
+    if (!email) { setServerError("Enter your email address first, then choose passkey sign-in."); return; }
+    setLoading(true); setServerError(null);
+    try { const user = await passkeyLogin(email.trim()); finishLogin(user.user_type, user.requires_onboarding); }
+    catch (error) { setServerError(getApiError(error, error instanceof Error ? error.message : "Passkey sign-in failed.")); }
+    finally { setLoading(false); }
+  };
 
   // Show loading state while auth context is initializing
   if (authLoading) {
@@ -109,6 +118,7 @@ export default function Login() {
           <Button className="w-full" size="lg" disabled={loading || twoFactorCode.trim().length < 6} onClick={() => void completeTwoFactor()}>{loading ? "Verifying…" : "Verify and sign in"}</Button>
           <button type="button" className="w-full text-sm font-semibold text-green-700" onClick={() => { sessionStorage.removeItem("mc:2fa-challenge"); setChallengeToken(""); setTwoFactorCode(""); setServerError(null); }}>Use a different account</button>
         </div> : <>
+        <Button type="button" variant="outline" size="lg" className="mb-4 w-full" disabled={loading} onClick={() => void signInWithPasskey()}><Fingerprint size={19} /> Continue with a passkey</Button>
         {googleClientId && <>
           <GoogleSignInButton
             clientId={googleClientId}

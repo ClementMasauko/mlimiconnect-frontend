@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { KeyRound, Link2, ShieldCheck } from "lucide-react";
+import { Fingerprint, KeyRound, Link2, ShieldCheck } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import AccountNav from "../../components/AccountNav";
 import GoogleSignInButton from "../../components/GoogleSignInButton";
@@ -9,8 +9,10 @@ import Card from "../../components/ui/Card";
 import Input from "../../components/ui/Input";
 import api, { getApiError } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
+import { browserSupportsPasskeys, createPasskey } from "../../lib/passkeys";
 
-type SecuritySummary = { google_connected: boolean; has_usable_password: boolean; two_factor_enabled: boolean; recovery_codes_remaining: number; recent_activity: Array<{ action: string; provider: string; created_at: string }> };
+type Passkey = { id: number; name: string; device_type: string; backed_up: boolean; last_used_at: string | null; created_at: string };
+type SecuritySummary = { google_connected: boolean; has_usable_password: boolean; two_factor_enabled: boolean; recovery_codes_remaining: number; passkeys: Passkey[]; recent_activity: Array<{ action: string; provider: string; created_at: string }> };
 type AuthSession = { id: number; current: boolean; device: string; ip_address: string | null; created_at: string; last_seen_at: string };
 
 export default function AccountSecurity() {
@@ -70,10 +72,19 @@ export default function AccountSecurity() {
     catch (reason) { setMessage(getApiError(reason, "Could not revoke the selected sessions.")); }
     finally { setBusy(false); }
   };
+  const addPasskey = async () => {
+    if (!browserSupportsPasskeys()) { setMessage("Passkeys require a supported browser and a secure HTTPS connection."); return; }
+    setBusy(true); setMessage("");
+    try { const { data } = await api.post<{ challenge_token: string; publicKey: Record<string, unknown> & { challenge: string } }>("/api/auth/passkeys/register/options/"); const credential = await createPasskey(data.publicKey); await api.post("/api/auth/passkeys/register/verify/", { challenge_token: data.challenge_token, credential, name: "This device" }); await load(); setMessage("Passkey added successfully."); }
+    catch (reason) { setMessage(getApiError(reason, reason instanceof Error ? reason.message : "Could not add the passkey.")); }
+    finally { setBusy(false); }
+  };
+  const removePasskey = async (id: number) => { setBusy(true); setMessage(""); try { await api.delete(`/api/auth/passkeys/${id}/`); await load(); setMessage("Passkey removed."); } catch (reason) { setMessage(getApiError(reason, "Could not remove the passkey.")); } finally { setBusy(false); } };
 
   return <div className="mx-auto max-w-6xl"><div className="mb-7"><p className="text-sm font-bold uppercase tracking-wider text-green-700">My account</p><h1 className="mt-1 text-3xl font-extrabold">Sign-in & security</h1><p className="mt-2 text-slate-500">Manage how you access MlimiConnect and review recent security activity.</p></div><div className="grid gap-7 lg:grid-cols-[240px_1fr]"><Card className="h-fit p-3"><AccountNav /></Card><div className="space-y-4">
     {message && <p role="status" className="rounded-lg border bg-white p-3 text-sm dark:bg-slate-900">{message}</p>}
     <Card className="p-6"><h2 className="flex items-center gap-2 text-lg font-extrabold"><KeyRound size={20} /> Sign-in methods</h2><div className="mt-5 space-y-5"><div className="flex items-center justify-between gap-4"><div><strong>Password</strong><p className="text-sm text-slate-500">{summary?.has_usable_password ? "A password is configured." : "No password is configured for this Google-created account."}</p></div><Link className="font-semibold text-green-700" to="/forgot-password">{summary?.has_usable_password ? "Reset" : "Set password"}</Link></div><div className="border-t pt-5"><div className="mb-3 flex items-center justify-between"><div><strong>Google</strong><p className="text-sm text-slate-500">{summary?.google_connected ? `Connected to ${user?.email}` : "Not connected"}</p></div>{summary?.google_connected && <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-800">Connected</span>}</div>{!summary?.google_connected && googleClientId && <GoogleSignInButton clientId={googleClientId} onCredential={credential => void linkGoogle(credential)} onError={setMessage} />}{summary?.google_connected && <div className="flex gap-2"><Input type="password" autoComplete="current-password" value={password} onChange={event => setPassword(event.target.value)} placeholder="Confirm password to disconnect" /><Button variant="outline" disabled={busy || !password || !summary.has_usable_password} onClick={() => void unlinkGoogle()}>Disconnect</Button></div>}</div></div></Card>
+    <Card className="p-6"><div className="flex items-center justify-between gap-3"><div><h2 className="flex items-center gap-2 text-lg font-extrabold"><Fingerprint size={20} /> Passkeys</h2><p className="mt-1 text-sm text-slate-500">Sign in using your fingerprint, face, screen lock, or security key.</p></div><Button disabled={busy} onClick={() => void addPasskey()}>Add passkey</Button></div><div className="mt-4 divide-y dark:divide-slate-800">{summary?.passkeys.map(item => <div key={item.id} className="flex items-center justify-between gap-3 py-3"><div><p className="text-sm font-semibold">{item.name}</p><p className="text-xs text-slate-500">Added {new Date(item.created_at).toLocaleDateString()}{item.last_used_at ? ` · Last used ${new Date(item.last_used_at).toLocaleString()}` : ""}</p></div><Button variant="outline" disabled={busy} onClick={() => void removePasskey(item.id)}>Remove</Button></div>)}{summary && !summary.passkeys.length && <p className="py-4 text-sm text-slate-500">No passkeys have been added.</p>}</div></Card>
     <Card className="p-6"><div className="flex items-center justify-between gap-3"><div><h2 className="flex items-center gap-2 text-lg font-extrabold"><ShieldCheck size={20} /> Authenticator two-factor authentication</h2><p className="mt-1 text-sm text-slate-500">Require a rotating code after password or Google sign-in.</p>{user?.twoFactorRequired && !summary?.two_factor_enabled && <p className="mt-2 text-sm font-semibold text-amber-700">Your role requires 2FA before privileged access can be enabled.</p>}</div>{summary?.two_factor_enabled && <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-800">Enabled</span>}</div>
       {!summary?.two_factor_enabled && !twoFactorSetup && !recoveryCodes.length && <Button className="mt-5" disabled={busy} onClick={() => void startTwoFactor()}>Set up authenticator</Button>}
       {twoFactorSetup && <div className="mt-5 space-y-4"><p className="text-sm">Scan this QR code with Google Authenticator, Microsoft Authenticator, Authy, or another TOTP app.</p><div className="w-fit rounded-xl bg-white p-3"><QRCodeSVG value={twoFactorSetup.provisioning_uri} size={180} /></div><details className="text-sm"><summary className="cursor-pointer font-semibold">Cannot scan the QR code?</summary><code className="mt-2 block break-all rounded bg-slate-100 p-3 dark:bg-slate-800">{twoFactorSetup.secret}</code></details><div className="flex gap-2"><Input value={twoFactorCode} onChange={event => setTwoFactorCode(event.target.value.replace(/\D/g, ""))} inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="6-digit code" /><Button disabled={busy || twoFactorCode.length !== 6} onClick={() => void confirmTwoFactor()}>Confirm</Button></div></div>}

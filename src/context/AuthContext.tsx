@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import api, { getApiError } from "../lib/api";
+import { getPasskey } from "../lib/passkeys";
 
 export interface User {
   id: number;
@@ -38,6 +39,7 @@ interface AuthContextType {
   error: string | null;
   login: (identifier: string, password: string) => Promise<User>;
   googleLogin: (credential: string) => Promise<User>;
+  passkeyLogin: (email: string) => Promise<User>;
   verifyTwoFactor: (challengeToken: string, code: string) => Promise<User>;
   logout: () => Promise<void>;
   refreshUserProfile: () => Promise<void>;
@@ -128,6 +130,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
+  const passkeyLogin = useCallback(async (email: string) => {
+    setError(null); setIsLoading(true);
+    try {
+      const { data: begin } = await api.post<{ challenge_token: string; publicKey: Record<string, unknown> & { challenge: string } }>("/api/auth/passkeys/authenticate/options/", { email });
+      const credential = await getPasskey(begin.publicKey);
+      const { data } = await api.post<{ user: User }>("/api/auth/passkeys/authenticate/verify/", { challenge_token: begin.challenge_token, credential });
+      setUser(data.user); return data.user;
+    } finally { setIsLoading(false); }
+  }, []);
+
   const verifyTwoFactor = useCallback(async (challengeToken: string, code: string) => {
     const { data } = await api.post<{ user: User }>("/api/auth/2fa/challenge/", { challenge_token: challengeToken, code });
     setUser(data.user);
@@ -140,7 +152,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(data);
   }, [user]);
 
-  const value = useMemo<AuthContextType>(() => ({ user, isAuthenticated: !!user, isLoading, error, login, googleLogin, verifyTwoFactor, logout, refreshUserProfile }), [user, isLoading, error, login, googleLogin, verifyTwoFactor, logout, refreshUserProfile]);
+  const value = useMemo<AuthContextType>(() => ({ user, isAuthenticated: !!user, isLoading, error, login, googleLogin, passkeyLogin, verifyTwoFactor, logout, refreshUserProfile }), [user, isLoading, error, login, googleLogin, passkeyLogin, verifyTwoFactor, logout, refreshUserProfile]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
