@@ -13,7 +13,7 @@ const googleUser = {
   requires_onboarding: true,
 };
 
-test("a first-time Google user completes onboarding", async ({ page }) => {
+test("a first-time Google user registers and completes onboarding", async ({ page }) => {
   let authenticated = false;
   let onboardingComplete = false;
 
@@ -55,7 +55,7 @@ test("a first-time Google user completes onboarding", async ({ page }) => {
     return route.fulfill({ status: 404, json: { detail: "Not mocked" } });
   });
 
-  await page.goto("/login");
+  await page.goto("/register");
   await page.getByRole("button", { name: "Continue with Google" }).click();
   await expect(page).toHaveURL(/\/google-onboarding$/);
   await expect(page.getByRole("heading", { name: "Complete your MlimiConnect profile" })).toBeVisible();

@@ -12,6 +12,8 @@ import api, { getApiError } from "../../lib/api";
 import AuthShell from "../../components/AuthShell";
 import { useTranslation } from "react-i18next";
 import LogoLoader from "../../components/LogoLoader";
+import GoogleSignInButton from "../../components/GoogleSignInButton";
+import { useAuth } from "../../context/AuthContext";
 
 // ── Zod Schemas ────────────────────────────────────────────────────────
 const registerSchema = z.object({
@@ -61,6 +63,7 @@ const passwordStrength = (password: string) => {
 
 export default function Register() {
   const { t } = useTranslation();
+  const { googleLogin } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState<"register" | "verify" | "success">("register");
   const [userData, setUserData] = useState<{ email: string; phone?: string } | null>(null);
@@ -80,6 +83,21 @@ export default function Register() {
   const accountType = watch("account_type");
   const enteredPassword = watch("password") || "";
   const strength = passwordStrength(enteredPassword);
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+
+  const continueWithGoogle = async (credential: string) => {
+    setLoading(true);
+    setServerError(null);
+    try {
+      const user = await googleLogin(credential);
+      if (user.requires_onboarding) navigate("/google-onboarding", { replace: true });
+      else navigate(user.user_type === "buyer" ? "/app/marketplace" : user.user_type === "admin" ? "/admin" : "/app/dashboard", { replace: true });
+    } catch (error) {
+      setServerError(getApiError(error, "Google sign-up failed. Please try again."));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const onRegister = async (data: RegisterForm) => {
     setLoading(true);
@@ -165,6 +183,11 @@ export default function Register() {
         )}
 
         {step === "success" ? <div className="rounded-2xl border border-green-200 bg-green-50 p-7 text-center dark:border-green-900 dark:bg-green-950/30"><CheckCircle2 className="mx-auto text-green-700" size={52} /><h2 className="mt-4 text-xl font-extrabold text-slate-900 dark:text-white">{t("accountCreated")}</h2><p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{t("signInContinue")}</p><Button className="mt-6 w-full" size="lg" onClick={() => navigate("/login")}>{t("continueSignIn")}<ArrowRight className="ml-2" size={18} /></Button></div> : step === "register" ? (
+          <div>
+          {googleClientId && <>
+            <GoogleSignInButton clientId={googleClientId} onCredential={credential => void continueWithGoogle(credential)} onError={setServerError} />
+            <div className="my-6 flex items-center gap-3" aria-hidden="true"><span className="h-px flex-1 bg-slate-200 dark:bg-slate-700" /><span className="text-xs font-semibold uppercase tracking-wider text-slate-500">or register with email</span><span className="h-px flex-1 bg-slate-200 dark:bg-slate-700" /></div>
+          </>}
           <form onSubmit={handleRegister(onRegister)} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
@@ -267,7 +290,7 @@ export default function Register() {
               {t("createFreeAccount")}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-          </form>
+          </form></div>
         ) : (
           <form onSubmit={handleOtp(onVerify)} className="space-y-6">
             <div>
