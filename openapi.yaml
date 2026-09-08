@@ -283,6 +283,22 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/v1/admin/payouts/{payout_id}/review/:
+    post:
+      operationId: api_v1_admin_payouts_review_create
+      parameters:
+      - in: path
+        name: payout_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/v1/admin/providers/:
     get:
       operationId: api_v1_admin_providers_retrieve
