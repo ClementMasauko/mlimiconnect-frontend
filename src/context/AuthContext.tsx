@@ -37,9 +37,17 @@ interface AuthContextType {
   error: string | null;
   login: (identifier: string, password: string) => Promise<User>;
   googleLogin: (credential: string) => Promise<User>;
+  verifyTwoFactor: (challengeToken: string, code: string) => Promise<User>;
   logout: () => Promise<void>;
   refreshUserProfile: () => Promise<void>;
 }
+
+export class TwoFactorRequiredError extends Error {
+  challengeToken: string;
+  constructor(challengeToken: string) { super("Two-factor authentication required."); this.name = "TwoFactorRequiredError"; this.challengeToken = challengeToken; }
+}
+
+type LoginResponse = { user: User; two_factor_required?: never; challenge_token?: never } | { two_factor_required: true; challenge_token: string; user?: never };
 
 const demoUsers: Record<string, { password: string; user: User }> = {
   "farmer@demo.mw": { password: "demo123", user: { id: 1, username: "demo_farmer", email: "farmer@demo.mw", user_type: "farmer", location: "Lilongwe" } },
@@ -75,10 +83,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(account.user);
         return account.user;
       }
-      const { data } = await api.post<{ user: User }>("/api/auth/login/", { identifier: identifier.trim(), password });
+      const { data } = await api.post<LoginResponse>("/api/auth/login/", { identifier: identifier.trim(), password });
+      if (data.two_factor_required) throw new TwoFactorRequiredError(data.challenge_token);
       setUser(data.user);
       return data.user;
     } catch (requestError: unknown) {
+      if (requestError instanceof TwoFactorRequiredError) throw requestError;
       const message = getApiError(requestError, "Login failed. Please check your credentials.");
       setError(message);
       throw new Error(message);
@@ -103,10 +113,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setError(null);
     setIsLoading(true);
     try {
-      const { data } = await api.post<{ user: User }>("/api/auth/google/", { credential });
+      const { data } = await api.post<LoginResponse>("/api/auth/google/", { credential });
+      if (data.two_factor_required) throw new TwoFactorRequiredError(data.challenge_token);
       setUser(data.user);
       return data.user;
     } catch (requestError: unknown) {
+      if (requestError instanceof TwoFactorRequiredError) throw requestError;
       const message = getApiError(requestError, "Google sign-in failed. Please try again.");
       setError(message);
       throw requestError;
@@ -115,13 +127,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
+  const verifyTwoFactor = useCallback(async (challengeToken: string, code: string) => {
+    const { data } = await api.post<{ user: User }>("/api/auth/2fa/challenge/", { challenge_token: challengeToken, code });
+    setUser(data.user);
+    return data.user;
+  }, []);
+
   const refreshUserProfile = useCallback(async () => {
     if (!user) return;
     const { data } = await api.get<User>("/api/auth/profile/");
     setUser(data);
   }, [user]);
 
-  const value = useMemo<AuthContextType>(() => ({ user, isAuthenticated: !!user, isLoading, error, login, googleLogin, logout, refreshUserProfile }), [user, isLoading, error, login, googleLogin, logout, refreshUserProfile]);
+  const value = useMemo<AuthContextType>(() => ({ user, isAuthenticated: !!user, isLoading, error, login, googleLogin, verifyTwoFactor, logout, refreshUserProfile }), [user, isLoading, error, login, googleLogin, verifyTwoFactor, logout, refreshUserProfile]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 

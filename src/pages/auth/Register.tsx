@@ -13,7 +13,7 @@ import AuthShell from "../../components/AuthShell";
 import { useTranslation } from "react-i18next";
 import LogoLoader from "../../components/LogoLoader";
 import GoogleSignInButton from "../../components/GoogleSignInButton";
-import { useAuth } from "../../context/AuthContext";
+import { TwoFactorRequiredError, useAuth } from "../../context/AuthContext";
 
 // ── Zod Schemas ────────────────────────────────────────────────────────
 const registerSchema = z.object({
@@ -93,6 +93,11 @@ export default function Register() {
       if (user.requires_onboarding) navigate("/google-onboarding", { replace: true });
       else navigate(user.user_type === "buyer" ? "/app/marketplace" : user.user_type === "admin" ? "/admin" : "/app/dashboard", { replace: true });
     } catch (error) {
+      if (error instanceof TwoFactorRequiredError) {
+        sessionStorage.setItem("mc:2fa-challenge", error.challengeToken);
+        navigate("/login", { replace: true });
+        return;
+      }
       setServerError(getApiError(error, "Google sign-up failed. Please try again."));
     } finally {
       setLoading(false);

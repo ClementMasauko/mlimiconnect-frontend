@@ -645,6 +645,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/2fa/challenge/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["api_v1_auth_2fa_challenge_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/2fa/confirm/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["api_v1_auth_2fa_confirm_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/2fa/disable/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["api_v1_auth_2fa_disable_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/2fa/setup/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["api_v1_auth_2fa_setup_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/forgot-password/": {
         parameters: {
             query?: never;
@@ -2555,6 +2619,7 @@ export interface components {
             readonly google_connected?: boolean;
             readonly has_usable_password?: boolean;
             readonly requires_onboarding?: boolean;
+            readonly twoFactorEnabled?: boolean;
         };
         Register: {
             /** @description Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only. */
@@ -2632,6 +2697,18 @@ export interface components {
          * @enum {string}
          */
         TradingModeEnum: "buy" | "sell" | "both";
+        TwoFactorChallenge: {
+            code: string;
+            /** Format: uuid */
+            challenge_token: string;
+        };
+        TwoFactorCode: {
+            code: string;
+        };
+        TwoFactorDisable: {
+            code: string;
+            password?: string;
+        };
         /**
          * @description * `kg` - Kg
          *     * `tonne` - Tonne
@@ -2664,6 +2741,7 @@ export interface components {
             readonly google_connected: boolean;
             readonly has_usable_password: boolean;
             readonly requires_onboarding: boolean;
+            readonly twoFactorEnabled: boolean;
         };
         /**
          * @description * `farmer` - Farmer
@@ -3653,6 +3731,99 @@ export interface operations {
         };
     };
     api_v1_analytics_overview_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    api_v1_auth_2fa_challenge_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TwoFactorChallenge"];
+                "application/x-www-form-urlencoded": components["schemas"]["TwoFactorChallenge"];
+                "multipart/form-data": components["schemas"]["TwoFactorChallenge"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TwoFactorChallenge"];
+                };
+            };
+        };
+    };
+    api_v1_auth_2fa_confirm_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TwoFactorCode"];
+                "application/x-www-form-urlencoded": components["schemas"]["TwoFactorCode"];
+                "multipart/form-data": components["schemas"]["TwoFactorCode"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TwoFactorCode"];
+                };
+            };
+        };
+    };
+    api_v1_auth_2fa_disable_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TwoFactorDisable"];
+                "application/x-www-form-urlencoded": components["schemas"]["TwoFactorDisable"];
+                "multipart/form-data": components["schemas"]["TwoFactorDisable"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TwoFactorDisable"];
+                };
+            };
+        };
+    };
+    api_v1_auth_2fa_setup_create: {
         parameters: {
             query?: never;
             header?: never;

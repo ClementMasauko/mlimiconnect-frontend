@@ -628,6 +628,94 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/v1/auth/2fa/challenge/:
+    post:
+      operationId: api_v1_auth_2fa_challenge_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TwoFactorChallenge'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TwoFactorChallenge'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TwoFactorChallenge'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TwoFactorChallenge'
+          description: ''
+  /api/v1/auth/2fa/confirm/:
+    post:
+      operationId: api_v1_auth_2fa_confirm_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TwoFactorCode'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TwoFactorCode'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TwoFactorCode'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TwoFactorCode'
+          description: ''
+  /api/v1/auth/2fa/disable/:
+    post:
+      operationId: api_v1_auth_2fa_disable_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TwoFactorDisable'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TwoFactorDisable'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TwoFactorDisable'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TwoFactorDisable'
+          description: ''
+  /api/v1/auth/2fa/setup/:
+    post:
+      operationId: api_v1_auth_2fa_setup_create
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/v1/auth/forgot-password/:
     post:
       operationId: api_v1_auth_forgot_password_create
@@ -3541,6 +3629,9 @@ components:
         requires_onboarding:
           type: boolean
           readOnly: true
+        twoFactorEnabled:
+          type: boolean
+          readOnly: true
     Register:
       type: object
       properties:
@@ -3723,6 +3814,40 @@ components:
         * `buy` - buy
         * `sell` - sell
         * `both` - both
+    TwoFactorChallenge:
+      type: object
+      properties:
+        code:
+          type: string
+          maxLength: 20
+          minLength: 6
+        challenge_token:
+          type: string
+          format: uuid
+      required:
+      - challenge_token
+      - code
+    TwoFactorCode:
+      type: object
+      properties:
+        code:
+          type: string
+          maxLength: 20
+          minLength: 6
+      required:
+      - code
+    TwoFactorDisable:
+      type: object
+      properties:
+        code:
+          type: string
+          maxLength: 20
+          minLength: 6
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - code
     UnitEnum:
       enum:
       - kg
@@ -3800,6 +3925,9 @@ components:
         requires_onboarding:
           type: boolean
           readOnly: true
+        twoFactorEnabled:
+          type: boolean
+          readOnly: true
       required:
       - account_type
       - can_buy
@@ -3813,6 +3941,7 @@ components:
       - organization_status
       - requires_onboarding
       - subscription
+      - twoFactorEnabled
       - user_type
       - username
     UserTypeEnum:

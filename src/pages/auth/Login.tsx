@@ -6,7 +6,7 @@ import * as z from "zod";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
-import { demoLoginEnabled, useAuth } from "../../context/AuthContext";   // ← use the hook
+import { demoLoginEnabled, TwoFactorRequiredError, useAuth } from "../../context/AuthContext";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import AuthShell from "../../components/AuthShell";
@@ -25,13 +25,15 @@ type LoginForm = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const { t } = useTranslation();
-  const { login: authLogin, googleLogin, isLoading: authLoading } = useAuth();
+  const { login: authLogin, googleLogin, verifyTwoFactor, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const [challengeToken, setChallengeToken] = useState(() => sessionStorage.getItem("mc:2fa-challenge") || "");
+  const [twoFactorCode, setTwoFactorCode] = useState("");
 
   const {
     register,
@@ -68,11 +70,19 @@ export default function Login() {
       const user = await authLogin(data.identifier.trim(), data.password);
       finishLogin(user.user_type, user.requires_onboarding);
     } catch (err: unknown) {
+      if (err instanceof TwoFactorRequiredError) { setChallengeToken(err.challengeToken); return; }
       console.error("Login error:", err);
       setServerError(getApiError(err, "Invalid username/email or password. Please try again."));
     } finally {
       setLoading(false);
     }
+  };
+
+  const completeTwoFactor = async () => {
+    setLoading(true); setServerError(null);
+    try { const user = await verifyTwoFactor(challengeToken, twoFactorCode.trim()); sessionStorage.removeItem("mc:2fa-challenge"); finishLogin(user.user_type, user.requires_onboarding); }
+    catch (error) { setServerError(getApiError(error, "The authenticator or recovery code is incorrect.")); }
+    finally { setLoading(false); }
   };
 
   // Show loading state while auth context is initializing
@@ -94,6 +104,11 @@ export default function Login() {
           </div>
         )}
 
+        {challengeToken ? <div className="space-y-5">
+          <div><label className="mb-1.5 block text-sm font-medium">Authenticator or recovery code</label><Input value={twoFactorCode} onChange={event => setTwoFactorCode(event.target.value.toUpperCase())} autoComplete="one-time-code" inputMode="text" placeholder="123456 or recovery code" /></div>
+          <Button className="w-full" size="lg" disabled={loading || twoFactorCode.trim().length < 6} onClick={() => void completeTwoFactor()}>{loading ? "Verifying…" : "Verify and sign in"}</Button>
+          <button type="button" className="w-full text-sm font-semibold text-green-700" onClick={() => { sessionStorage.removeItem("mc:2fa-challenge"); setChallengeToken(""); setTwoFactorCode(""); setServerError(null); }}>Use a different account</button>
+        </div> : <>
         {googleClientId && <>
           <GoogleSignInButton
             clientId={googleClientId}
@@ -102,7 +117,7 @@ export default function Login() {
               setLoading(true);
               void googleLogin(credential)
                 .then(user => finishLogin(user.user_type, user.requires_onboarding))
-                .catch(error => setServerError(getApiError(error, "Google sign-in failed. Please try again.")))
+                .catch(error => error instanceof TwoFactorRequiredError ? setChallengeToken(error.challengeToken) : setServerError(getApiError(error, "Google sign-in failed. Please try again.")))
                 .finally(() => setLoading(false));
             }}
             onError={setServerError}
@@ -170,7 +185,7 @@ export default function Login() {
           >
             {loading || authLoading ? t("signingIn") : t("signIn")}
           </Button>
-        </form>
+        </form></>}
 
         {demoLoginEnabled && (
           <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100">
