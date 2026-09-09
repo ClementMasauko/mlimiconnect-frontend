@@ -255,6 +255,7 @@ export default function Register() {
               </label>
               <select
                 {...registerForm("account_type")}
+                aria-label={t("accountOwner")}
                 className="w-full h-11 px-4 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all"
               >
                 <option value="individual">{t("individual")}</option>
@@ -268,7 +269,7 @@ export default function Register() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t("tradingIntent")}</label>
-              <select {...registerForm("trading_mode")} className="w-full h-11 px-4 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+              <select {...registerForm("trading_mode")} aria-label={t("tradingIntent")} className="w-full h-11 px-4 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200">
                 <option value="buy">{t("buyProducts")}</option><option value="sell">{t("sellProducts")}</option><option value="both">{t("buyAndSell")}</option>
               </select>
               <p className="mt-1 text-xs text-gray-500">{t("capabilityNote")}</p>

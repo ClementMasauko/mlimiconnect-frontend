@@ -149,7 +149,7 @@ export default function Login() {
               placeholder={t("identifierPlaceholder")}
               leftIcon={<Mail size={18} />}
               error={errors.identifier?.message}
-              autoComplete="username email"
+              autoComplete="username"
             />
           </div>
 

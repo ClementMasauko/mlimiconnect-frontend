@@ -72,7 +72,7 @@ export default function GoogleSignInButton({ clientId, onCredential, onError }: 
   }, [clientId]);
 
   return <div className="min-h-11 w-full" aria-busy={loading}>
-    {loading && <div className="h-11 w-full animate-pulse rounded-md bg-slate-100 dark:bg-slate-800" aria-label="Loading Google sign-in" />}
+    {loading && <div className="h-11 w-full animate-pulse rounded-md bg-slate-100 dark:bg-slate-800" role="status" aria-label="Loading Google sign-in" />}
     <div ref={container} className="flex w-full justify-center" />
   </div>;
 }
